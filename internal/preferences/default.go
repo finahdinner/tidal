@@ -1,6 +1,6 @@
 package preferences
 
-var DefaultPreferences preferencesFormat = preferencesFormat{
+var DefaultPreferences PreferencesFormat = PreferencesFormat{
 	TwitchConfig: twitchConfigT{
 		UserName:     "",
 		UserId:       "",

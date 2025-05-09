@@ -1,6 +1,6 @@
 package preferences
 
-type preferencesFormat struct {
+type PreferencesFormat struct {
 	TwitchConfig          twitchConfigT    `json:"twitch_config"`
 	StreamVariables       streamVariablesT `json:"stream_variables"`
 	LlmVariables          []llmVariableT   `json:"llm_variables"`

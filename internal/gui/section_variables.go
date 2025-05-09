@@ -8,5 +8,5 @@ import (
 )
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
-	return container.New(layout.NewVBoxLayout(), widget.NewLabel("getStreamVariablesSection"))
+	return container.New(layout.NewVBoxLayout(), widget.NewLabel("getVariablesSection"))
 }

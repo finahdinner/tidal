@@ -7,7 +7,7 @@ import (
 	"path"
 )
 
-const appConfigDirName = "tidal.config"
+const appConfigDirName = "finahdinner-tidal"
 
 var appConfigPath string
 

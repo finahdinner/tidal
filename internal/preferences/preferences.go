@@ -6,15 +6,15 @@ import (
 	"os"
 )
 
-func SetPreferences(preferences preferencesFormat) error {
+func SetPreferences(preferences PreferencesFormat) error {
 	if err := writeJsonIfSuccessful(appConfigPath, preferences); err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetPreferences() (preferencesFormat, error) {
-	preferences := preferencesFormat{}
+func GetPreferences() (PreferencesFormat, error) {
+	preferences := PreferencesFormat{}
 	data, err := os.ReadFile(appConfigPath)
 	if err != nil {
 		return preferences, err
