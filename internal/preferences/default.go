@@ -1,49 +1,49 @@
 package preferences
 
-var DefaultPreferences PreferencesFormat = PreferencesFormat{
-	TwitchConfig: twitchConfigT{
-		UserName:     "",
-		UserId:       "",
-		ClientId:     "",
-		ClientSecret: "",
-		RedirectUri:  "",
-		Credentials: credentialsT{
+var defaultPreferences PreferencesFormat = PreferencesFormat{
+	TwitchConfig: TwitchConfigT{
+		UserName:          "",
+		UserId:            "",
+		ClientId:          "",
+		ClientSecret:      "",
+		ClientRedirectUri: "",
+		Credentials: CredentialsT{
 			UserAccessToken:        "",
 			UserAccessRefreshToken: "",
 			UserAccessScope:        []string{},
 		},
 	},
-	StreamVariables: streamVariablesT{
-		StreamCategory: streamVariableT{
+	StreamVariables: StreamVariablesT{
+		StreamCategory: StreamVariableT{
 			Value:       "",
 			Description: "Game or category currently being streamed",
 		},
-		StreamUptime: streamVariableT{
+		StreamUptime: StreamVariableT{
 			Value:       "",
 			Description: "Current stream duration, in minutes",
 		},
-		NumViewers: streamVariableT{
+		NumViewers: StreamVariableT{
 			Value:       "",
 			Description: "Current number of viewers of the stream",
 		},
-		NumSubscribers: streamVariableT{
+		NumSubscribers: StreamVariableT{
 			Value:       "",
 			Description: "Current number of subscribers to the channel",
 		},
-		NumFollowers: streamVariableT{
+		NumFollowers: StreamVariableT{
 			Value:       "",
 			Description: "Current number of followers of the channel",
 		},
-		MostRecentSubscriber: streamVariableT{
+		MostRecentSubscriber: StreamVariableT{
 			Value:       "",
 			Description: "Username of the most recent subscriber to the channel",
 		},
-		MostRecentFollower: streamVariableT{
+		MostRecentFollower: StreamVariableT{
 			Value:       "",
 			Description: "Username of the most recent follower of the channel",
 		},
 	},
-	LlmVariables:          []llmVariableT{},
+	LlmVariables:          []LlmVariableT{},
 	ActivityConsoleOutput: "",
 	UpdateFrequency:       0,
 }

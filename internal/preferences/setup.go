@@ -37,7 +37,7 @@ func init() {
 	fmt.Printf("appConfigPath: %s\n", appConfigPath)
 	// set empty config if the file didn't previously exist
 	if !fileExists(appConfigPath) {
-		err := SetPreferences(DefaultPreferences)
+		err := SetPreferences(defaultPreferences)
 		if err != nil {
 			log.Fatal(err)
 		}
