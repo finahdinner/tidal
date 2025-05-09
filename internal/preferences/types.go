@@ -25,7 +25,7 @@ type credentialsT struct {
 
 type streamVariablesT struct {
 	StreamCategory       streamVariableT `json:"stream_category"`
-	StreamUuptime        streamVariableT `json:"stream_uptime"`
+	StreamUptime         streamVariableT `json:"stream_uptime"`
 	NumViewers           streamVariableT `json:"num_viewers"`
 	NumSubscribers       streamVariableT `json:"num_subscribers"`
 	NumFollowers         streamVariableT `json:"num_followers"`
