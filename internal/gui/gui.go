@@ -31,7 +31,7 @@ func init() {
 
 	menuMap := map[string]func() *fyne.Container{
 		"Twitch Config":    Gui.getTwitchConfigSection,
-		"Stream Variables": Gui.getStreamVariablesSection,
+		"Variables":        Gui.getVariablesSection,
 		"Activity Console": Gui.getActivityConsoleSection,
 	}
 	menuItemNames := []string{"Twitch Config", "Stream Variables", "Activity Console"}

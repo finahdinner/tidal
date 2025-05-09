@@ -7,6 +7,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func (g *GuiWrapper) getStreamVariablesSection() *fyne.Container {
+func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	return container.New(layout.NewVBoxLayout(), widget.NewLabel("getStreamVariablesSection"))
 }
