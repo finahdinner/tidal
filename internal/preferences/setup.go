@@ -9,6 +9,8 @@ import (
 
 const appConfigDirName = "finahdinner-tidal"
 
+var Preferences PreferencesFormat = defaultPreferences
+
 var appConfigPath string
 
 func dirExists(path string) bool {
@@ -35,9 +37,13 @@ func init() {
 	}
 	appConfigPath = path.Join(appConfigDir, "config.json")
 	fmt.Printf("appConfigPath: %s\n", appConfigPath)
-	// set empty config if the file didn't previously exist
-	if !fileExists(appConfigPath) {
-		err := SetPreferences(defaultPreferences)
+	if fileExists(appConfigPath) {
+		Preferences, err = GetPreferences()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		err = SavePreferences()
 		if err != nil {
 			log.Fatal(err)
 		}

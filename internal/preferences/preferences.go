@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-func SetPreferences(preferences PreferencesFormat) error {
-	if err := writeJsonIfSuccessful(appConfigPath, preferences); err != nil {
+func SavePreferences() error {
+	if err := writeJsonIfSuccessful(appConfigPath, Preferences); err != nil {
 		return err
 	}
 	return nil

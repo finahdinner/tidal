@@ -25,7 +25,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
-	streamVariables := &g.Preferences.StreamVariables
+	streamVariables := &preferences.Preferences.StreamVariables
 
 	fields := reflect.TypeOf(*streamVariables)
 	vals := reflect.ValueOf(*streamVariables)
@@ -67,16 +67,20 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	}
 
 	updateRateSelect := widget.NewSelect([]string{"10", "20", "30", "60"}, func(s string) {
-		asInt, err := strconv.ParseUint(s, 10, 16)
+		asInt, err := strconv.Atoi(s)
 		if err != nil {
 			log.Printf("unable to parse update rate as int - err: %v", err)
 			return
 		}
-		g.Preferences.VariableUpdateInterval = uint16(asInt)
-		preferences.SetPreferences(g.Preferences)
+		preferences.Preferences.VariableUpdateInterval = asInt
+		preferences.SavePreferences()
 		log.Printf("saved update frequency as %v seconds", asInt)
 	})
-	updateRateSelect.SetSelected(strconv.FormatUint(uint64(g.Preferences.VariableUpdateInterval), 10))
+
+	if preferences.Preferences.VariableUpdateInterval > 0 {
+		updateRateSelect.SetSelected(strconv.Itoa(preferences.Preferences.VariableUpdateInterval))
+	}
+
 	updateRateForm := container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Update every"),

@@ -4,7 +4,7 @@ type PreferencesFormat struct {
 	TwitchConfig           TwitchConfigT    `json:"twitch_config"`
 	StreamVariables        StreamVariablesT `json:"stream_variables"`
 	LlmVariables           []LlmVariableT   `json:"llm_variables"`
-	VariableUpdateInterval uint16           `json:"variable_update_interval"`
+	VariableUpdateInterval int              `json:"variable_update_interval"`
 	ActivityConsoleOutput  string           `json:"activity_console_output"`
 }
 

@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/finahdinner/tidal/internal/preferences"
 )
 
 func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
@@ -20,7 +21,7 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 	channelAccessTokenEntry := widget.NewPasswordEntry()
 	channelAccessTokenEntry.Disable()
 
-	twitchConfig := g.Preferences.TwitchConfig
+	twitchConfig := preferences.Preferences.TwitchConfig
 
 	channelUsernameEntry.SetText(twitchConfig.UserName)
 	channelUserIdEntry.SetText(twitchConfig.UserId)

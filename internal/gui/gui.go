@@ -1,20 +1,16 @@
 package gui
 
 import (
-	"log"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/preferences"
 )
 
 type GuiWrapper struct {
 	App           fyne.App
 	PrimaryWindow fyne.Window
-	Preferences   preferences.PreferencesFormat
 	Clipboard     fyne.Clipboard
 }
 
@@ -29,15 +25,9 @@ func init() {
 	primaryWindow.Resize(fyne.NewSize(1000, 600))
 	primaryWindow.SetMaster()
 
-	preferences, err := preferences.GetPreferences()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	Gui = &GuiWrapper{
 		App:           a,
 		PrimaryWindow: primaryWindow,
-		Preferences:   preferences,
 	}
 
 	menuMap := map[string]func() *fyne.Container{
