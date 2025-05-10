@@ -2,7 +2,9 @@ package gui
 
 import (
 	"fmt"
+	"log"
 	"reflect"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -23,12 +25,12 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
-	streamVariables := g.Preferences.StreamVariables
+	streamVariables := &g.Preferences.StreamVariables
 
-	fields := reflect.TypeOf(streamVariables)
-	vals := reflect.ValueOf(streamVariables)
+	fields := reflect.TypeOf(*streamVariables)
+	vals := reflect.ValueOf(*streamVariables)
 
-	for idx := range reflect.ValueOf(streamVariables).NumField() {
+	for idx := range reflect.ValueOf(*streamVariables).NumField() {
 
 		varName := fields.Field(idx).Name
 		varPlaceholderName := generatePlaceholderString(varName)
@@ -65,10 +67,16 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	}
 
 	updateRateSelect := widget.NewSelect([]string{"10", "20", "30", "60"}, func(s string) {
-		// TODO - save updateRateSeconds in preferences
-		fmt.Printf("%v seconds\n", s)
+		asInt, err := strconv.ParseUint(s, 10, 16)
+		if err != nil {
+			log.Printf("unable to parse update rate as int - err: %v", err)
+			return
+		}
+		g.Preferences.UpdateFrequency = uint16(asInt)
+		preferences.SetPreferences(g.Preferences)
+		log.Printf("saved update frequency as %v seconds", asInt)
 	})
-	updateRateSelect.SetSelected("10") // TODO set to whatever is saved in preferences, else set a default
+	updateRateSelect.SetSelected(strconv.FormatUint(uint64(g.Preferences.UpdateFrequency), 10))
 	updateRateForm := container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Update every"),
