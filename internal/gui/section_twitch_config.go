@@ -18,7 +18,14 @@ import (
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
+var twitchConfigSection *fyne.Container
+
 func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
+
+	if twitchConfigSection != nil {
+		log.Println("twitchConfigSection already exists")
+		return twitchConfigSection
+	}
 
 	channelUsernameEntry := widget.NewEntry()
 	channelUserIdEntry := widget.NewPasswordEntry()
@@ -96,7 +103,8 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 	saveConfigButton.OnTapped = func() {
 		prevPreferences := preferences.Preferences
 		if err := handleSaveTwitchConfig(
-			channelUsernameEntry, appClientIdEntry, appClientSecretEntry, appClientRedirectUri,
+			channelUsernameEntry, appClientIdEntry, appClientSecretEntry,
+			appClientRedirectUri, channelUserIdEntry, channelAccessTokenEntry,
 		); err != nil {
 			// restore old preferences
 			preferences.Preferences = prevPreferences
@@ -115,27 +123,30 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 	}
 
 	authenticateButton.OnTapped = func() {
-		prevPreferences := preferences.Preferences
-		if err := handleAuthenticate(
-			channelUserIdEntry,
-			channelAccessTokenEntry,
-		); err != nil {
-			// restore old preferences
-			preferences.Preferences = prevPreferences
-			if err2 := preferences.SavePreferences(); err2 != nil {
-				err = err2
+		go func() {
+			prevPreferences := preferences.Preferences
+			if err := handleAuthenticate(
+				channelUserIdEntry,
+				channelAccessTokenEntry,
+			); err != nil {
+				// restore old preferences
+				preferences.Preferences = prevPreferences
+				if err2 := preferences.SavePreferences(); err2 != nil {
+					err = err2
+				}
+				showErrorDialog(
+					err,
+					fmt.Sprintf("unable to authenticate using twitch credentials:\n%v", err),
+					g.PrimaryWindow,
+				)
+				return
 			}
-			showErrorDialog(
-				err,
-				fmt.Sprintf("unable to authenticate using twitch credentials:\n%v", err),
-				g.PrimaryWindow,
-			)
-			return
-		}
-		authenticateButton.Disable()
+			fyne.Do(func() { authenticateButton.Disable() })
+		}()
 	}
 
-	return container.NewPadded(outerContainer)
+	twitchConfigSection = container.NewPadded(outerContainer)
+	return twitchConfigSection
 }
 
 func handleSaveTwitchConfig(
@@ -143,6 +154,8 @@ func handleSaveTwitchConfig(
 	appClientIdEntry *widget.Entry,
 	appClientSecretEntry *widget.Entry,
 	appClientRedirectUri *widget.Entry,
+	channelUserIdEntry *widget.Entry,
+	channelAccessTokenEntry *widget.Entry,
 ) error {
 	twitchUsername := channelUsernameEntry.Text
 	clientId := appClientIdEntry.Text
@@ -166,6 +179,11 @@ func handleSaveTwitchConfig(
 		ClientRedirectUri: clientRedirectUri,
 		Credentials:       preferences.CredentialsT{},
 	}
+
+	fyne.Do(func() {
+		channelUserIdEntry.SetText(preferences.Preferences.TwitchConfig.UserId)
+		channelAccessTokenEntry.SetText(preferences.Preferences.TwitchConfig.Credentials.UserAccessToken)
+	})
 
 	if err := preferences.SavePreferences(); err != nil {
 		return fmt.Errorf("unable to save preferences - err: %v", err)
@@ -215,8 +233,10 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 		return fmt.Errorf("unable to retrieve twitch user id - error: %v", err)
 	}
 
-	channelUserIdEntry.SetText(preferences.Preferences.TwitchConfig.UserId)
-	channelAccessTokenEntry.SetText(preferences.Preferences.TwitchConfig.Credentials.UserAccessToken)
+	fyne.Do(func() {
+		channelUserIdEntry.SetText(preferences.Preferences.TwitchConfig.UserId)
+		channelAccessTokenEntry.SetText(preferences.Preferences.TwitchConfig.Credentials.UserAccessToken)
+	})
 
 	log.Println("successfully authenticated (got access token + twitch user id)")
 	return nil
