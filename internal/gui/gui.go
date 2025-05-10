@@ -31,11 +31,11 @@ func init() {
 	}
 
 	menuMap := map[string]func() *fyne.Container{
-		"Twitch Config":    Gui.getTwitchConfigSection,
-		"Variables":        Gui.getVariablesSection,
-		"Activity Console": Gui.getActivityConsoleSection,
+		"Twitch Config": Gui.getTwitchConfigSection,
+		"Variables":     Gui.getVariablesSection,
+		"Dashboard":     Gui.getDashboardSection,
 	}
-	menuItemNames := []string{"Twitch Config", "Variables", "Activity Console"}
+	menuItemNames := []string{"Dashboard", "Twitch Config", "Variables"}
 	menuList := widget.NewList(
 		func() int {
 			return len(menuItemNames)

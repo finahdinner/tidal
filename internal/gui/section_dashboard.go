@@ -7,6 +7,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func (g *GuiWrapper) getActivityConsoleSection() *fyne.Container {
+func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	return container.New(layout.NewVBoxLayout(), widget.NewLabel("getActivityConsoleSection"))
 }
