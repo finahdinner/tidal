@@ -72,11 +72,11 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			log.Printf("unable to parse update rate as int - err: %v", err)
 			return
 		}
-		g.Preferences.UpdateFrequency = uint16(asInt)
+		g.Preferences.VariableUpdateInterval = uint16(asInt)
 		preferences.SetPreferences(g.Preferences)
 		log.Printf("saved update frequency as %v seconds", asInt)
 	})
-	updateRateSelect.SetSelected(strconv.FormatUint(uint64(g.Preferences.UpdateFrequency), 10))
+	updateRateSelect.SetSelected(strconv.FormatUint(uint64(g.Preferences.VariableUpdateInterval), 10))
 	updateRateForm := container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Update every"),

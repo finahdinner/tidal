@@ -1,11 +1,11 @@
 package preferences
 
 type PreferencesFormat struct {
-	TwitchConfig          TwitchConfigT    `json:"twitch_config"`
-	StreamVariables       StreamVariablesT `json:"stream_variables"`
-	LlmVariables          []LlmVariableT   `json:"llm_variables"`
-	ActivityConsoleOutput string           `json:"activity_console_output"`
-	UpdateFrequency       uint16           `json:"update_frequency"`
+	TwitchConfig           TwitchConfigT    `json:"twitch_config"`
+	StreamVariables        StreamVariablesT `json:"stream_variables"`
+	LlmVariables           []LlmVariableT   `json:"llm_variables"`
+	VariableUpdateInterval uint16           `json:"variable_update_interval"`
+	ActivityConsoleOutput  string           `json:"activity_console_output"`
 }
 
 type TwitchConfigT struct {

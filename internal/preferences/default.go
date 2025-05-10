@@ -43,7 +43,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 			Description: "Username of the most recent follower of the channel",
 		},
 	},
-	LlmVariables:          []LlmVariableT{},
-	ActivityConsoleOutput: "",
-	UpdateFrequency:       0,
+	LlmVariables:           []LlmVariableT{},
+	VariableUpdateInterval: 0,
+	ActivityConsoleOutput:  "",
 }
