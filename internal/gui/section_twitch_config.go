@@ -3,7 +3,9 @@ package gui
 import (
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -11,7 +13,9 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/finahdinner/tidal/internal/helpers"
 	"github.com/finahdinner/tidal/internal/preferences"
+	"github.com/finahdinner/tidal/internal/twitch"
 )
 
 func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
@@ -90,17 +94,45 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 	}
 
 	saveConfigButton.OnTapped = func() {
+		prevPreferences := preferences.Preferences
 		if err := handleSaveTwitchConfig(
 			channelUsernameEntry, appClientIdEntry, appClientSecretEntry, appClientRedirectUri,
 		); err != nil {
+			// restore old preferences
+			preferences.Preferences = prevPreferences
+			if err2 := preferences.SavePreferences(); err2 != nil {
+				err = err2
+			}
 			showErrorDialog(
 				err,
 				fmt.Sprintf("unable to save twitch config:\n%v", err),
 				g.PrimaryWindow,
 			)
+			return
 		}
 		saveConfigButton.Disable()
 		authenticateButton.Enable()
+	}
+
+	authenticateButton.OnTapped = func() {
+		prevPreferences := preferences.Preferences
+		if err := handleAuthenticate(
+			channelUserIdEntry,
+			channelAccessTokenEntry,
+		); err != nil {
+			// restore old preferences
+			preferences.Preferences = prevPreferences
+			if err2 := preferences.SavePreferences(); err2 != nil {
+				err = err2
+			}
+			showErrorDialog(
+				err,
+				fmt.Sprintf("unable to authenticate using twitch credentials:\n%v", err),
+				g.PrimaryWindow,
+			)
+			return
+		}
+		authenticateButton.Disable()
 	}
 
 	return container.NewPadded(outerContainer)
@@ -139,6 +171,54 @@ func handleSaveTwitchConfig(
 		return fmt.Errorf("unable to save preferences - err: %v", err)
 	}
 
+	return nil
+}
+
+func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntry *widget.Entry) error {
+	codeChan := make(chan string)
+	csrfToken := helpers.GenerateCsrfToken(32)
+	hostAndPort := strings.Replace(strings.Replace(preferences.Preferences.TwitchConfig.ClientRedirectUri, "https://", "", 1), "http://", "", 1)
+
+	if helpers.PortInUse(hostAndPort) {
+		log.Printf("%s is already in use - not creating a new one\n", hostAndPort)
+	} else {
+		log.Println("creating authcode listener")
+		if err := twitch.CreateAuthCodeListener(hostAndPort, codeChan, csrfToken); err != nil {
+			return fmt.Errorf("unable to open listener port - error: %v", err)
+		}
+	}
+
+	twitch.SendGetRequestForAuthCode(csrfToken)
+	authCode := <-codeChan
+	fmt.Printf("auth code: %v\n", authCode)
+
+	userAccessTokenInfo, err := twitch.GetUserAccessTokenFromAuthCode(authCode)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve user access token information - error: %v", err)
+	}
+	log.Printf("userAccessTokenInfo: %v\n", userAccessTokenInfo)
+
+	twitchUserId, err := twitch.GetTwitchUserId(userAccessTokenInfo.AccessToken)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve twitch user id - error: %v", err)
+	}
+	log.Printf("twitchUserId: %v\n", twitchUserId)
+
+	preferences.Preferences.TwitchConfig.Credentials = preferences.CredentialsT{
+		UserAccessToken:        userAccessTokenInfo.AccessToken,
+		UserAccessRefreshToken: userAccessTokenInfo.RefreshToken,
+		UserAccessScope:        userAccessTokenInfo.Scope,
+	}
+	preferences.Preferences.TwitchConfig.UserId = twitchUserId
+
+	if err := preferences.SavePreferences(); err != nil {
+		return fmt.Errorf("unable to retrieve twitch user id - error: %v", err)
+	}
+
+	channelUserIdEntry.SetText(preferences.Preferences.TwitchConfig.UserId)
+	channelAccessTokenEntry.SetText(preferences.Preferences.TwitchConfig.Credentials.UserAccessToken)
+
+	log.Println("successfully authenticated (got access token + twitch user id)")
 	return nil
 }
 

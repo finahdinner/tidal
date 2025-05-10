@@ -25,7 +25,7 @@ func GetPreferences() (PreferencesFormat, error) {
 	return preferences, nil
 }
 
-func writeJsonIfSuccessful(path string, data interface{}) error {
+func writeJsonIfSuccessful(path string, data any) error {
 
 	tmpFile, err := os.CreateTemp("", "tmpconfig_*.json")
 	if err != nil {
