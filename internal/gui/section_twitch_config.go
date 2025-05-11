@@ -18,14 +18,7 @@ import (
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
-var twitchConfigSection *fyne.Container
-
 func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
-
-	if twitchConfigSection != nil {
-		config.Logger.LogDebug("twitchConfigSection already exists")
-		return twitchConfigSection
-	}
 
 	channelUsernameEntry := widget.NewEntry()
 	channelUserIdEntry := widget.NewPasswordEntry()
@@ -143,8 +136,7 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 		}()
 	}
 
-	twitchConfigSection = container.NewPadded(outerContainer)
-	return twitchConfigSection
+	return container.NewPadded(outerContainer)
 }
 
 func handleSaveTwitchConfig(
