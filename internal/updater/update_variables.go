@@ -1,9 +1,12 @@
 package updater
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/finahdinner/tidal/internal/helpers"
 	"github.com/finahdinner/tidal/internal/preferences"
@@ -29,7 +32,7 @@ func StartUpdatingVariables() {
 func updateVariables() error {
 
 	httpClient := &http.Client{}
-	preferences := preferences.Preferences
+	prefs := preferences.Preferences
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -47,7 +50,7 @@ func updateVariables() error {
 	// stream info
 	go func() {
 		defer wg.Done()
-		streamInfo, err := twitch.GetStreamInfo(httpClient, preferences)
+		streamInfo, err := twitch.GetStreamInfo(httpClient, prefs)
 		if err != nil {
 			log.Printf("unable to get stream info - err: %v", err)
 			streamInfo = nil
@@ -60,7 +63,7 @@ func updateVariables() error {
 	// subscribers
 	go func() {
 		defer wg.Done()
-		subscribersInfo, err := twitch.GetSubscribers(httpClient, preferences)
+		subscribersInfo, err := twitch.GetSubscribers(httpClient, prefs)
 		if err != nil {
 			log.Printf("unable to get subscribers - err: %v", err)
 			subscribersInfo = nil
@@ -73,7 +76,7 @@ func updateVariables() error {
 	// followers
 	go func() {
 		defer wg.Done()
-		followersInfo, err := twitch.GetFollowers(httpClient, preferences)
+		followersInfo, err := twitch.GetFollowers(httpClient, prefs)
 		if err != nil {
 			log.Printf("unable to get followers - err: %v", err)
 			followersInfo = nil
@@ -87,5 +90,36 @@ func updateVariables() error {
 
 	log.Printf("all api responses: %v", rawApiResponses)
 
+	// update Preferences, both in memory and on disk
+
+	prevPrefs := preferences.Preferences
+
+	if rawApiResponses.StreamInfo != nil {
+		prefs.StreamVariables.NumViewers.Value = strconv.Itoa(rawApiResponses.StreamInfo.ViewerCount)
+		prefs.StreamVariables.StreamCategory.Value = rawApiResponses.StreamInfo.GameName
+		streamStartedAt := rawApiResponses.StreamInfo.StartedAt
+		t, err := time.Parse(time.RFC3339, streamStartedAt)
+		if err == nil {
+			secondsSinceStreamStart := int(time.Since(t).Seconds())
+			prefs.StreamVariables.StreamUptime.Value = strconv.Itoa(secondsSinceStreamStart)
+		}
+	}
+
+	if rawApiResponses.SubscribersInfo != nil {
+		prefs.StreamVariables.NumSubscribers.Value = strconv.Itoa(rawApiResponses.SubscribersInfo.Total)
+	}
+
+	if rawApiResponses.FollowersInfo != nil {
+		prefs.StreamVariables.NumFollowers.Value = strconv.Itoa(rawApiResponses.FollowersInfo.Total)
+	}
+
+	preferences.Preferences = prefs
+
+	if err := preferences.SavePreferences(); err != nil {
+		preferences.Preferences = prevPrefs
+		return fmt.Errorf("unable to save new preferences - err: %v", err)
+	}
+
+	log.Println("successfully updated preferences with new values")
 	return nil
 }

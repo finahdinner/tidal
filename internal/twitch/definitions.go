@@ -51,7 +51,7 @@ type streamInfoT struct {
 	Title        string   `json:"title"`
 	Tags         []string `json:"tags"`
 	ViewerCount  int      `json:"viewer_count"`
-	StartedAt    string   `json:"started_at"`
+	StartedAt    string   `json:"started_at"` // RFC3339 format
 	Language     string   `json:"language"`
 	ThumbnailUrl string   `json:"thumbnail_url"`
 	TagIds       []string `json:"tag_ids"`

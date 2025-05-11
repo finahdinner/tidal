@@ -20,7 +20,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		},
 		StreamUptime: StreamVariableT{
 			Value:       "",
-			Description: "Current stream duration, in minutes",
+			Description: "Current stream duration, in seconds",
 		},
 		NumViewers: StreamVariableT{
 			Value:       "",
@@ -33,14 +33,6 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		NumFollowers: StreamVariableT{
 			Value:       "",
 			Description: "Current number of followers of the channel",
-		},
-		MostRecentSubscriber: StreamVariableT{
-			Value:       "",
-			Description: "Username of the most recent subscriber to the channel",
-		},
-		MostRecentFollower: StreamVariableT{
-			Value:       "",
-			Description: "Username of the most recent follower of the channel",
 		},
 	},
 	LlmVariables:           []LlmVariableT{},

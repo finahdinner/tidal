@@ -24,13 +24,13 @@ type CredentialsT struct {
 }
 
 type StreamVariablesT struct {
-	StreamCategory       StreamVariableT `json:"stream_category"`
-	StreamUptime         StreamVariableT `json:"stream_uptime"`
-	NumViewers           StreamVariableT `json:"num_viewers"`
-	NumSubscribers       StreamVariableT `json:"num_subscribers"`
-	NumFollowers         StreamVariableT `json:"num_followers"`
-	MostRecentSubscriber StreamVariableT `json:"most_recent_subscriber"`
-	MostRecentFollower   StreamVariableT `json:"most_recent_follower"`
+	StreamCategory StreamVariableT `json:"stream_category"`
+	StreamUptime   StreamVariableT `json:"stream_uptime"`
+	NumViewers     StreamVariableT `json:"num_viewers"`
+	NumSubscribers StreamVariableT `json:"num_subscribers"`
+	NumFollowers   StreamVariableT `json:"num_followers"`
+	// MostRecentSubscriber StreamVariableT `json:"most_recent_subscriber"`
+	// MostRecentFollower   StreamVariableT `json:"most_recent_follower"`
 }
 
 type StreamVariableT struct {
