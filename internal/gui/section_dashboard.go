@@ -19,7 +19,7 @@ var dashboardSection *fyne.Container
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	if dashboardSection != nil {
-		config.Logger.LogInfo("dashboardSection already exists")
+		config.Logger.LogDebug("dashboardSection already exists")
 		return dashboardSection
 	}
 

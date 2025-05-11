@@ -13,7 +13,8 @@ var appLogPath string
 var Logger *TidalLoggerT
 
 type TidalLoggerT struct {
-	logger *log.Logger
+	fileLogger   *log.Logger
+	stdoutLogger *log.Logger
 }
 
 func newTidalLogger(logPath string) (*TidalLoggerT, error) {
@@ -28,24 +29,37 @@ func newTidalLogger(logPath string) (*TidalLoggerT, error) {
 		return nil, fmt.Errorf("unable to open log file: %w", err)
 	}
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
-	logger := log.New(multiWriter, "LOG: ", log.Ldate|log.Ltime|log.Lshortfile)
-	return &TidalLoggerT{logger: logger}, nil
+	fileLogger := log.New(multiWriter, "LOG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	stdoutLogger := log.New(os.Stdout, "LOG: ", log.Ldate|log.Ltime|log.Lshortfile)
+	return &TidalLoggerT{
+		fileLogger:   fileLogger,
+		stdoutLogger: stdoutLogger,
+	}, nil
+}
+
+func (tl *TidalLoggerT) LogDebug(msg string) {
+	tl.stdoutLogger.Println("DEBUG: " + msg)
+}
+
+func (tl *TidalLoggerT) LogDebugf(format string, args ...any) {
+	msg := fmt.Sprintf(format, args...)
+	tl.stdoutLogger.Println("DEBUG: " + msg)
 }
 
 func (tl *TidalLoggerT) LogInfo(msg string) {
-	tl.logger.Println("INFO: " + msg)
+	tl.fileLogger.Println("INFO: " + msg)
 }
 
 func (tl *TidalLoggerT) LogInfof(format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	tl.logger.Println("INFO: " + msg)
+	tl.fileLogger.Println("INFO: " + msg)
 }
 
 func (tl *TidalLoggerT) LogError(msg string) {
-	tl.logger.Println("ERROR: " + msg)
+	tl.fileLogger.Println("ERROR: " + msg)
 }
 
 func (tl *TidalLoggerT) LogErrorf(format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	tl.logger.Println("ERROR: " + msg)
+	tl.fileLogger.Println("ERROR: " + msg)
 }

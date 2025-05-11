@@ -30,9 +30,7 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 		// ctx to allow handler to shutdown the server
 		ctx := context.WithValue(r.Context(), ctxServerKey{}, server)
 		config.Logger.LogInfof("ctx val: %v\n", ctx.Value(ctxServerKey{}))
-		config.Logger.LogInfo("handleAuthCodeReceived before")
 		code, err := handleAuthCodeReceived(w, r.WithContext(ctx), csrfToken)
-		config.Logger.LogInfof("handleAuthCodeReceived after - code: %v\n", code)
 		if err != nil {
 			config.Logger.LogInfof("not valid: %v\n", err)
 			return

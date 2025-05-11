@@ -23,7 +23,7 @@ var twitchConfigSection *fyne.Container
 func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 
 	if twitchConfigSection != nil {
-		config.Logger.LogInfo("twitchConfigSection already exists")
+		config.Logger.LogDebug("twitchConfigSection already exists")
 		return twitchConfigSection
 	}
 
