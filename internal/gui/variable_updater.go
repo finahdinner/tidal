@@ -9,7 +9,6 @@ import (
 )
 
 var updaterTicker *time.Ticker
-var updaterDone = make(chan struct{})
 var updateVariablesSectionSignal = make(chan struct{}, 1)
 
 func startUpdatingVariables(interval int) error {
@@ -20,9 +19,6 @@ func startUpdatingVariables(interval int) error {
 		return errors.New("ticker already exists - call stopUpdaterTicker() first")
 	}
 
-	// signal old goroutine to exit, and create a new chan + ticker
-	close(updaterDone)
-	updaterDone = make(chan struct{})
 	updaterTicker = time.NewTicker(time.Duration(interval) * time.Second)
 
 	go func() {
