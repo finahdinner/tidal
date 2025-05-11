@@ -29,8 +29,6 @@ type StreamVariablesT struct {
 	NumViewers     StreamVariableT `json:"num_viewers"`
 	NumSubscribers StreamVariableT `json:"num_subscribers"`
 	NumFollowers   StreamVariableT `json:"num_followers"`
-	// MostRecentSubscriber StreamVariableT `json:"most_recent_subscriber"`
-	// MostRecentFollower   StreamVariableT `json:"most_recent_follower"`
 }
 
 type StreamVariableT struct {

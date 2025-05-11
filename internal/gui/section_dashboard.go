@@ -54,7 +54,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	stopTidalButton.OnTapped = func() {
 		log.Println("stopped the ticker")
-		stopUpdateTicker()
+		stopUpdaterTicker()
 		stopTidalButton.Disable()
 		startTidalButton.Enable()
 	}

@@ -17,9 +17,7 @@ func startUpdatingVariables(interval int) error {
 		return errors.New("interval value must be a positive integer")
 	}
 	if updaterTicker != nil {
-		// stop previous ticker
-		updaterTicker.Stop()
-		updaterTicker = nil
+		return errors.New("ticker already exists - call stopUpdaterTicker() first")
 	}
 
 	// signal old goroutine to exit, and create a new chan + ticker
@@ -45,7 +43,7 @@ func startUpdatingVariables(interval int) error {
 	return nil
 }
 
-func stopUpdateTicker() {
+func stopUpdaterTicker() {
 	updaterTicker.Stop()
 	updaterTicker = nil
 }

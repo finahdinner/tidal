@@ -120,9 +120,8 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	// set up a listener to update widgets whenever the ticker updates stream variables
 	go func() {
-		log.Println("setting up listener")
 		for range updateVariablesSectionSignal {
-			log.Println("received update signal!")
+			log.Println("updating stream variable widgets")
 
 			for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
 
@@ -152,7 +151,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				}
 			}
 		}
-		log.Println("set up listener")
 	}()
 
 	return variablesSection
