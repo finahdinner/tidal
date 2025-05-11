@@ -14,7 +14,6 @@ import (
 
 // TODO - in some place check to see that the credentials are populated
 // ...or if any request returns 401, cancel the ticker and prompt the user to authenticate
-// TODO - force update stream variables section each time - but don't create multiple listeners
 func UpdateStreamVariables(ctx context.Context) error {
 
 	// httpClient := &http.Client{}

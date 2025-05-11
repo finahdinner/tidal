@@ -16,8 +16,6 @@ import (
 	"github.com/finahdinner/tidal/internal/preferences"
 )
 
-var variablesSection *fyne.Container
-
 const (
 	streamVarNamePlaceholderPrefix = "{{"
 	streamVarNamePlaceholderSuffix = "}}"
@@ -25,11 +23,6 @@ const (
 )
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
-
-	if variablesSection != nil {
-		log.Println("variablesSection already exists")
-		return variablesSection
-	}
 
 	header := canvas.NewText("Variables", theme.Color(theme.ColorNameForeground))
 	header.TextSize = headerSize
@@ -67,11 +60,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 		streamVariable := vals.Field(idx).Interface().(preferences.StreamVariableT)
 
-		// streamVariableValue := streamVariable.Value
-		// if streamVariable.Value == "" {
-		// 	streamVariableValue = "N/A"
-		// }
-
 		twitchVariableValueColumn.Objects = append(
 			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(streamVariable.Value)),
 		)
@@ -105,7 +93,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	)
 	updateRateRow := container.New(layout.NewBorderLayout(nil, nil, updateRateForm, nil), updateRateForm)
 
-	variablesSection = container.NewPadded(container.New(
+	variablesSection := container.NewPadded(container.New(
 		layout.NewVBoxLayout(),
 		header,
 		container.New(
