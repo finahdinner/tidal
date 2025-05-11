@@ -90,8 +90,6 @@ func updateVariables() error {
 
 	log.Printf("all api responses: %v", rawApiResponses)
 
-	// update Preferences, both in memory and on disk
-
 	prevPrefs := preferences.Preferences
 
 	if rawApiResponses.StreamInfo != nil {
@@ -116,6 +114,7 @@ func updateVariables() error {
 	preferences.Preferences = prefs
 
 	if err := preferences.SavePreferences(); err != nil {
+		// restore old preferences
 		preferences.Preferences = prevPrefs
 		return fmt.Errorf("unable to save new preferences - err: %v", err)
 	}
