@@ -196,7 +196,7 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 	hostAndPort := strings.Replace(strings.Replace(config.Preferences.TwitchConfig.ClientRedirectUri, "https://", "", 1), "http://", "", 1)
 
 	if helpers.PortInUse(hostAndPort) {
-		config.Logger.LogInfof("%s is already in use - not creating a new one\n", hostAndPort)
+		config.Logger.LogInfof("%s is already in use - not creating a new one", hostAndPort)
 	} else {
 		config.Logger.LogInfo("creating authcode listener")
 		if err := twitch.CreateAuthCodeListener(hostAndPort, codeChan, csrfToken); err != nil {
@@ -206,19 +206,19 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 
 	twitch.SendGetRequestForAuthCode(csrfToken)
 	authCode := <-codeChan
-	config.Logger.LogInfof("auth code: %v\n", authCode)
+	config.Logger.LogInfof("auth code: %v", authCode)
 
 	userAccessTokenInfo, err := twitch.GetUserAccessTokenFromAuthCode(authCode)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve user access token information - error: %v", err)
 	}
-	config.Logger.LogInfof("userAccessTokenInfo: %v\n", userAccessTokenInfo)
+	config.Logger.LogInfof("userAccessTokenInfo: %v", userAccessTokenInfo)
 
 	twitchUserId, err := twitch.GetTwitchUserId(userAccessTokenInfo.AccessToken)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve twitch user id - error: %v", err)
 	}
-	config.Logger.LogInfof("twitchUserId: %v\n", twitchUserId)
+	config.Logger.LogInfof("twitchUserId: %v", twitchUserId)
 
 	config.Preferences.TwitchConfig.Credentials = config.CredentialsT{
 		UserAccessToken:        userAccessTokenInfo.AccessToken,
