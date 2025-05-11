@@ -1,7 +1,6 @@
 package preferences
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -36,7 +35,7 @@ func init() {
 		os.Mkdir(appConfigDir, 0755) // 0755 - owner can rwx, others can r-x
 	}
 	appConfigPath = path.Join(appConfigDir, "config.json")
-	fmt.Printf("appConfigPath: %s\n", appConfigPath)
+	log.Printf("appConfigPath: %s\n", appConfigPath)
 	if fileExists(appConfigPath) {
 		Preferences, err = GetPreferences()
 		if err != nil {

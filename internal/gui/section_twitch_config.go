@@ -208,7 +208,7 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 
 	twitch.SendGetRequestForAuthCode(csrfToken)
 	authCode := <-codeChan
-	fmt.Printf("auth code: %v\n", authCode)
+	log.Printf("auth code: %v\n", authCode)
 
 	userAccessTokenInfo, err := twitch.GetUserAccessTokenFromAuthCode(authCode)
 	if err != nil {

@@ -30,12 +30,12 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// ctx to allow handler to shutdown the server
 		ctx := context.WithValue(r.Context(), ctxServerKey{}, server)
-		fmt.Printf("ctx val: %v\n", ctx.Value(ctxServerKey{}))
-		fmt.Println("handleAuthCodeReceived before")
+		log.Printf("ctx val: %v\n", ctx.Value(ctxServerKey{}))
+		log.Println("handleAuthCodeReceived before")
 		code, err := handleAuthCodeReceived(w, r.WithContext(ctx), csrfToken)
-		fmt.Printf("handleAuthCodeReceived after - code: %v\n", code)
+		log.Printf("handleAuthCodeReceived after - code: %v\n", code)
 		if err != nil {
-			fmt.Printf("not valid: %v\n", err)
+			log.Printf("not valid: %v\n", err)
 			return
 		}
 		fmt.Fprintln(w, "Authentication successful. You may now close this browser.")
@@ -44,11 +44,11 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("server error: %v\n", err)
+			log.Printf("server error: %v\n", err)
 		}
 	}()
 
-	fmt.Printf("listener set up at %s\n", hostAndPort)
+	log.Printf("listener set up at %s\n", hostAndPort)
 
 	return nil
 }
@@ -64,7 +64,7 @@ func SendGetRequestForAuthCode(csrfToken string) {
 
 	fullAuthUrl := fmt.Sprintf("%s?%s", twitchApiAuthoriseUrl, params.Encode())
 
-	fmt.Printf("fullAuthUrl: %v\n", fullAuthUrl)
+	log.Printf("fullAuthUrl: %v\n", fullAuthUrl)
 
 	helpers.OpenUrlInBrowser(fullAuthUrl)
 	log.Printf("Please complete the authentication in your browser.")
@@ -136,14 +136,14 @@ func GetTwitchUserId(accessToken string) (string, error) {
 }
 
 func handleAuthCodeReceived(_ http.ResponseWriter, r *http.Request, csrfToken string) (string, error) {
-	fmt.Printf("first request from: %v - shutting down in 2 seconds...\n", r.URL)
+	log.Printf("first request from: %v - shutting down in 2 seconds...\n", r.URL)
 
 	if server, ok := r.Context().Value(ctxServerKey{}).(*http.Server); ok {
 		go shutDownServerGracefully(server, 2*time.Second)
 	}
 
 	queryParams := r.URL.Query()
-	fmt.Printf("queryParams: %v\n", queryParams)
+	log.Printf("queryParams: %v\n", queryParams)
 	authCode := queryParams.Get("code")
 
 	if authCode == "" {
@@ -159,8 +159,8 @@ func shutDownServerGracefully(server *http.Server, timeoutDuration time.Duration
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		fmt.Printf("error during shutdown: %v\n", err)
+		log.Printf("error during shutdown: %v\n", err)
 	} else {
-		fmt.Println("server shut down gracefully")
+		log.Println("server shut down gracefully")
 	}
 }

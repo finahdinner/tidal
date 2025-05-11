@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/preferences"
+	"github.com/finahdinner/tidal/internal/updater"
 )
 
 var dashboardSection *fyne.Container
@@ -35,12 +36,28 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	console := container.NewScroll(container.NewStack(consoleBg, consoleTextGrid))
 
 	uptimeLabel := widget.NewLabel("Uptime: <placeholder>")
-	startTidalButton := widget.NewButton("Start Tidal", func() {
-		// TODO - implement something proper here
-		log.Println("clicked a button")
-	})
 
-	bottomRow := container.New(layout.NewBorderLayout(nil, nil, uptimeLabel, startTidalButton), uptimeLabel, startTidalButton)
+	startTidalButton := widget.NewButton("Start Tidal", nil)
+	stopTidalButton := widget.NewButton("Stop Tidal", nil)
+	stopTidalButton.Disable()
+
+	startTidalButton.OnTapped = func() {
+		log.Println("created a ticker")
+		updater.UpdateUpdateTicker(1)
+		go func() { updater.UpdateVariables() }()
+		startTidalButton.Disable()
+		stopTidalButton.Enable()
+	}
+
+	stopTidalButton.OnTapped = func() {
+		log.Println("stopped the ticker")
+		updater.RemoveUpdateTicker()
+		stopTidalButton.Disable()
+		startTidalButton.Enable()
+	}
+
+	buttonContainer := container.New(layout.NewFormLayout(), startTidalButton, stopTidalButton)
+	bottomRow := container.New(layout.NewBorderLayout(nil, nil, uptimeLabel, buttonContainer), uptimeLabel, buttonContainer)
 
 	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(headerContainer, bottomRow, nil, nil), headerContainer, bottomRow, console))
 	return dashboardSection
