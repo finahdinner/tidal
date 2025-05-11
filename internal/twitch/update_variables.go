@@ -12,10 +12,32 @@ import (
 	"github.com/finahdinner/tidal/internal/preferences"
 )
 
+// TODO - add a timeout to this function - say, 5 seconds
+// TODO - in some place check to see that the credentials are populated
+// ...or if any request returns 401, cancel the ticker and prompt the user to authenticate
 func UpdateVariables() error {
 
 	httpClient := &http.Client{}
 	prefs := preferences.Preferences
+
+	// if the access token expires in <100 seconds, refresh it
+	accessTokenExpiryTimestamp := preferences.Preferences.TwitchConfig.Credentials.ExpiryUnixTimestamp
+	if time.Now().Unix()+100 > accessTokenExpiryTimestamp {
+		newUserAccessTokenInfo, err := getUserAccessTokenFromRefreshToken()
+		if err != nil {
+			return fmt.Errorf("unable to refresh access code - err: %v", err)
+		}
+		preferences.Preferences.TwitchConfig.Credentials = preferences.CredentialsT{
+			UserAccessToken:        newUserAccessTokenInfo.AccessToken,
+			UserAccessRefreshToken: newUserAccessTokenInfo.RefreshToken,
+			UserAccessScope:        newUserAccessTokenInfo.Scope,
+			ExpiryUnixTimestamp:    time.Now().Unix() + int64(newUserAccessTokenInfo.ExpiresIn),
+		}
+		if err := preferences.SavePreferences(); err != nil {
+			return fmt.Errorf("unable to save preferences - error: %v", err)
+		}
+		prefs = preferences.Preferences
+	}
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex

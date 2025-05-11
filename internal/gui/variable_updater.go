@@ -24,6 +24,10 @@ func startUpdatingVariables(interval int) error {
 	updaterTickerDone = make(chan struct{})
 
 	go func() {
+		// // initial update, before the ticker
+		// if err := twitch.UpdateVariables(); err != nil {
+		// 	log.Printf("failed - err: %v", err)
+		// }
 		for {
 			select {
 			case <-updaterTickerDone:
@@ -48,10 +52,12 @@ func startUpdatingVariables(interval int) error {
 
 func stopUpdaterTicker() {
 	if updaterTicker != nil {
+		log.Println("ticker 'updaterTicker' stopped")
 		updaterTicker.Stop()
 		updaterTicker = nil
 	}
 	if updaterTickerDone != nil {
+		log.Println("chan 'updaterTickerDone' closed")
 		close(updaterTickerDone)
 		updaterTickerDone = nil
 	}

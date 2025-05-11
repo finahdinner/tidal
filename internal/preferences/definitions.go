@@ -21,6 +21,7 @@ type CredentialsT struct {
 	UserAccessToken        string   `json:"user_access_token"`
 	UserAccessRefreshToken string   `json:"user_refresh_token"`
 	UserAccessScope        []string `json:"user_access_scope"`
+	ExpiryUnixTimestamp    int64    `json:"expiry_unix_timestamp"`
 }
 
 type StreamVariablesT struct {

@@ -135,6 +135,27 @@ func GetTwitchUserId(accessToken string) (string, error) {
 	return twitchUserId, nil
 }
 
+func getUserAccessTokenFromRefreshToken() (*userAccessTokenInfoT, error) {
+	userAccessTokenInfo := &userAccessTokenInfoT{}
+
+	params := url.Values{}
+	params.Add("client_id", preferences.Preferences.TwitchConfig.ClientId)
+	params.Add("client_secret", preferences.Preferences.TwitchConfig.ClientSecret)
+	params.Add("grant_type", "refresh_token")
+	params.Add("refresh_token", preferences.Preferences.TwitchConfig.Credentials.UserAccessRefreshToken)
+
+	resp, err := http.Post(twitchApiTokenUrl, "application/x-www-form-urlencoded", strings.NewReader(params.Encode()))
+	if err != nil {
+		return userAccessTokenInfo, fmt.Errorf("error requesting userAccess token: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if err := json.NewDecoder(resp.Body).Decode(userAccessTokenInfo); err != nil {
+		return userAccessTokenInfo, fmt.Errorf("error decoding response: %v", err)
+	}
+	return userAccessTokenInfo, nil
+}
+
 func handleAuthCodeReceived(_ http.ResponseWriter, r *http.Request, csrfToken string) (string, error) {
 	log.Printf("first request from: %v - shutting down in 2 seconds...\n", r.URL)
 

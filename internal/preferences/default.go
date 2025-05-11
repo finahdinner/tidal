@@ -11,6 +11,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 			UserAccessToken:        "",
 			UserAccessRefreshToken: "",
 			UserAccessScope:        []string{},
+			ExpiryUnixTimestamp:    0,
 		},
 	},
 	StreamVariables: StreamVariablesT{
@@ -36,6 +37,6 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		},
 	},
 	LlmVariables:           []LlmVariableT{},
-	VariableUpdateInterval: -1,
+	VariableUpdateInterval: 0,
 	ActivityConsoleOutput:  "",
 }

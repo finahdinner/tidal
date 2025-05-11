@@ -6,6 +6,7 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -226,11 +227,12 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 		UserAccessToken:        userAccessTokenInfo.AccessToken,
 		UserAccessRefreshToken: userAccessTokenInfo.RefreshToken,
 		UserAccessScope:        userAccessTokenInfo.Scope,
+		ExpiryUnixTimestamp:    time.Now().Unix() + int64(userAccessTokenInfo.ExpiresIn),
 	}
 	preferences.Preferences.TwitchConfig.UserId = twitchUserId
 
 	if err := preferences.SavePreferences(); err != nil {
-		return fmt.Errorf("unable to retrieve twitch user id - error: %v", err)
+		return fmt.Errorf("unable to save preferences - error: %v", err)
 	}
 
 	fyne.Do(func() {
