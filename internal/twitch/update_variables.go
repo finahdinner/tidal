@@ -13,8 +13,6 @@ import (
 	"github.com/finahdinner/tidal/internal/preferences"
 )
 
-// TODO - in some place check to see that the credentials are populated
-// ...or if any request returns 401, cancel the ticker and prompt the user to authenticate
 func UpdateStreamVariables(ctx context.Context) error {
 
 	// httpClient := &http.Client{}
