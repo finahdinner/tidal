@@ -9,6 +9,7 @@ import (
 )
 
 var updaterTicker *time.Ticker
+var updaterTickerDone chan struct{}
 var updateVariablesSectionSignal = make(chan struct{}, 1)
 
 func startUpdatingVariables(interval int) error {
@@ -16,23 +17,29 @@ func startUpdatingVariables(interval int) error {
 		return errors.New("interval value must be a positive integer")
 	}
 	if updaterTicker != nil {
-		return errors.New("ticker already exists - call stopUpdaterTicker() first")
+		return errors.New("ticker already running - stop it first")
 	}
 
 	updaterTicker = time.NewTicker(time.Duration(interval) * time.Second)
+	updaterTickerDone = make(chan struct{})
 
 	go func() {
-		for range updaterTicker.C {
-			if err := twitch.UpdateVariables(); err != nil {
-				log.Printf("failed - err: %v", err)
-				continue
-			}
-			log.Println("tick!")
+		for {
 			select {
-			case updateVariablesSectionSignal <- struct{}{}:
-				// signal to update widgets in variables section
-			default:
-				// reached if updateSignalChan is full
+			case <-updaterTickerDone:
+				log.Println("updaterTickerDone closed")
+				return
+			case <-updaterTicker.C:
+				if err := twitch.UpdateVariables(); err != nil {
+					log.Printf("failed - err: %v", err)
+					continue
+				}
+				select {
+				case updateVariablesSectionSignal <- struct{}{}:
+					// signal to update widgets in variables section
+				default:
+					// reached if updateSignalChan is full
+				}
 			}
 		}
 	}()
@@ -40,6 +47,12 @@ func startUpdatingVariables(interval int) error {
 }
 
 func stopUpdaterTicker() {
-	updaterTicker.Stop()
-	updaterTicker = nil
+	if updaterTicker != nil {
+		updaterTicker.Stop()
+		updaterTicker = nil
+	}
+	if updaterTickerDone != nil {
+		close(updaterTickerDone)
+		updaterTickerDone = nil
+	}
 }
