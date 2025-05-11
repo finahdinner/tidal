@@ -7,6 +7,10 @@ const (
 	twitchApiUsersUrl     = "https://api.twitch.tv/helix/users"
 )
 
+type paginationApiResponse struct {
+	cursor string `json:"cursor"`
+}
+
 type userAccessTokenInfoT struct {
 	AccessToken  string   `json:"access_token"`
 	ExpiresIn    int      `json:"expires_in"`
@@ -31,4 +35,32 @@ type userDataT struct {
 
 type getUsersApiResponseT struct {
 	Data []userDataT
+}
+
+type requestAuthorisation struct {
+	Authorisation string `json:"authorization"`
+	ClientId      string `json:"Client-Id"`
+}
+
+type streamInfoApiResponse struct {
+	id           string   `json:"id"`
+	userId       string   `json:"user_id"`
+	userLogin    string   `json:"user_login"`
+	userName     string   `json:"user_name"`
+	gameId       string   `json:"game_id"`
+	gameName     string   `json:"game_name"`
+	streamType   string   `json:"type"`
+	title        string   `json:"title"`
+	tags         []string `json:"tags"`
+	viewerCount  int      `json:"viewer_count"`
+	startedAt    string   `json:"started_at"`
+	language     string   `json:"language"`
+	thumbnailUrl string   `json:"thumbnail_url"`
+	tagIds       []string `json:"tag_ids"`
+	isMature     bool     `json:"is_mature"`
+}
+
+type getStreamsApiResponse struct {
+	data       []streamInfoApiResponse
+	pagination paginationApiResponse
 }
