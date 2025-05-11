@@ -12,7 +12,7 @@ import (
 func GenerateCsrfToken(length int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	res := make([]byte, length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		res[i] = chars[rand.IntN(len(chars))]
 	}
 	return string(res)[:length]
