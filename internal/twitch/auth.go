@@ -135,7 +135,11 @@ func GetTwitchUserId(accessToken string) (string, error) {
 	return twitchUserId, nil
 }
 
-func getUserAccessTokenFromRefreshToken() (*userAccessTokenInfoT, error) {
+func getUserAccessTokenFromRefreshToken(ctx context.Context) (*userAccessTokenInfoT, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	userAccessTokenInfo := &userAccessTokenInfoT{}
 
 	params := url.Values{}
@@ -144,7 +148,13 @@ func getUserAccessTokenFromRefreshToken() (*userAccessTokenInfoT, error) {
 	params.Add("grant_type", "refresh_token")
 	params.Add("refresh_token", preferences.Preferences.TwitchConfig.Credentials.UserAccessRefreshToken)
 
-	resp, err := http.Post(twitchApiTokenUrl, "application/x-www-form-urlencoded", strings.NewReader(params.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", twitchApiTokenUrl, strings.NewReader(params.Encode()))
+	if err != nil {
+		return userAccessTokenInfo, fmt.Errorf("error creating request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return userAccessTokenInfo, fmt.Errorf("error requesting userAccess token: %v", err)
 	}

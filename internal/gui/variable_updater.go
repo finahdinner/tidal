@@ -1,12 +1,15 @@
 package gui
 
 import (
+	"context"
 	"errors"
 	"log"
 	"time"
 
 	"github.com/finahdinner/tidal/internal/twitch"
 )
+
+const updateVariablesTimeout = 5 * time.Second
 
 var updaterTicker *time.Ticker
 var updaterTickerDone chan struct{}
@@ -24,17 +27,20 @@ func startUpdatingVariables(interval int) error {
 	updaterTickerDone = make(chan struct{})
 
 	go func() {
-		// // initial update, before the ticker
-		// if err := twitch.UpdateVariables(); err != nil {
-		// 	log.Printf("failed - err: %v", err)
-		// }
+		ctx := context.Background()
+
+		// initial update, before the ticker
+		if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
+			log.Printf("failed - err: %v", err)
+		}
+
 		for {
 			select {
 			case <-updaterTickerDone:
 				log.Println("updaterTickerDone closed")
 				return
 			case <-updaterTicker.C:
-				if err := twitch.UpdateVariables(); err != nil {
+				if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
 					log.Printf("failed - err: %v", err)
 					continue
 				}
@@ -61,4 +67,11 @@ func stopUpdaterTicker() {
 		close(updaterTickerDone)
 		updaterTickerDone = nil
 	}
+}
+
+// attempts to update the stream variables, but cancels if the timeout limit is exceeded
+func callUpdateStreamVariablesWithTimeout(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, updateVariablesTimeout)
+	defer cancel()
+	return twitch.UpdateStreamVariables(ctx)
 }

@@ -1,9 +1,9 @@
 package twitch
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -12,18 +12,18 @@ import (
 	"github.com/finahdinner/tidal/internal/preferences"
 )
 
-// TODO - add a timeout to this function - say, 5 seconds
 // TODO - in some place check to see that the credentials are populated
 // ...or if any request returns 401, cancel the ticker and prompt the user to authenticate
-func UpdateVariables() error {
+// TODO - force update stream variables section each time - but don't create multiple listeners
+func UpdateStreamVariables(ctx context.Context) error {
 
-	httpClient := &http.Client{}
+	// httpClient := &http.Client{}
 	prefs := preferences.Preferences
 
 	// if the access token expires in <100 seconds, refresh it
 	accessTokenExpiryTimestamp := preferences.Preferences.TwitchConfig.Credentials.ExpiryUnixTimestamp
 	if time.Now().Unix()+100 > accessTokenExpiryTimestamp {
-		newUserAccessTokenInfo, err := getUserAccessTokenFromRefreshToken()
+		newUserAccessTokenInfo, err := getUserAccessTokenFromRefreshToken(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to refresh access code - err: %v", err)
 		}
@@ -55,7 +55,7 @@ func UpdateVariables() error {
 	// stream info
 	go func() {
 		defer wg.Done()
-		streamInfo, err := GetStreamInfo(httpClient, prefs)
+		streamInfo, err := GetStreamInfo(ctx, prefs)
 		if err != nil {
 			log.Printf("unable to get stream info - err: %v", err)
 			streamInfo = nil
@@ -68,7 +68,7 @@ func UpdateVariables() error {
 	// subscribers
 	go func() {
 		defer wg.Done()
-		subscribersInfo, err := GetSubscribers(httpClient, prefs)
+		subscribersInfo, err := GetSubscribers(ctx, prefs)
 		if err != nil {
 			log.Printf("unable to get subscribers - err: %v", err)
 			subscribersInfo = nil
@@ -81,7 +81,7 @@ func UpdateVariables() error {
 	// followers
 	go func() {
 		defer wg.Done()
-		followersInfo, err := GetFollowers(httpClient, prefs)
+		followersInfo, err := GetFollowers(ctx, prefs)
 		if err != nil {
 			log.Printf("unable to get followers - err: %v", err)
 			followersInfo = nil
@@ -91,7 +91,20 @@ func UpdateVariables() error {
 		mu.Unlock()
 	}()
 
-	wg.Wait()
+	requestsDone := make(chan struct{})
+
+	go func() {
+		wg.Wait()
+		close(requestsDone)
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Println("context timed out - returning early")
+		return ctx.Err()
+	case <-requestsDone:
+		// continue
+	}
 
 	log.Printf("all api responses: %v", rawApiResponses)
 
@@ -132,6 +145,6 @@ func UpdateVariables() error {
 		return fmt.Errorf("unable to save new preferences - err: %v", err)
 	}
 
-	log.Println("successfully updated preferences with new values")
+	log.Println("updated preferences with new values")
 	return nil
 }
