@@ -11,7 +11,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/preferences"
-	"github.com/finahdinner/tidal/internal/updater"
 )
 
 var dashboardSection *fyne.Container
@@ -43,17 +42,17 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	startTidalButton.OnTapped = func() {
 		log.Println("created a ticker")
-		if err := updater.UpdateUpdateTicker(5); err != nil {
+		if err := updateUpdateTicker(5); err != nil {
 			return // TODO - have proper error handling and/or a popup
 		}
-		go func() { updater.StartUpdatingVariables() }()
+		go func() { startUpdatingVariables() }()
 		startTidalButton.Disable()
 		stopTidalButton.Enable()
 	}
 
 	stopTidalButton.OnTapped = func() {
 		log.Println("stopped the ticker")
-		updater.RemoveUpdateTicker()
+		removeUpdateTicker()
 		stopTidalButton.Disable()
 		startTidalButton.Enable()
 	}

@@ -1,4 +1,4 @@
-package updater
+package twitch
 
 import (
 	"fmt"
@@ -10,26 +10,9 @@ import (
 
 	"github.com/finahdinner/tidal/internal/helpers"
 	"github.com/finahdinner/tidal/internal/preferences"
-	"github.com/finahdinner/tidal/internal/twitch"
 )
 
-func StartUpdatingVariables() {
-	for {
-		select {
-		case <-TickerDone:
-			return
-		case <-UpdaterTicker.C:
-			if err := updateVariables(); err != nil {
-				log.Printf("failed - err: %v", err)
-				return // TODO - consider whether I need to return if an error
-			}
-			log.Println("done - exiting")
-			return
-		}
-	}
-}
-
-func updateVariables() error {
+func UpdateVariables() error {
 
 	httpClient := &http.Client{}
 	prefs := preferences.Preferences
@@ -37,7 +20,7 @@ func updateVariables() error {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	rawApiResponses := twitch.RawApiResponses{}
+	rawApiResponses := RawApiResponses{}
 
 	numRawApiResponses, err := helpers.NumFieldsInStruct(rawApiResponses)
 	if err != nil {
@@ -50,7 +33,7 @@ func updateVariables() error {
 	// stream info
 	go func() {
 		defer wg.Done()
-		streamInfo, err := twitch.GetStreamInfo(httpClient, prefs)
+		streamInfo, err := GetStreamInfo(httpClient, prefs)
 		if err != nil {
 			log.Printf("unable to get stream info - err: %v", err)
 			streamInfo = nil
@@ -63,7 +46,7 @@ func updateVariables() error {
 	// subscribers
 	go func() {
 		defer wg.Done()
-		subscribersInfo, err := twitch.GetSubscribers(httpClient, prefs)
+		subscribersInfo, err := GetSubscribers(httpClient, prefs)
 		if err != nil {
 			log.Printf("unable to get subscribers - err: %v", err)
 			subscribersInfo = nil
@@ -76,7 +59,7 @@ func updateVariables() error {
 	// followers
 	go func() {
 		defer wg.Done()
-		followersInfo, err := twitch.GetFollowers(httpClient, prefs)
+		followersInfo, err := GetFollowers(httpClient, prefs)
 		if err != nil {
 			log.Printf("unable to get followers - err: %v", err)
 			followersInfo = nil
