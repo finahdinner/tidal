@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/finahdinner/tidal/internal/helpers"
 	"github.com/finahdinner/tidal/internal/preferences"
 	"github.com/finahdinner/tidal/internal/twitch"
 )
@@ -33,10 +34,15 @@ func updateVariables() error {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	apiResponses := map[string]any{}
+	rawApiResponses := twitch.RawApiResponses{}
 
-	numApiRequests := 3
-	wg.Add(numApiRequests)
+	numRawApiResponses, err := helpers.NumFieldsInStruct(rawApiResponses)
+	if err != nil {
+		return err
+	}
+	log.Printf("numRawApiResponses: %v", numRawApiResponses)
+
+	wg.Add(numRawApiResponses)
 
 	// stream info
 	go func() {
@@ -44,10 +50,10 @@ func updateVariables() error {
 		streamInfo, err := twitch.GetStreamInfo(httpClient, preferences)
 		if err != nil {
 			log.Printf("unable to get stream info - err: %v", err)
-			return
+			streamInfo = nil
 		}
 		mu.Lock()
-		apiResponses["streamInfo"] = streamInfo
+		rawApiResponses.StreamInfo = streamInfo
 		mu.Unlock()
 	}()
 
@@ -57,10 +63,10 @@ func updateVariables() error {
 		subscribersInfo, err := twitch.GetSubscribers(httpClient, preferences)
 		if err != nil {
 			log.Printf("unable to get subscribers - err: %v", err)
-			return
+			subscribersInfo = nil
 		}
 		mu.Lock()
-		apiResponses["subscribersInfo"] = subscribersInfo
+		rawApiResponses.SubscribersInfo = subscribersInfo
 		mu.Unlock()
 	}()
 
@@ -70,16 +76,16 @@ func updateVariables() error {
 		followersInfo, err := twitch.GetFollowers(httpClient, preferences)
 		if err != nil {
 			log.Printf("unable to get followers - err: %v", err)
-			return
+			followersInfo = nil
 		}
 		mu.Lock()
-		apiResponses["followersInfo"] = followersInfo
+		rawApiResponses.FollowersInfo = followersInfo
 		mu.Unlock()
 	}()
 
 	wg.Wait()
 
-	log.Printf("all api responses: %v", apiResponses)
+	log.Printf("all api responses: %v", rawApiResponses)
 
 	return nil
 }

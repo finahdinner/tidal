@@ -94,7 +94,8 @@ type getChannelFollowersResponseT struct {
 	Total      int                   `json:"total"`
 }
 
-// type getStreamsApiResponseT struct {
-// 	data       []streamInfoApiResponseT
-// 	pagination paginationApiResponse
-// }
+type RawApiResponses struct {
+	StreamInfo      *streamInfoT
+	SubscribersInfo *getChannelSubscribersResponseT
+	FollowersInfo   *getChannelFollowersResponseT
+}

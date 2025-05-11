@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 	"net"
 	"os/exec"
+	"reflect"
 	"runtime"
 )
 
@@ -39,4 +40,12 @@ func OpenUrlInBrowser(url string) error {
 		err = fmt.Errorf("unsupported platform - cannot open browser")
 	}
 	return err
+}
+
+func NumFieldsInStruct(val any) (int, error) {
+	t := reflect.TypeOf(val)
+	if t.Kind() == reflect.Struct {
+		return t.NumField(), nil
+	}
+	return -1, fmt.Errorf("%v is not a struct", val)
 }
