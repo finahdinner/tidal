@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -16,6 +17,11 @@ import (
 )
 
 var variablesSection *fyne.Container
+
+const (
+	placeholderStringPrefix = "{{"
+	placeholderStringSuffix = "}}"
+)
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
@@ -98,7 +104,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	)
 	updateRateRow := container.New(layout.NewBorderLayout(nil, nil, updateRateForm, nil), updateRateForm)
 
-	variablesSection = container.NewPadded(container.New(
+	variablesSection := container.NewPadded(container.New(
 		layout.NewVBoxLayout(),
 		header,
 		container.New(
@@ -112,9 +118,77 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		updateRateRow,
 	))
 
+	// set up a listener to update widgets whenever the ticker updates stream variables
+	go func() {
+		for range updateVariablesSectionSignal {
+			log.Println("received update signal!")
+
+			for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
+
+				varPlaceholderName := twitchVariableNameColumn.Objects[rowIdx].(*widget.Label).Text
+				varName := getVarNameFromPlaceholderString(varPlaceholderName)
+				streamVariablesV := reflect.ValueOf(preferences.Preferences.StreamVariables)
+				streamVariablesT := streamVariablesV.Type()
+				streamVariableObjType := reflect.TypeOf(preferences.StreamVariableT{})
+
+				for fieldIdx := range streamVariablesT.NumField() {
+					fieldName := streamVariablesT.Field(fieldIdx).Name
+					if fieldName == varName {
+						// populate the value on this row with StreamVariableT.Value
+						valueField := streamVariablesV.Field(fieldIdx)
+						if valueField.Kind() == reflect.Struct && valueField.Type() == streamVariableObjType {
+							valueField := valueField.FieldByName("Value")
+							if valueField.IsValid() {
+								newValue := valueField.String()
+								fyne.Do(func() {
+									twitchVariableValueColumn.Objects[rowIdx].(*widget.Label).SetText(newValue)
+									twitchVariableValueColumn.Objects[rowIdx].Refresh()
+								})
+								log.Printf("updated field name %v to value %v", fieldName, newValue)
+							}
+						}
+					}
+				}
+			}
+		}
+	}()
+
+	// go func() {
+	// 	log.Println("setting up listener...")
+	// 	<-tickerReady
+	// 	log.Println("ticker is ready!!")
+	// 	<-updaterTicker.C
+	// 	log.Println("received a signal!!")
+	// 	log.Printf("len(twitchVariableValueColumn.Objects): %v", len(twitchVariableValueColumn.Objects))
+	// 	// read preferences and update values of widgets
+	// 	for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
+	// 		varPlaceholderName := twitchVariableNameColumn.Objects[rowIdx].(*widget.Label).Text
+	// 		varName := getVarNameFromPlaceholderString(varPlaceholderName)
+
+	// 		streamVariablesV := reflect.ValueOf(preferences.Preferences.StreamVariables)
+	// 		streamVariablesT := streamVariablesV.Type()
+
+	// 		for varIdx := range streamVariablesT.NumField() {
+	// 			fieldName := streamVariablesT.Field(varIdx).Name
+	// 			value := streamVariablesV.Field(varIdx)
+	// 			log.Printf("fieldName: %v, value: %v", fieldName, value)
+	// 			if fieldName == varName {
+	// 				twitchVariableValueColumn.Objects[rowIdx].(*widget.Label).SetText(value.String())
+	// 				twitchVariableValueColumn.Objects[rowIdx].Refresh()
+	// 				log.Printf("updated field name %v to value %v", fieldName, value)
+	// 			}
+	// 		}
+	// 	}
+	// 	variablesSection.Refresh()
+	// }()
+
 	return variablesSection
 }
 
 func generatePlaceholderString(varName string) string {
-	return fmt.Sprintf("{{%v}}", varName)
+	return fmt.Sprintf("%v%v%v", placeholderStringPrefix, varName, placeholderStringSuffix)
+}
+
+func getVarNameFromPlaceholderString(placeholderString string) string {
+	return strings.Replace(strings.Replace(placeholderString, placeholderStringPrefix, "", 1), placeholderStringSuffix, "", 1)
 }

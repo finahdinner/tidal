@@ -41,18 +41,20 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	stopTidalButton.Disable()
 
 	startTidalButton.OnTapped = func() {
-		log.Println("created a ticker")
-		if err := updateUpdateTicker(5); err != nil {
+		// err := startUpdatingVariables(5)
+		if err := startUpdatingVariables(5); err != nil {
+			log.Println("failed to create ticker")
 			return // TODO - have proper error handling and/or a popup
 		}
-		go func() { startUpdatingVariables() }()
+		log.Println("created a ticker")
+		// go func() { startUpdatingVariables() }()
 		startTidalButton.Disable()
 		stopTidalButton.Enable()
 	}
 
 	stopTidalButton.OnTapped = func() {
 		log.Println("stopped the ticker")
-		removeUpdateTicker()
+		stopUpdateTicker()
 		stopTidalButton.Disable()
 		startTidalButton.Enable()
 	}

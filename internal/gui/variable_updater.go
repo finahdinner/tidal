@@ -9,41 +9,43 @@ import (
 )
 
 var updaterTicker *time.Ticker
-var tickerDone chan bool
+var updaterDone = make(chan struct{})
+var updateVariablesSectionSignal = make(chan struct{}, 1)
 
-func updateUpdateTicker(interval int) error {
+func startUpdatingVariables(interval int) error {
 	if interval < 0 {
-		return errors.New("interval value must be a positive interger")
+		return errors.New("interval value must be a positive integer")
 	}
 	if updaterTicker != nil {
+		// stop previous ticker
 		updaterTicker.Stop()
+		updaterTicker = nil
 	}
+
+	// signal old goroutine to exit, and create a new chan + ticker
+	close(updaterDone)
+	updaterDone = make(chan struct{})
 	updaterTicker = time.NewTicker(time.Duration(interval) * time.Second)
-	return nil
-}
 
-func removeUpdateTicker() {
-	if updaterTicker != nil {
-		updaterTicker.Stop()
-	}
-	updaterTicker = nil
-}
-
-func startUpdatingVariables() {
-	// initial update
-	if err := twitch.UpdateVariables(); err != nil {
-		log.Printf("failed - err: %v", err)
-	}
-	for {
-		select {
-		case <-tickerDone:
-			return
-		case <-updaterTicker.C:
+	go func() {
+		for range updaterTicker.C {
 			if err := twitch.UpdateVariables(); err != nil {
 				log.Printf("failed - err: %v", err)
 				continue
 			}
-			log.Println("done")
+			log.Println("tick!")
+			select {
+			case updateVariablesSectionSignal <- struct{}{}:
+				// signal to update widgets in variables section
+			default:
+				// reached if updateSignalChan is full
+			}
 		}
-	}
+	}()
+	return nil
+}
+
+func stopUpdateTicker() {
+	updaterTicker.Stop()
+	updaterTicker = nil
 }
