@@ -6,8 +6,13 @@ import (
 	"os"
 )
 
+const preferencesFileName = "preferences.json"
+
+var appPreferencesPath string
+var Preferences PreferencesFormat = defaultPreferences
+
 func SavePreferences() error {
-	if err := writeJsonIfSuccessful(appConfigPath, Preferences); err != nil {
+	if err := writeJsonIfSuccessful(appPreferencesPath, Preferences); err != nil {
 		return err
 	}
 	return nil
@@ -15,7 +20,7 @@ func SavePreferences() error {
 
 func GetPreferences() (PreferencesFormat, error) {
 	prefs := PreferencesFormat{}
-	data, err := os.ReadFile(appConfigPath)
+	data, err := os.ReadFile(appPreferencesPath)
 	if err != nil {
 		return prefs, err
 	}

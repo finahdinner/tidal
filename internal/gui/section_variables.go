@@ -2,7 +2,6 @@ package gui
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -71,12 +70,12 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	updateRateSelect := widget.NewSelect([]string{"10", "20", "30", "60"}, func(s string) {
 		asInt, err := strconv.Atoi(s)
 		if err != nil {
-			log.Printf("unable to parse update rate as int - err: %v", err)
+			config.Logger.LogInfof("unable to parse update rate as int - err: %v", err)
 			return
 		}
 		config.Preferences.VariableUpdateInterval = asInt
 		config.SavePreferences()
-		log.Printf("saved update frequency as %v seconds", asInt)
+		config.Logger.LogInfof("saved update frequency as %v seconds", asInt)
 	})
 
 	if config.Preferences.VariableUpdateInterval > 0 {
@@ -110,7 +109,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	// set up a listener to update widgets whenever the ticker updates stream variables
 	go func() {
 		for range updateVariablesSectionSignal {
-			log.Println("updating stream variable widgets")
+			config.Logger.LogInfo("updating stream variable widgets")
 
 			for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
 
@@ -133,7 +132,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 									twitchVariableValueColumn.Objects[rowIdx].(*widget.Label).SetText(valueOrPlaceholderValue(newValue))
 									twitchVariableValueColumn.Objects[rowIdx].Refresh()
 								})
-								log.Printf("updated field name %v to value %v", fieldName, newValue)
+								config.Logger.LogInfof("updated field name %v to value %v", fieldName, newValue)
 							}
 						}
 					}

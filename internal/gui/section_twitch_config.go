@@ -3,7 +3,6 @@ package gui
 import (
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -24,7 +23,7 @@ var twitchConfigSection *fyne.Container
 func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 
 	if twitchConfigSection != nil {
-		log.Println("twitchConfigSection already exists")
+		config.Logger.LogInfo("twitchConfigSection already exists")
 		return twitchConfigSection
 	}
 
@@ -197,9 +196,9 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 	hostAndPort := strings.Replace(strings.Replace(config.Preferences.TwitchConfig.ClientRedirectUri, "https://", "", 1), "http://", "", 1)
 
 	if helpers.PortInUse(hostAndPort) {
-		log.Printf("%s is already in use - not creating a new one\n", hostAndPort)
+		config.Logger.LogInfof("%s is already in use - not creating a new one\n", hostAndPort)
 	} else {
-		log.Println("creating authcode listener")
+		config.Logger.LogInfo("creating authcode listener")
 		if err := twitch.CreateAuthCodeListener(hostAndPort, codeChan, csrfToken); err != nil {
 			return fmt.Errorf("unable to open listener port - error: %v", err)
 		}
@@ -207,19 +206,19 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 
 	twitch.SendGetRequestForAuthCode(csrfToken)
 	authCode := <-codeChan
-	log.Printf("auth code: %v\n", authCode)
+	config.Logger.LogInfof("auth code: %v\n", authCode)
 
 	userAccessTokenInfo, err := twitch.GetUserAccessTokenFromAuthCode(authCode)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve user access token information - error: %v", err)
 	}
-	log.Printf("userAccessTokenInfo: %v\n", userAccessTokenInfo)
+	config.Logger.LogInfof("userAccessTokenInfo: %v\n", userAccessTokenInfo)
 
 	twitchUserId, err := twitch.GetTwitchUserId(userAccessTokenInfo.AccessToken)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve twitch user id - error: %v", err)
 	}
-	log.Printf("twitchUserId: %v\n", twitchUserId)
+	config.Logger.LogInfof("twitchUserId: %v\n", twitchUserId)
 
 	config.Preferences.TwitchConfig.Credentials = config.CredentialsT{
 		UserAccessToken:        userAccessTokenInfo.AccessToken,
@@ -238,7 +237,7 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 		channelAccessTokenEntry.SetText(config.Preferences.TwitchConfig.Credentials.UserAccessToken)
 	})
 
-	log.Println("successfully authenticated (got access token + twitch user id)")
+	config.Logger.LogInfo("successfully authenticated (got access token + twitch user id)")
 	return nil
 }
 

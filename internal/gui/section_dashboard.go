@@ -3,7 +3,6 @@ package gui
 import (
 	"errors"
 	"image/color"
-	"log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -20,7 +19,7 @@ var dashboardSection *fyne.Container
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	if dashboardSection != nil {
-		log.Println("dashboardSection already exists")
+		config.Logger.LogInfo("dashboardSection already exists")
 		return dashboardSection
 	}
 
@@ -43,7 +42,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	stopTidalButton.Disable()
 
 	startTidalButton.OnTapped = func() {
-		log.Println("starting the ticker")
+		config.Logger.LogInfo("starting the ticker")
 
 		if !config.Preferences.IsValidForUpdatingStreamVariables() {
 			showErrorDialog(
@@ -80,7 +79,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	}
 
 	stopTidalButton.OnTapped = func() {
-		log.Println("attempting to stop the ticker")
+		config.Logger.LogInfo("attempting to stop the ticker")
 		stopUpdaterTicker()
 		stopTidalButton.Disable()
 		startTidalButton.Enable()

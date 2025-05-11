@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -45,7 +44,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("numRawApiResponses: %v", numRawApiResponses)
+	config.Logger.LogInfof("numRawApiResponses: %v", numRawApiResponses)
 
 	wg.Add(numRawApiResponses)
 
@@ -56,7 +55,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 		defer wg.Done()
 		streamInfo, err := GetStreamInfo(ctx, prefs)
 		if err != nil {
-			log.Printf("unable to get stream info - err: %v", err)
+			config.Logger.LogInfof("unable to get stream info - err: %v", err)
 			if errors.Is(err, Err401Unauthorised) {
 				err401Chan <- err
 			}
@@ -72,7 +71,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 		defer wg.Done()
 		subscribersInfo, err := GetSubscribers(ctx, prefs)
 		if err != nil {
-			log.Printf("unable to get subscribers - err: %v", err)
+			config.Logger.LogInfof("unable to get subscribers - err: %v", err)
 			if errors.Is(err, Err401Unauthorised) {
 				err401Chan <- err
 			}
@@ -88,7 +87,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 		defer wg.Done()
 		followersInfo, err := GetFollowers(ctx, prefs)
 		if err != nil {
-			log.Printf("unable to get followers - err: %v", err)
+			config.Logger.LogInfof("unable to get followers - err: %v", err)
 			if errors.Is(err, Err401Unauthorised) {
 				err401Chan <- err
 			}
@@ -108,16 +107,16 @@ func UpdateStreamVariables(ctx context.Context) error {
 
 	select {
 	case err := <-err401Chan:
-		log.Printf("401 unauthorised http code - invalid oauth, cancelling early - err: %v", err)
+		config.Logger.LogInfof("401 unauthorised http code - invalid oauth, cancelling early - err: %v", err)
 		return err
 	case <-ctx.Done():
-		log.Println("context timed out - returning early")
+		config.Logger.LogInfo("context timed out - returning early")
 		return ctx.Err()
 	case <-requestsDone:
 		// continue
 	}
 
-	log.Printf("all api responses: %v", rawApiResponses)
+	config.Logger.LogInfof("all api responses: %v", rawApiResponses)
 
 	prevPrefs := config.Preferences
 
@@ -156,6 +155,6 @@ func UpdateStreamVariables(ctx context.Context) error {
 		return fmt.Errorf("unable to save new preferences - err: %w", err)
 	}
 
-	log.Println("updated preferences with new values")
+	config.Logger.LogInfo("updated preferences with new values")
 	return nil
 }

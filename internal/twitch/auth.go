@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -30,12 +29,12 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// ctx to allow handler to shutdown the server
 		ctx := context.WithValue(r.Context(), ctxServerKey{}, server)
-		log.Printf("ctx val: %v\n", ctx.Value(ctxServerKey{}))
-		log.Println("handleAuthCodeReceived before")
+		config.Logger.LogInfof("ctx val: %v\n", ctx.Value(ctxServerKey{}))
+		config.Logger.LogInfo("handleAuthCodeReceived before")
 		code, err := handleAuthCodeReceived(w, r.WithContext(ctx), csrfToken)
-		log.Printf("handleAuthCodeReceived after - code: %v\n", code)
+		config.Logger.LogInfof("handleAuthCodeReceived after - code: %v\n", code)
 		if err != nil {
-			log.Printf("not valid: %v\n", err)
+			config.Logger.LogInfof("not valid: %v\n", err)
 			return
 		}
 		fmt.Fprintln(w, "You may now close this browser.")
@@ -44,11 +43,11 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("server error: %v\n", err)
+			config.Logger.LogInfof("server error: %v\n", err)
 		}
 	}()
 
-	log.Printf("listener set up at %s\n", hostAndPort)
+	config.Logger.LogInfof("listener set up at %s\n", hostAndPort)
 
 	return nil
 }
@@ -64,10 +63,10 @@ func SendGetRequestForAuthCode(csrfToken string) {
 
 	fullAuthUrl := fmt.Sprintf("%s?%s", twitchApiAuthoriseUrl, params.Encode())
 
-	log.Printf("fullAuthUrl: %v\n", fullAuthUrl)
+	config.Logger.LogInfof("fullAuthUrl: %v\n", fullAuthUrl)
 
 	helpers.OpenUrlInBrowser(fullAuthUrl)
-	log.Printf("Please complete the authentication in your browser.")
+	config.Logger.LogInfof("Please complete the authentication in your browser.")
 }
 
 func GetUserAccessTokenFromAuthCode(authCode string) (*userAccessTokenInfoT, error) {
@@ -167,14 +166,14 @@ func getUserAccessTokenFromRefreshToken(ctx context.Context) (*userAccessTokenIn
 }
 
 func handleAuthCodeReceived(_ http.ResponseWriter, r *http.Request, csrfToken string) (string, error) {
-	log.Printf("first request from: %v - shutting down in 2 seconds...\n", r.URL)
+	config.Logger.LogInfof("first request from: %v - shutting down in 2 seconds...\n", r.URL)
 
 	if server, ok := r.Context().Value(ctxServerKey{}).(*http.Server); ok {
 		go shutDownServerGracefully(server, 2*time.Second)
 	}
 
 	queryParams := r.URL.Query()
-	log.Printf("queryParams: %v\n", queryParams)
+	config.Logger.LogInfof("queryParams: %v\n", queryParams)
 	authCode := queryParams.Get("code")
 
 	if authCode == "" {
@@ -190,8 +189,8 @@ func shutDownServerGracefully(server *http.Server, timeoutDuration time.Duration
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("error during shutdown: %v\n", err)
+		config.Logger.LogInfof("error during shutdown: %v\n", err)
 	} else {
-		log.Println("server shut down gracefully")
+		config.Logger.LogInfo("server shut down gracefully")
 	}
 }

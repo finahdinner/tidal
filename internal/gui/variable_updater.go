@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
@@ -36,7 +36,7 @@ func startUpdatingVariables(interval int) error {
 
 		// initial update, before the ticker
 		if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
-			log.Printf("failed - err: %v", err)
+			config.Logger.LogInfof("failed - err: %v", err)
 			if errors.Is(err, twitch.Err401Unauthorised) {
 				errChan <- err
 				return
@@ -46,12 +46,12 @@ func startUpdatingVariables(interval int) error {
 		for {
 			select {
 			case <-updaterTickerDone:
-				log.Println("updaterTickerDone closed")
+				config.Logger.LogInfo("updaterTickerDone closed")
 				doneChan <- struct{}{}
 				return
 			case <-updaterTicker.C:
 				if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
-					log.Printf("failed - err: %v", err)
+					config.Logger.LogInfof("failed - err: %v", err)
 					if errors.Is(err, twitch.Err401Unauthorised) {
 						errChan <- err
 						return
@@ -80,12 +80,12 @@ func startUpdatingVariables(interval int) error {
 
 func stopUpdaterTicker() {
 	if updaterTicker != nil {
-		log.Println("ticker 'updaterTicker' stopped")
+		config.Logger.LogInfo("ticker 'updaterTicker' stopped")
 		updaterTicker.Stop()
 		updaterTicker = nil
 	}
 	if updaterTickerDone != nil {
-		log.Println("chan 'updaterTickerDone' closed")
+		config.Logger.LogInfo("chan 'updaterTickerDone' closed")
 		close(updaterTickerDone)
 		updaterTickerDone = nil
 	}

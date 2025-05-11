@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -18,7 +17,7 @@ func GetStreamInfo(ctx context.Context, prefs config.PreferencesFormat) (*stream
 	params := url.Values{}
 	params.Add("user_id", prefs.TwitchConfig.UserId)
 	queryUrl := fmt.Sprintf("%s?%s", twitchApiStreamsUrl, params.Encode())
-	log.Printf("queryUrl: %v", queryUrl)
+	config.Logger.LogInfof("queryUrl: %v", queryUrl)
 	streamsApiResponse, err := makeGetRequest[getStreamInfoApiResponseT](ctx, queryUrl, "application/json", prefs)
 	if err != nil {
 		return nil, err
@@ -38,7 +37,7 @@ func GetSubscribers(ctx context.Context, prefs config.PreferencesFormat) (*getCh
 	params := url.Values{}
 	params.Add("broadcaster_id", prefs.TwitchConfig.UserId)
 	queryUrl := fmt.Sprintf("%s?%s", twitchApiSubscriptionsUrl, params.Encode())
-	log.Printf("queryUrl: %v", queryUrl)
+	config.Logger.LogInfof("queryUrl: %v", queryUrl)
 	subscribersApiResponse, err := makeGetRequest[getChannelSubscribersResponseT](ctx, queryUrl, "application/json", prefs)
 	if err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func GetFollowers(ctx context.Context, prefs config.PreferencesFormat) (*getChan
 	params := url.Values{}
 	params.Add("broadcaster_id", prefs.TwitchConfig.UserId)
 	queryUrl := fmt.Sprintf("%s?%s", twitchApiFollowersUrl, params.Encode())
-	log.Printf("queryUrl: %v", queryUrl)
+	config.Logger.LogInfof("queryUrl: %v", queryUrl)
 	followersApiResponse, err := makeGetRequest[getChannelFollowersResponseT](ctx, queryUrl, "application/json", prefs)
 	if err != nil {
 		return &followersApiResponse, err
