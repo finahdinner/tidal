@@ -2,6 +2,11 @@ package updater
 
 import (
 	"log"
+	"net/http"
+	"sync"
+
+	"github.com/finahdinner/tidal/internal/preferences"
+	"github.com/finahdinner/tidal/internal/twitch"
 )
 
 func StartUpdatingVariables() {
@@ -22,24 +27,59 @@ func StartUpdatingVariables() {
 
 func updateVariables() error {
 
-	// httpClient := &http.Client{}
-	// preferences := preferences.Preferences
-	// var wg sync.WaitGroup
-	// var mu sync.Mutex
-	// responses := map[string]any{
-	// 	"streamResponse":      nil,
-	// 	"subscribersResponse": nil,
-	// 	"followerssResponse":  nil,
-	// }
-	// wg.Wait()
+	httpClient := &http.Client{}
+	preferences := preferences.Preferences
 
-	// var wg sync.WaitGroup
-	// httpClient := &http.Client{}
-	// preferences := preferences.Preferences
-	// usersApiResponse, err := twitch.GetUsers(httpClient, preferences)
-	// if err != nil {
-	// 	return err
-	// }
-	// log.Printf("usersApiResponse data: %v", usersApiResponse.Data)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	apiResponses := map[string]any{}
+
+	numApiRequests := 3
+	wg.Add(numApiRequests)
+
+	// stream info
+	go func() {
+		defer wg.Done()
+		streamInfo, err := twitch.GetStreamInfo(httpClient, preferences)
+		if err != nil {
+			log.Printf("unable to get stream info - err: %v", err)
+			return
+		}
+		mu.Lock()
+		apiResponses["streamInfo"] = streamInfo
+		mu.Unlock()
+	}()
+
+	// subscribers
+	go func() {
+		defer wg.Done()
+		subscribersInfo, err := twitch.GetSubscribers(httpClient, preferences)
+		if err != nil {
+			log.Printf("unable to get subscribers - err: %v", err)
+			return
+		}
+		mu.Lock()
+		apiResponses["subscribersInfo"] = subscribersInfo
+		mu.Unlock()
+	}()
+
+	// followers
+	go func() {
+		defer wg.Done()
+		followersInfo, err := twitch.GetFollowers(httpClient, preferences)
+		if err != nil {
+			log.Printf("unable to get followers - err: %v", err)
+			return
+		}
+		mu.Lock()
+		apiResponses["followersInfo"] = followersInfo
+		mu.Unlock()
+	}()
+
+	wg.Wait()
+
+	log.Printf("all api responses: %v", apiResponses)
+
 	return nil
 }
