@@ -29,7 +29,7 @@ func writeJsonIfSuccessful(path string, data any) error {
 
 	tmpFile, err := os.CreateTemp("", "tmpconfig_*.json")
 	if err != nil {
-		return fmt.Errorf("unable to create temporary config file - err: %v", err)
+		return fmt.Errorf("unable to create temporary config file - err: %w", err)
 	}
 	defer tmpFile.Close()
 
@@ -37,15 +37,15 @@ func writeJsonIfSuccessful(path string, data any) error {
 	encoder.SetIndent("", "    ")
 
 	if err := encoder.Encode(data); err != nil {
-		return fmt.Errorf("unable to write json data to temporary file - err: %v", err)
+		return fmt.Errorf("unable to write json data to temporary file - err: %w", err)
 	}
 
 	if err := tmpFile.Close(); err != nil {
-		return fmt.Errorf("unable to close temporary file - err: %v", err)
+		return fmt.Errorf("unable to close temporary file - err: %w", err)
 	}
 
 	if err := os.Rename(tmpFile.Name(), path); err != nil {
-		return fmt.Errorf("unable to rename temporary file to %s - err: %v", path, err)
+		return fmt.Errorf("unable to rename temporary file to %s - err: %w", path, err)
 	}
 
 	return nil

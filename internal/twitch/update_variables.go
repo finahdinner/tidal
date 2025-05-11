@@ -2,6 +2,7 @@ package twitch
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -24,7 +25,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 	if time.Now().Unix()+100 > accessTokenExpiryTimestamp {
 		newUserAccessTokenInfo, err := getUserAccessTokenFromRefreshToken(ctx)
 		if err != nil {
-			return fmt.Errorf("unable to refresh access code - err: %v", err)
+			return fmt.Errorf("unable to refresh access code - err: %w", err)
 		}
 		preferences.Preferences.TwitchConfig.Credentials = preferences.CredentialsT{
 			UserAccessToken:        newUserAccessTokenInfo.AccessToken,
@@ -51,12 +52,17 @@ func UpdateStreamVariables(ctx context.Context) error {
 
 	wg.Add(numRawApiResponses)
 
+	err401Chan := make(chan error, 1)
+
 	// stream info
 	go func() {
 		defer wg.Done()
 		streamInfo, err := GetStreamInfo(ctx, prefs)
 		if err != nil {
 			log.Printf("unable to get stream info - err: %v", err)
+			if errors.Is(err, Err401Unauthorised) {
+				err401Chan <- err
+			}
 			streamInfo = nil
 		}
 		mu.Lock()
@@ -70,6 +76,9 @@ func UpdateStreamVariables(ctx context.Context) error {
 		subscribersInfo, err := GetSubscribers(ctx, prefs)
 		if err != nil {
 			log.Printf("unable to get subscribers - err: %v", err)
+			if errors.Is(err, Err401Unauthorised) {
+				err401Chan <- err
+			}
 			subscribersInfo = nil
 		}
 		mu.Lock()
@@ -83,6 +92,9 @@ func UpdateStreamVariables(ctx context.Context) error {
 		followersInfo, err := GetFollowers(ctx, prefs)
 		if err != nil {
 			log.Printf("unable to get followers - err: %v", err)
+			if errors.Is(err, Err401Unauthorised) {
+				err401Chan <- err
+			}
 			followersInfo = nil
 		}
 		mu.Lock()
@@ -98,6 +110,9 @@ func UpdateStreamVariables(ctx context.Context) error {
 	}()
 
 	select {
+	case err := <-err401Chan:
+		log.Printf("401 unauthorised http code - invalid oauth, cancelling early - err: %v", err)
+		return err
 	case <-ctx.Done():
 		log.Println("context timed out - returning early")
 		return ctx.Err()
@@ -141,7 +156,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 	if err := preferences.SavePreferences(); err != nil {
 		// restore old preferences
 		preferences.Preferences = prevPrefs
-		return fmt.Errorf("unable to save new preferences - err: %v", err)
+		return fmt.Errorf("unable to save new preferences - err: %w", err)
 	}
 
 	log.Println("updated preferences with new values")

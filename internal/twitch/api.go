@@ -3,6 +3,7 @@ package twitch
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/finahdinner/tidal/internal/preferences"
 )
+
+var Err401Unauthorised error = errors.New("unauthorised")
 
 func GetStreamInfo(ctx context.Context, preferences preferences.PreferencesFormat) (*streamInfoT, error) {
 	params := url.Values{}
@@ -20,11 +23,13 @@ func GetStreamInfo(ctx context.Context, preferences preferences.PreferencesForma
 	if err != nil {
 		return nil, err
 	}
-	if len(streamsApiResponse.Data) > 1 {
-		return nil, fmt.Errorf("api response somehow returned more than one stream for user_id %v", preferences.TwitchConfig.UserId)
-	}
-	if len(streamsApiResponse.Data) == 0 {
+	switch len(streamsApiResponse.Data) {
+	case 0:
 		return nil, fmt.Errorf("api response returned no stream info for user_id %v", preferences.TwitchConfig.UserId)
+	case 1:
+		// valid
+	default:
+		return nil, fmt.Errorf("api response somehow returned more than one stream for user_id %v", preferences.TwitchConfig.UserId)
 	}
 	return &streamsApiResponse.Data[0], nil
 }
@@ -36,7 +41,7 @@ func GetSubscribers(ctx context.Context, preferences preferences.PreferencesForm
 	log.Printf("queryUrl: %v", queryUrl)
 	subscribersApiResponse, err := makeGetRequest[getChannelSubscribersResponseT](ctx, queryUrl, "application/json", preferences)
 	if err != nil {
-		return &subscribersApiResponse, err
+		return nil, err
 	}
 	return &subscribersApiResponse, nil
 }
@@ -58,7 +63,7 @@ func makeGetRequest[T any](ctx context.Context, queryUrl string, mimeType string
 
 	req, err := http.NewRequestWithContext(ctx, "GET", queryUrl, nil)
 	if err != nil {
-		return result, fmt.Errorf("unable to construct request for %v - err: %v", queryUrl, err)
+		return result, fmt.Errorf("unable to construct request for %v - err: %w", queryUrl, err)
 	}
 
 	req.Header.Set("Client-Id", preferences.TwitchConfig.ClientId)
@@ -67,37 +72,17 @@ func makeGetRequest[T any](ctx context.Context, queryUrl string, mimeType string
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return result, fmt.Errorf("request for %v failed - err: %v", req.URL, err)
+		return result, fmt.Errorf("request for %v failed - err: %w", req.URL, err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		return result, Err401Unauthorised
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return result, fmt.Errorf("unable to decode response from request to %v - err: %v", req.URL, err)
+		return result, fmt.Errorf("unable to decode response from request to %v - err: %w", req.URL, err)
 	}
 
 	return result, nil
 }
-
-// func buildRequest(queryUrl string, mimeType string, preferences preferences.PreferencesFormat) (*http.Request, error) {
-
-// 	req, err := http.NewRequest("GET", queryUrl, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("unable to construct request for %v - err: %v", queryUrl, err)
-// 	}
-
-// 	req.Header.Set("Client-Id", preferences.TwitchConfig.ClientId)
-// 	req.Header.Set("Authorization", "Bearer "+preferences.TwitchConfig.Credentials.UserAccessToken)
-// 	req.Header.Set("Accept", mimeType)
-
-// 	return req, nil
-// }
-
-// func makeGetRequestGetRawResponse(req *http.Request) (io.ReadCloser, error) {
-// 	client := &http.Client{}
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("request for %v failed - err: %v", req.URL, err)
-// 	}
-// 	defer resp.Body.Close()
-// 	return resp.Body, nil
-// }

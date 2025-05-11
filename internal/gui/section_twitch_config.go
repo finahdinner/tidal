@@ -187,7 +187,7 @@ func handleSaveTwitchConfig(
 	})
 
 	if err := preferences.SavePreferences(); err != nil {
-		return fmt.Errorf("unable to save preferences - err: %v", err)
+		return fmt.Errorf("unable to save preferences - err: %w", err)
 	}
 
 	return nil

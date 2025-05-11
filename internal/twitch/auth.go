@@ -104,7 +104,7 @@ func GetTwitchUserId(accessToken string) (string, error) {
 
 	req, err := http.NewRequest("GET", queryUrl, nil)
 	if err != nil {
-		return "", fmt.Errorf("unable to construct request - err: %v", err)
+		return "", fmt.Errorf("unable to construct request - err: %w", err)
 	}
 
 	req.Header.Set("Client-Id", preferences.Preferences.TwitchConfig.ClientId)
@@ -114,7 +114,7 @@ func GetTwitchUserId(accessToken string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("request failed - err: %v", err)
+		return "", fmt.Errorf("request failed - err: %w", err)
 	}
 	defer resp.Body.Close()
 
