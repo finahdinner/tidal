@@ -22,14 +22,16 @@ func GetUsers(client *http.Client, preferences preferences.PreferencesFormat) (g
 	return usersApiResponse, nil
 }
 
-func GetSubscriptions(client *http.Client, preferences preferences.PreferencesFormat) error {
-	// params := url.Values{}
-	// params.Add("broadcaster_id", preferences.TwitchConfig.UserId)
-	// queryUrl := fmt.Sprintf("%s?%s", twitchApiUsersUrl, params.Encode())
-	// log.Printf("queryUrl: %v", queryUrl)
-
-	return nil
-
+func GetSubscribers(client *http.Client, preferences preferences.PreferencesFormat) (getChannelSubscribersResponseT, error) {
+	params := url.Values{}
+	params.Add("broadcaster_id", preferences.TwitchConfig.UserId)
+	queryUrl := fmt.Sprintf("%s?%s", twitchApiSubscriptionsUrl, params.Encode())
+	log.Printf("queryUrl: %v", queryUrl)
+	subscribersApiResponse, err := makeGetRequest[getChannelSubscribersResponseT](client, queryUrl, "application/json", preferences)
+	if err != nil {
+		return subscribersApiResponse, err
+	}
+	return subscribersApiResponse, nil
 }
 
 func GetFollowers(client *http.Client, preferences preferences.PreferencesFormat) error {

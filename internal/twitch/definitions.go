@@ -1,14 +1,15 @@
 package twitch
 
 const (
-	twitchApiAuthoriseUrl = "https://id.twitch.tv/oauth2/authorize"
-	twitchApiTokenUrl     = "https://id.twitch.tv/oauth2/token"
-	twitchApiChannelUrl   = "https://api.twitch.tv/helix/channels"
-	twitchApiUsersUrl     = "https://api.twitch.tv/helix/users"
+	twitchApiAuthoriseUrl     = "https://id.twitch.tv/oauth2/authorize"
+	twitchApiTokenUrl         = "https://id.twitch.tv/oauth2/token"
+	twitchApiChannelUrl       = "https://api.twitch.tv/helix/channels"
+	twitchApiUsersUrl         = "https://api.twitch.tv/helix/users"
+	twitchApiSubscriptionsUrl = "https://api.twitch.tv/helix/subscriptions"
 )
 
 type paginationApiResponse struct {
-	cursor string `json:"cursor"`
+	Cursor string `json:"cursor"`
 }
 
 type userAccessTokenInfoT struct {
@@ -19,30 +20,57 @@ type userAccessTokenInfoT struct {
 	TokenType    string   `json:"token_type"`
 }
 
-type userDataT struct {
-	Id              string `json:"id"`
-	Login           string `json:"login"`
-	DisplayName     string `json:"display_name"`
-	UserType        string `json:"type"`
-	BroadcasterType string `json:"broadcaster_type"`
-	Description     string `json:"description"`
-	ProfileImageUrl string `json:"profile_image_url"`
-	OfflineImageUrl string `json:"offline_image_url"`
-	ViewCount       int    `json:"view_count"`
-	Email           string `json:"email"`
-	CreatedAt       string `json:"created_at"`
-}
+// type userDataT struct {
+// 	Id              string `json:"id"`
+// 	Login           string `json:"login"`
+// 	DisplayName     string `json:"display_name"`
+// 	UserType        string `json:"type"`
+// 	BroadcasterType string `json:"broadcaster_type"`
+// 	Description     string `json:"description"`
+// 	ProfileImageUrl string `json:"profile_image_url"`
+// 	OfflineImageUrl string `json:"offline_image_url"`
+// 	ViewCount       int    `json:"view_count"`
+// 	Email           string `json:"email"`
+// 	CreatedAt       string `json:"created_at"`
+// }
 
 type getUsersApiResponseT struct {
-	Data []userDataT
+	Data []struct {
+		Id              string `json:"id"`
+		Login           string `json:"login"`
+		DisplayName     string `json:"display_name"`
+		UserType        string `json:"type"`
+		BroadcasterType string `json:"broadcaster_type"`
+		Description     string `json:"description"`
+		ProfileImageUrl string `json:"profile_image_url"`
+		OfflineImageUrl string `json:"offline_image_url"`
+		ViewCount       int    `json:"view_count"`
+		Email           string `json:"email"`
+		CreatedAt       string `json:"created_at"`
+	} `json:"data"`
 }
 
-type requestAuthorisation struct {
-	Authorisation string `json:"authorization"`
-	ClientId      string `json:"Client-Id"`
+type getChannelSubscribersResponseT struct {
+	Data []struct {
+		BroadcasterId    string `json:"broadcaster_id"`
+		BroadcasterLogin string `json:"broadcaster_login"`
+		BroadcasterName  string `json:"broadcaster_name"`
+		GifterId         string `json:"gifter_id"`
+		GifterLogin      string `json:"gifter_login"`
+		GifterName       string `json:"gifter_name"`
+		IsGift           bool   `json:"is_gift"`
+		PlanName         string `json:"plan_name"`
+		Tier             string `json:"tier"`
+		UserId           string `json:"user_id"`
+		UserName         string `json:"user_name"`
+		UserLogin        string `json:"user_login"`
+	} `json:"data"`
+	Pagination paginationApiResponse `json:"pagination"`
+	Points     int                   `json:"points"`
+	Total      int                   `json:"total"`
 }
 
-type streamInfoApiResponse struct {
+type streamInfoApiResponseT struct {
 	id           string   `json:"id"`
 	userId       string   `json:"user_id"`
 	userLogin    string   `json:"user_login"`
@@ -60,7 +88,7 @@ type streamInfoApiResponse struct {
 	isMature     bool     `json:"is_mature"`
 }
 
-type getStreamsApiResponse struct {
-	data       []streamInfoApiResponse
+type getStreamsApiResponseT struct {
+	data       []streamInfoApiResponseT
 	pagination paginationApiResponse
 }
