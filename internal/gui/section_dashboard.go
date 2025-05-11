@@ -45,9 +45,22 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	startTidalButton.OnTapped = func() {
 		log.Println("starting the ticker")
 
+		if !preferences.Preferences.IsValidForUpdatingStreamVariables() {
+			showErrorDialog(
+				errors.New("twitch configuration is not populated"),
+				"You must first configure your Twitch credentials before starting Tidal.",
+				Gui.PrimaryWindow,
+			)
+			return
+		}
+
 		updateInterval := preferences.Preferences.VariableUpdateInterval
 		if updateInterval <= 0 {
-			log.Println("updateInterval is not a positive integer")
+			showErrorDialog(
+				errors.New("updateInterval is not a positive integer"),
+				"Unexpected Error\nCorrupted configuration - updateInterval is not a positive integer.",
+				Gui.PrimaryWindow,
+			)
 			return
 		}
 

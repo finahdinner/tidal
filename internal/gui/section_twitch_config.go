@@ -140,9 +140,9 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 					fmt.Sprintf("unable to authenticate using twitch credentials:\n%v", err),
 					g.PrimaryWindow,
 				)
-				return
+				fyne.Do(func() { saveConfigButton.Enable() }) // to encourage to change settings + save again
 			}
-			fyne.Do(func() { authenticateButton.Disable() })
+			fyne.Do(func() { authenticateButton.Disable() }) // to encourage to authenticate again
 		}()
 	}
 

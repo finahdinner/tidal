@@ -37,6 +37,6 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		},
 	},
 	LlmVariables:           []LlmVariableT{},
-	VariableUpdateInterval: 0,
+	VariableUpdateInterval: 10,
 	ActivityConsoleOutput:  "",
 }

@@ -38,7 +38,7 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 			log.Printf("not valid: %v\n", err)
 			return
 		}
-		fmt.Fprintln(w, "Authentication successful. You may now close this browser.")
+		fmt.Fprintln(w, "You may now close this browser.")
 		codeChan <- code
 	})
 

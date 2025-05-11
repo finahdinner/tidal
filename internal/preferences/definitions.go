@@ -41,3 +41,15 @@ type LlmVariableT struct {
 	Value  string `json:"value"`
 	Prompt string `json:"prompt"`
 }
+
+// Ensure fields are populated enough to make requests to update stream variables
+func (pf *PreferencesFormat) IsValidForUpdatingStreamVariables() bool {
+	return pf.TwitchConfig.UserName != "" &&
+		pf.TwitchConfig.UserId != "" &&
+		pf.TwitchConfig.ClientId != "" &&
+		pf.TwitchConfig.ClientSecret != "" &&
+		pf.TwitchConfig.ClientRedirectUri != "" &&
+		pf.TwitchConfig.Credentials.UserAccessToken != "" &&
+		pf.TwitchConfig.Credentials.UserAccessRefreshToken != "" &&
+		len(pf.TwitchConfig.Credentials.UserAccessScope) > 0
+}
