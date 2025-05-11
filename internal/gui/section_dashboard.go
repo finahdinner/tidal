@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"errors"
 	"image/color"
 	"log"
 
@@ -11,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/preferences"
+	"github.com/finahdinner/tidal/internal/twitch"
 )
 
 var dashboardSection *fyne.Container
@@ -41,18 +43,25 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	stopTidalButton.Disable()
 
 	startTidalButton.OnTapped = func() {
-		log.Println("attempting to start the ticker")
+		log.Println("starting the ticker")
+
 		updateInterval := preferences.Preferences.VariableUpdateInterval
 		if updateInterval <= 0 {
 			log.Println("updateInterval is not a positive integer")
 			return
 		}
-		if err := startUpdatingVariables(updateInterval); err != nil {
-			log.Println("failed to create ticker")
-			return // TODO - have proper error handling and/or a popup
-		}
-		log.Printf("created a ticker with interval: %vs", updateInterval)
-		// go func() { startUpdatingVariables() }()
+
+		go func() {
+			if err := startUpdatingVariables(updateInterval); err != nil {
+				fyne.Do(func() {
+					startTidalButton.Enable()
+					stopTidalButton.Disable()
+				})
+				if errors.Is(err, twitch.Err401Unauthorised) {
+					showErrorDialog(err, "Twitch API returned 401 Unauthorised.\nEnsure you have set up your Twitch credentials correctly.", Gui.PrimaryWindow)
+				}
+			}
+		}()
 		startTidalButton.Disable()
 		stopTidalButton.Enable()
 	}

@@ -3,6 +3,7 @@ package gui
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -26,22 +27,35 @@ func startUpdatingVariables(interval int) error {
 	updaterTicker = time.NewTicker(time.Duration(interval) * time.Second)
 	updaterTickerDone = make(chan struct{})
 
+	errChan := make(chan error, 1)
+	doneChan := make(chan struct{})
+
 	go func() {
+		defer close(doneChan)
 		ctx := context.Background()
 
 		// initial update, before the ticker
 		if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
 			log.Printf("failed - err: %v", err)
+			if errors.Is(err, twitch.Err401Unauthorised) {
+				errChan <- err
+				return
+			}
 		}
 
 		for {
 			select {
 			case <-updaterTickerDone:
 				log.Println("updaterTickerDone closed")
+				doneChan <- struct{}{}
 				return
 			case <-updaterTicker.C:
 				if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
 					log.Printf("failed - err: %v", err)
+					if errors.Is(err, twitch.Err401Unauthorised) {
+						errChan <- err
+						return
+					}
 					continue
 				}
 				select {
@@ -53,7 +67,15 @@ func startUpdatingVariables(interval int) error {
 			}
 		}
 	}()
-	return nil
+
+	select {
+	case err := <-errChan:
+		stopUpdaterTicker()
+		return fmt.Errorf("unauthorised 401 - cancelling - err: %w", err)
+	case <-doneChan:
+		return nil
+	}
+
 }
 
 func stopUpdaterTicker() {
