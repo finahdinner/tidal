@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/helpers"
-	"github.com/finahdinner/tidal/internal/preferences"
 )
 
 type ctxServerKey struct{}
@@ -55,9 +55,9 @@ func CreateAuthCodeListener(hostAndPort string, codeChan chan string, csrfToken 
 
 func SendGetRequestForAuthCode(csrfToken string) {
 	params := url.Values{}
-	params.Add("client_id", preferences.Preferences.TwitchConfig.ClientId)
+	params.Add("client_id", config.Preferences.TwitchConfig.ClientId)
 	params.Add("force_verify", "true") // re-authorise each time
-	params.Add("redirect_uri", preferences.Preferences.TwitchConfig.ClientRedirectUri)
+	params.Add("redirect_uri", config.Preferences.TwitchConfig.ClientRedirectUri)
 	params.Add("response_type", "code")
 	params.Add("scope", "channel:read:subscriptions") // add to the scopes if required
 	params.Add("state", csrfToken)
@@ -74,11 +74,11 @@ func GetUserAccessTokenFromAuthCode(authCode string) (*userAccessTokenInfoT, err
 	userAccessTokenInfo := &userAccessTokenInfoT{}
 
 	params := url.Values{}
-	params.Add("client_id", preferences.Preferences.TwitchConfig.ClientId)
-	params.Add("client_secret", preferences.Preferences.TwitchConfig.ClientSecret)
+	params.Add("client_id", config.Preferences.TwitchConfig.ClientId)
+	params.Add("client_secret", config.Preferences.TwitchConfig.ClientSecret)
 	params.Add("code", authCode)
 	params.Add("grant_type", "authorization_code")
-	params.Add("redirect_uri", preferences.Preferences.TwitchConfig.ClientRedirectUri)
+	params.Add("redirect_uri", config.Preferences.TwitchConfig.ClientRedirectUri)
 
 	resp, err := http.Post(twitchApiTokenUrl, "application/x-www-form-urlencoded", strings.NewReader(params.Encode()))
 	if err != nil {
@@ -93,12 +93,12 @@ func GetUserAccessTokenFromAuthCode(authCode string) (*userAccessTokenInfoT, err
 }
 
 func GetTwitchUserId(accessToken string) (string, error) {
-	if preferences.Preferences.TwitchConfig.UserName == "" {
+	if config.Preferences.TwitchConfig.UserName == "" {
 		return "", fmt.Errorf("username must be populated")
 	}
 
 	params := url.Values{}
-	params.Add("login", preferences.Preferences.TwitchConfig.UserName)
+	params.Add("login", config.Preferences.TwitchConfig.UserName)
 
 	queryUrl := fmt.Sprintf("%s?%s", twitchApiUsersUrl, params.Encode())
 
@@ -107,7 +107,7 @@ func GetTwitchUserId(accessToken string) (string, error) {
 		return "", fmt.Errorf("unable to construct request - err: %w", err)
 	}
 
-	req.Header.Set("Client-Id", preferences.Preferences.TwitchConfig.ClientId)
+	req.Header.Set("Client-Id", config.Preferences.TwitchConfig.ClientId)
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Accept", "application/json")
 
@@ -143,10 +143,10 @@ func getUserAccessTokenFromRefreshToken(ctx context.Context) (*userAccessTokenIn
 	userAccessTokenInfo := &userAccessTokenInfoT{}
 
 	params := url.Values{}
-	params.Add("client_id", preferences.Preferences.TwitchConfig.ClientId)
-	params.Add("client_secret", preferences.Preferences.TwitchConfig.ClientSecret)
+	params.Add("client_id", config.Preferences.TwitchConfig.ClientId)
+	params.Add("client_secret", config.Preferences.TwitchConfig.ClientSecret)
 	params.Add("grant_type", "refresh_token")
-	params.Add("refresh_token", preferences.Preferences.TwitchConfig.Credentials.UserAccessRefreshToken)
+	params.Add("refresh_token", config.Preferences.TwitchConfig.Credentials.UserAccessRefreshToken)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", twitchApiTokenUrl, strings.NewReader(params.Encode()))
 	if err != nil {

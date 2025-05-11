@@ -1,4 +1,4 @@
-package preferences
+package config
 
 type PreferencesFormat struct {
 	TwitchConfig           TwitchConfigT    `json:"twitch_config"`

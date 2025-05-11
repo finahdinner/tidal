@@ -1,4 +1,4 @@
-package preferences
+package config
 
 var defaultPreferences PreferencesFormat = PreferencesFormat{
 	TwitchConfig: TwitchConfigT{

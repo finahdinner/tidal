@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/preferences"
+	"github.com/finahdinner/tidal/internal/config"
 )
 
 const (
@@ -32,7 +32,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
-	streamVariables := &preferences.Preferences.StreamVariables
+	streamVariables := &config.Preferences.StreamVariables
 
 	fields := reflect.TypeOf(*streamVariables)
 	vals := reflect.ValueOf(*streamVariables)
@@ -58,7 +58,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			twitchVariableCopyColumn.Objects, nameLabelCopyButton,
 		)
 
-		streamVariable := vals.Field(idx).Interface().(preferences.StreamVariableT)
+		streamVariable := vals.Field(idx).Interface().(config.StreamVariableT)
 
 		twitchVariableValueColumn.Objects = append(
 			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(streamVariable.Value)),
@@ -74,13 +74,13 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			log.Printf("unable to parse update rate as int - err: %v", err)
 			return
 		}
-		preferences.Preferences.VariableUpdateInterval = asInt
-		preferences.SavePreferences()
+		config.Preferences.VariableUpdateInterval = asInt
+		config.SavePreferences()
 		log.Printf("saved update frequency as %v seconds", asInt)
 	})
 
-	if preferences.Preferences.VariableUpdateInterval > 0 {
-		updateRateSelect.SetSelected(strconv.Itoa(preferences.Preferences.VariableUpdateInterval))
+	if config.Preferences.VariableUpdateInterval > 0 {
+		updateRateSelect.SetSelected(strconv.Itoa(config.Preferences.VariableUpdateInterval))
 	}
 
 	updateRateForm := container.New(
@@ -116,9 +116,9 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 				varPlaceholderName := twitchVariableNameColumn.Objects[rowIdx].(*widget.Label).Text
 				varName := getVarNameFromPlaceholderString(varPlaceholderName)
-				streamVariablesV := reflect.ValueOf(preferences.Preferences.StreamVariables)
+				streamVariablesV := reflect.ValueOf(config.Preferences.StreamVariables)
 				streamVariablesT := streamVariablesV.Type()
-				streamVariableObjType := reflect.TypeOf(preferences.StreamVariableT{})
+				streamVariableObjType := reflect.TypeOf(config.StreamVariableT{})
 
 				for fieldIdx := range streamVariablesT.NumField() {
 					fieldName := streamVariablesT.Field(fieldIdx).Name

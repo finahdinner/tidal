@@ -14,8 +14,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/helpers"
-	"github.com/finahdinner/tidal/internal/preferences"
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
@@ -37,7 +37,7 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 	channelAccessTokenEntry := widget.NewPasswordEntry()
 	channelAccessTokenEntry.Disable()
 
-	twitchConfig := preferences.Preferences.TwitchConfig
+	twitchConfig := config.Preferences.TwitchConfig
 
 	channelUsernameEntry.SetText(twitchConfig.UserName)
 	channelUserIdEntry.SetText(twitchConfig.UserId)
@@ -100,14 +100,14 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 	}
 
 	saveConfigButton.OnTapped = func() {
-		prevPreferences := preferences.Preferences
+		prevPreferences := config.Preferences
 		if err := handleSaveTwitchConfig(
 			channelUsernameEntry, appClientIdEntry, appClientSecretEntry,
 			appClientRedirectUri, channelUserIdEntry, channelAccessTokenEntry,
 		); err != nil {
 			// restore old preferences
-			preferences.Preferences = prevPreferences
-			if err2 := preferences.SavePreferences(); err2 != nil {
+			config.Preferences = prevPreferences
+			if err2 := config.SavePreferences(); err2 != nil {
 				err = err2
 			}
 			showErrorDialog(
@@ -123,14 +123,14 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 
 	authenticateButton.OnTapped = func() {
 		go func() {
-			prevPreferences := preferences.Preferences
+			prevPreferences := config.Preferences
 			if err := handleAuthenticate(
 				channelUserIdEntry,
 				channelAccessTokenEntry,
 			); err != nil {
 				// restore old preferences
-				preferences.Preferences = prevPreferences
-				if err2 := preferences.SavePreferences(); err2 != nil {
+				config.Preferences = prevPreferences
+				if err2 := config.SavePreferences(); err2 != nil {
 					err = err2
 				}
 				showErrorDialog(
@@ -170,21 +170,21 @@ func handleSaveTwitchConfig(
 		return errors.New("redirect URI is not valid")
 	}
 
-	preferences.Preferences.TwitchConfig = preferences.TwitchConfigT{
+	config.Preferences.TwitchConfig = config.TwitchConfigT{
 		UserName:          twitchUsername,
 		UserId:            "",
 		ClientId:          clientId,
 		ClientSecret:      clientSecret,
 		ClientRedirectUri: clientRedirectUri,
-		Credentials:       preferences.CredentialsT{},
+		Credentials:       config.CredentialsT{},
 	}
 
 	fyne.Do(func() {
-		channelUserIdEntry.SetText(preferences.Preferences.TwitchConfig.UserId)
-		channelAccessTokenEntry.SetText(preferences.Preferences.TwitchConfig.Credentials.UserAccessToken)
+		channelUserIdEntry.SetText(config.Preferences.TwitchConfig.UserId)
+		channelAccessTokenEntry.SetText(config.Preferences.TwitchConfig.Credentials.UserAccessToken)
 	})
 
-	if err := preferences.SavePreferences(); err != nil {
+	if err := config.SavePreferences(); err != nil {
 		return fmt.Errorf("unable to save preferences - err: %w", err)
 	}
 
@@ -194,7 +194,7 @@ func handleSaveTwitchConfig(
 func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntry *widget.Entry) error {
 	codeChan := make(chan string)
 	csrfToken := helpers.GenerateCsrfToken(32)
-	hostAndPort := strings.Replace(strings.Replace(preferences.Preferences.TwitchConfig.ClientRedirectUri, "https://", "", 1), "http://", "", 1)
+	hostAndPort := strings.Replace(strings.Replace(config.Preferences.TwitchConfig.ClientRedirectUri, "https://", "", 1), "http://", "", 1)
 
 	if helpers.PortInUse(hostAndPort) {
 		log.Printf("%s is already in use - not creating a new one\n", hostAndPort)
@@ -221,21 +221,21 @@ func handleAuthenticate(channelUserIdEntry *widget.Entry, channelAccessTokenEntr
 	}
 	log.Printf("twitchUserId: %v\n", twitchUserId)
 
-	preferences.Preferences.TwitchConfig.Credentials = preferences.CredentialsT{
+	config.Preferences.TwitchConfig.Credentials = config.CredentialsT{
 		UserAccessToken:        userAccessTokenInfo.AccessToken,
 		UserAccessRefreshToken: userAccessTokenInfo.RefreshToken,
 		UserAccessScope:        userAccessTokenInfo.Scope,
 		ExpiryUnixTimestamp:    time.Now().Unix() + int64(userAccessTokenInfo.ExpiresIn),
 	}
-	preferences.Preferences.TwitchConfig.UserId = twitchUserId
+	config.Preferences.TwitchConfig.UserId = twitchUserId
 
-	if err := preferences.SavePreferences(); err != nil {
+	if err := config.SavePreferences(); err != nil {
 		return fmt.Errorf("unable to save preferences - error: %v", err)
 	}
 
 	fyne.Do(func() {
-		channelUserIdEntry.SetText(preferences.Preferences.TwitchConfig.UserId)
-		channelAccessTokenEntry.SetText(preferences.Preferences.TwitchConfig.Credentials.UserAccessToken)
+		channelUserIdEntry.SetText(config.Preferences.TwitchConfig.UserId)
+		channelAccessTokenEntry.SetText(config.Preferences.TwitchConfig.Credentials.UserAccessToken)
 	})
 
 	log.Println("successfully authenticated (got access token + twitch user id)")

@@ -1,4 +1,4 @@
-package preferences
+package config
 
 import (
 	"encoding/json"
@@ -14,15 +14,15 @@ func SavePreferences() error {
 }
 
 func GetPreferences() (PreferencesFormat, error) {
-	preferences := PreferencesFormat{}
+	prefs := PreferencesFormat{}
 	data, err := os.ReadFile(appConfigPath)
 	if err != nil {
-		return preferences, err
+		return prefs, err
 	}
-	if err := json.Unmarshal(data, &preferences); err != nil {
-		return preferences, err
+	if err := json.Unmarshal(data, &prefs); err != nil {
+		return prefs, err
 	}
-	return preferences, nil
+	return prefs, nil
 }
 
 func writeJsonIfSuccessful(path string, data any) error {

@@ -11,7 +11,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/preferences"
+	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
@@ -29,7 +29,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	headerContainer := container.NewVBox(header, horizontalSpacer(5))
 
 	consoleTextGrid := widget.NewTextGrid()
-	consoleTextGrid.SetText(preferences.Preferences.ActivityConsoleOutput)
+	consoleTextGrid.SetText(config.Preferences.ActivityConsoleOutput)
 
 	consoleTextGrid.SetStyleRange(0, 0, 100, 100, &widget.CustomTextGridStyle{FGColor: color.White, BGColor: color.Black})
 	consoleBg := canvas.NewRectangle(color.Black)
@@ -45,7 +45,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	startTidalButton.OnTapped = func() {
 		log.Println("starting the ticker")
 
-		if !preferences.Preferences.IsValidForUpdatingStreamVariables() {
+		if !config.Preferences.IsValidForUpdatingStreamVariables() {
 			showErrorDialog(
 				errors.New("twitch configuration is not populated"),
 				"You must first configure your Twitch credentials before starting Tidal.",
@@ -54,7 +54,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 			return
 		}
 
-		updateInterval := preferences.Preferences.VariableUpdateInterval
+		updateInterval := config.Preferences.VariableUpdateInterval
 		if updateInterval <= 0 {
 			showErrorDialog(
 				errors.New("updateInterval is not a positive integer"),

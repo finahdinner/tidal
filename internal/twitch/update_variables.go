@@ -9,31 +9,31 @@ import (
 	"sync"
 	"time"
 
+	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/helpers"
-	"github.com/finahdinner/tidal/internal/preferences"
 )
 
 func UpdateStreamVariables(ctx context.Context) error {
 
-	prefs := preferences.Preferences
+	prefs := config.Preferences
 
 	// if the access token expires in <100 seconds, refresh it
-	accessTokenExpiryTimestamp := preferences.Preferences.TwitchConfig.Credentials.ExpiryUnixTimestamp
+	accessTokenExpiryTimestamp := config.Preferences.TwitchConfig.Credentials.ExpiryUnixTimestamp
 	if time.Now().Unix()+100 > accessTokenExpiryTimestamp {
 		newUserAccessTokenInfo, err := getUserAccessTokenFromRefreshToken(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to refresh access code - err: %w", err)
 		}
-		preferences.Preferences.TwitchConfig.Credentials = preferences.CredentialsT{
+		config.Preferences.TwitchConfig.Credentials = config.CredentialsT{
 			UserAccessToken:        newUserAccessTokenInfo.AccessToken,
 			UserAccessRefreshToken: newUserAccessTokenInfo.RefreshToken,
 			UserAccessScope:        newUserAccessTokenInfo.Scope,
 			ExpiryUnixTimestamp:    time.Now().Unix() + int64(newUserAccessTokenInfo.ExpiresIn),
 		}
-		if err := preferences.SavePreferences(); err != nil {
+		if err := config.SavePreferences(); err != nil {
 			return fmt.Errorf("unable to save preferences - error: %v", err)
 		}
-		prefs = preferences.Preferences
+		prefs = config.Preferences
 	}
 
 	var wg sync.WaitGroup
@@ -119,7 +119,7 @@ func UpdateStreamVariables(ctx context.Context) error {
 
 	log.Printf("all api responses: %v", rawApiResponses)
 
-	prevPrefs := preferences.Preferences
+	prevPrefs := config.Preferences
 
 	if rawApiResponses.StreamInfo != nil {
 		prefs.StreamVariables.NumViewers.Value = strconv.Itoa(rawApiResponses.StreamInfo.ViewerCount)
@@ -148,11 +148,11 @@ func UpdateStreamVariables(ctx context.Context) error {
 		prefs.StreamVariables.NumFollowers.Value = ""
 	}
 
-	preferences.Preferences = prefs
+	config.Preferences = prefs
 
-	if err := preferences.SavePreferences(); err != nil {
+	if err := config.SavePreferences(); err != nil {
 		// restore old preferences
-		preferences.Preferences = prevPrefs
+		config.Preferences = prevPrefs
 		return fmt.Errorf("unable to save new preferences - err: %w", err)
 	}
 
