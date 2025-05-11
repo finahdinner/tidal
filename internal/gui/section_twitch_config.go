@@ -90,8 +90,6 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 		innerContainer,
 	)
 
-	// functionality
-
 	for _, entry := range []*widget.Entry{
 		channelUsernameEntry, appClientIdEntry, appClientSecretEntry, appClientRedirectUri,
 	} {

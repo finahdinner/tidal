@@ -91,7 +91,7 @@ func stopUpdaterTicker() {
 	}
 }
 
-// attempts to update the stream variables, but cancels if the timeout limit is exceeded
+// Attempts to update the stream variables, but cancels if the timeout limit is exceeded
 func callUpdateStreamVariablesWithTimeout(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, updateVariablesTimeout)
 	defer cancel()

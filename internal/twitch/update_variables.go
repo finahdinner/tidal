@@ -15,7 +15,6 @@ import (
 
 func UpdateStreamVariables(ctx context.Context) error {
 
-	// httpClient := &http.Client{}
 	prefs := preferences.Preferences
 
 	// if the access token expires in <100 seconds, refresh it
