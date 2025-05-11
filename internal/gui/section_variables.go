@@ -19,8 +19,9 @@ import (
 var variablesSection *fyne.Container
 
 const (
-	placeholderStringPrefix = "{{"
-	placeholderStringSuffix = "}}"
+	streamVarNamePlaceholderPrefix = "{{"
+	streamVarNamePlaceholderSuffix = "}}"
+	streamVarPlaceholderValue      = "-"
 )
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
@@ -66,13 +67,13 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 		streamVariable := vals.Field(idx).Interface().(preferences.StreamVariableT)
 
-		streamVariableValue := streamVariable.Value
-		if streamVariable.Value == "" {
-			streamVariableValue = "N/A"
-		}
+		// streamVariableValue := streamVariable.Value
+		// if streamVariable.Value == "" {
+		// 	streamVariableValue = "N/A"
+		// }
 
 		twitchVariableValueColumn.Objects = append(
-			twitchVariableValueColumn.Objects, widget.NewLabel(streamVariableValue),
+			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(streamVariable.Value)),
 		)
 		twitchVariableDescriptionColumn.Objects = append(
 			twitchVariableDescriptionColumn.Objects, widget.NewLabel(streamVariable.Description),
@@ -141,7 +142,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 							if valueField.IsValid() {
 								newValue := valueField.String()
 								fyne.Do(func() {
-									twitchVariableValueColumn.Objects[rowIdx].(*widget.Label).SetText(newValue)
+									twitchVariableValueColumn.Objects[rowIdx].(*widget.Label).SetText(valueOrPlaceholderValue(newValue))
 									twitchVariableValueColumn.Objects[rowIdx].Refresh()
 								})
 								log.Printf("updated field name %v to value %v", fieldName, newValue)
@@ -157,9 +158,16 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 }
 
 func generatePlaceholderString(varName string) string {
-	return fmt.Sprintf("%v%v%v", placeholderStringPrefix, varName, placeholderStringSuffix)
+	return fmt.Sprintf("%v%v%v", streamVarNamePlaceholderPrefix, varName, streamVarNamePlaceholderSuffix)
 }
 
 func getVarNameFromPlaceholderString(placeholderString string) string {
-	return strings.Replace(strings.Replace(placeholderString, placeholderStringPrefix, "", 1), placeholderStringSuffix, "", 1)
+	return strings.Replace(strings.Replace(placeholderString, streamVarNamePlaceholderPrefix, "", 1), streamVarNamePlaceholderSuffix, "", 1)
+}
+
+func valueOrPlaceholderValue(txt string) string {
+	if txt == "" {
+		return streamVarPlaceholderValue
+	}
+	return txt
 }

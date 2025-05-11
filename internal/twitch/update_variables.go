@@ -84,14 +84,22 @@ func UpdateVariables() error {
 			secondsSinceStreamStart := int(time.Since(t).Seconds())
 			prefs.StreamVariables.StreamUptime.Value = strconv.Itoa(secondsSinceStreamStart)
 		}
+	} else {
+		prefs.StreamVariables.NumViewers.Value = ""
+		prefs.StreamVariables.StreamCategory.Value = ""
+		prefs.StreamVariables.StreamUptime.Value = ""
 	}
 
 	if rawApiResponses.SubscribersInfo != nil {
 		prefs.StreamVariables.NumSubscribers.Value = strconv.Itoa(rawApiResponses.SubscribersInfo.Total)
+	} else {
+		prefs.StreamVariables.NumSubscribers.Value = ""
 	}
 
 	if rawApiResponses.FollowersInfo != nil {
 		prefs.StreamVariables.NumFollowers.Value = strconv.Itoa(rawApiResponses.FollowersInfo.Total)
+	} else {
+		prefs.StreamVariables.NumFollowers.Value = ""
 	}
 
 	preferences.Preferences = prefs
