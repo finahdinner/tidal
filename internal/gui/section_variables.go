@@ -104,7 +104,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	)
 	updateRateRow := container.New(layout.NewBorderLayout(nil, nil, updateRateForm, nil), updateRateForm)
 
-	variablesSection := container.NewPadded(container.New(
+	variablesSection = container.NewPadded(container.New(
 		layout.NewVBoxLayout(),
 		header,
 		container.New(
@@ -120,6 +120,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	// set up a listener to update widgets whenever the ticker updates stream variables
 	go func() {
+		log.Println("setting up listener")
 		for range updateVariablesSectionSignal {
 			log.Println("received update signal!")
 
@@ -151,36 +152,8 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				}
 			}
 		}
+		log.Println("set up listener")
 	}()
-
-	// go func() {
-	// 	log.Println("setting up listener...")
-	// 	<-tickerReady
-	// 	log.Println("ticker is ready!!")
-	// 	<-updaterTicker.C
-	// 	log.Println("received a signal!!")
-	// 	log.Printf("len(twitchVariableValueColumn.Objects): %v", len(twitchVariableValueColumn.Objects))
-	// 	// read preferences and update values of widgets
-	// 	for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
-	// 		varPlaceholderName := twitchVariableNameColumn.Objects[rowIdx].(*widget.Label).Text
-	// 		varName := getVarNameFromPlaceholderString(varPlaceholderName)
-
-	// 		streamVariablesV := reflect.ValueOf(preferences.Preferences.StreamVariables)
-	// 		streamVariablesT := streamVariablesV.Type()
-
-	// 		for varIdx := range streamVariablesT.NumField() {
-	// 			fieldName := streamVariablesT.Field(varIdx).Name
-	// 			value := streamVariablesV.Field(varIdx)
-	// 			log.Printf("fieldName: %v, value: %v", fieldName, value)
-	// 			if fieldName == varName {
-	// 				twitchVariableValueColumn.Objects[rowIdx].(*widget.Label).SetText(value.String())
-	// 				twitchVariableValueColumn.Objects[rowIdx].Refresh()
-	// 				log.Printf("updated field name %v to value %v", fieldName, value)
-	// 			}
-	// 		}
-	// 	}
-	// 	variablesSection.Refresh()
-	// }()
 
 	return variablesSection
 }
