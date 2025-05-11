@@ -1,16 +1,9 @@
 package twitch
 
 const (
-	twitchApiAuthoriseUrl     = "https://id.twitch.tv/oauth2/authorize"
-	twitchApiTokenUrl         = "https://id.twitch.tv/oauth2/token"
-	twitchApiChannelUrl       = "https://api.twitch.tv/helix/channels"
-	twitchApiUsersUrl         = "https://api.twitch.tv/helix/users"
-	twitchApiSubscriptionsUrl = "https://api.twitch.tv/helix/subscriptions"
+	twitchApiAuthoriseUrl = "https://id.twitch.tv/oauth2/authorize"
+	twitchApiTokenUrl     = "https://id.twitch.tv/oauth2/token"
 )
-
-type paginationApiResponse struct {
-	Cursor string `json:"cursor"`
-}
 
 type userAccessTokenInfoT struct {
 	AccessToken  string   `json:"access_token"`
@@ -20,19 +13,12 @@ type userAccessTokenInfoT struct {
 	TokenType    string   `json:"token_type"`
 }
 
-// type userDataT struct {
-// 	Id              string `json:"id"`
-// 	Login           string `json:"login"`
-// 	DisplayName     string `json:"display_name"`
-// 	UserType        string `json:"type"`
-// 	BroadcasterType string `json:"broadcaster_type"`
-// 	Description     string `json:"description"`
-// 	ProfileImageUrl string `json:"profile_image_url"`
-// 	OfflineImageUrl string `json:"offline_image_url"`
-// 	ViewCount       int    `json:"view_count"`
-// 	Email           string `json:"email"`
-// 	CreatedAt       string `json:"created_at"`
-// }
+const (
+	twitchApiUsersUrl         = "https://api.twitch.tv/helix/users"
+	twitchApiStreamsUrl       = "https://api.twitch.tv/helix/streams"
+	twitchApiSubscriptionsUrl = "https://api.twitch.tv/helix/subscriptions"
+	twitchApiFollowersUrl     = "https://api.twitch.tv/helix/channels/followers"
+)
 
 type getUsersApiResponseT struct {
 	Data []struct {
@@ -48,6 +34,33 @@ type getUsersApiResponseT struct {
 		Email           string `json:"email"`
 		CreatedAt       string `json:"created_at"`
 	} `json:"data"`
+}
+
+type paginationApiResponse struct {
+	Cursor string `json:"cursor"`
+}
+
+type streamInfoT struct {
+	Id           string   `json:"id"`
+	UserId       string   `json:"user_id"`
+	UserLogin    string   `json:"user_login"`
+	UserName     string   `json:"user_name"`
+	GameId       string   `json:"game_id"`
+	GameName     string   `json:"game_name"`
+	StreamType   string   `json:"type"`
+	Title        string   `json:"title"`
+	Tags         []string `json:"tags"`
+	ViewerCount  int      `json:"viewer_count"`
+	StartedAt    string   `json:"started_at"`
+	Language     string   `json:"language"`
+	ThumbnailUrl string   `json:"thumbnail_url"`
+	TagIds       []string `json:"tag_ids"`
+	IsMature     bool     `json:"is_mature"`
+}
+
+type getStreamInfoApiResponseT struct {
+	Data       []streamInfoT         `json:"data"`
+	Pagination paginationApiResponse `json:"pagination"`
 }
 
 type getChannelSubscribersResponseT struct {
@@ -70,25 +83,18 @@ type getChannelSubscribersResponseT struct {
 	Total      int                   `json:"total"`
 }
 
-type streamInfoApiResponseT struct {
-	id           string   `json:"id"`
-	userId       string   `json:"user_id"`
-	userLogin    string   `json:"user_login"`
-	userName     string   `json:"user_name"`
-	gameId       string   `json:"game_id"`
-	gameName     string   `json:"game_name"`
-	streamType   string   `json:"type"`
-	title        string   `json:"title"`
-	tags         []string `json:"tags"`
-	viewerCount  int      `json:"viewer_count"`
-	startedAt    string   `json:"started_at"`
-	language     string   `json:"language"`
-	thumbnailUrl string   `json:"thumbnail_url"`
-	tagIds       []string `json:"tag_ids"`
-	isMature     bool     `json:"is_mature"`
+type getChannelFollowersResponseT struct {
+	Data []struct {
+		FollowedAt string `json:"followed_at"`
+		UserID     string `json:"user_id"`
+		UserLogin  string `json:"user_login"`
+		UserName   string `json:"user_name"`
+	} `json:"data"`
+	Pagination paginationApiResponse `json:"pagination"`
+	Total      int                   `json:"total"`
 }
 
-type getStreamsApiResponseT struct {
-	data       []streamInfoApiResponseT
-	pagination paginationApiResponse
-}
+// type getStreamsApiResponseT struct {
+// 	data       []streamInfoApiResponseT
+// 	pagination paginationApiResponse
+// }

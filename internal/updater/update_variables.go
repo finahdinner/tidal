@@ -2,10 +2,6 @@ package updater
 
 import (
 	"log"
-	"net/http"
-
-	"github.com/finahdinner/tidal/internal/preferences"
-	"github.com/finahdinner/tidal/internal/twitch"
 )
 
 func StartUpdatingVariables() {
@@ -25,14 +21,25 @@ func StartUpdatingVariables() {
 }
 
 func updateVariables() error {
+
+	// httpClient := &http.Client{}
+	// preferences := preferences.Preferences
 	// var wg sync.WaitGroup
-	httpClient := &http.Client{}
-	preferences := preferences.Preferences
-	usersApiResponse, err := twitch.GetUsers(httpClient, preferences)
-	if err != nil {
-		return err
-	}
-	log.Printf("usersApiResponse data: %v", usersApiResponse.Data)
+	// var mu sync.Mutex
+	// responses := map[string]any{
+	// 	"streamResponse":      nil,
+	// 	"subscribersResponse": nil,
+	// 	"followerssResponse":  nil,
+	// }
 	// wg.Wait()
+
+	// var wg sync.WaitGroup
+	// httpClient := &http.Client{}
+	// preferences := preferences.Preferences
+	// usersApiResponse, err := twitch.GetUsers(httpClient, preferences)
+	// if err != nil {
+	// 	return err
+	// }
+	// log.Printf("usersApiResponse data: %v", usersApiResponse.Data)
 	return nil
 }
