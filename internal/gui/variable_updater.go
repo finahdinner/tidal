@@ -30,6 +30,10 @@ func removeUpdateTicker() {
 }
 
 func startUpdatingVariables() {
+	// initial update
+	if err := twitch.UpdateVariables(); err != nil {
+		log.Printf("failed - err: %v", err)
+	}
 	for {
 		select {
 		case <-tickerDone:
