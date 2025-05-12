@@ -45,7 +45,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			labelObj := twitchVariableNameColumn.Objects[idx+1]
 			if entry, ok := labelObj.(*widget.Label); ok {
 				// TODO - also add a brief popup to confirm copying to clipboard
-				g.Clipboard.SetContent(entry.Text)
+				g.App.Clipboard().SetContent(entry.Text)
 			}
 		})
 
@@ -66,31 +66,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		)
 	}
 
-	// updateRateSelect := widget.NewSelect([]string{"10", "20", "30", "60"}, func(s string) {
-	// 	asInt, err := strconv.Atoi(s)
-	// 	if err != nil {
-	// 		config.Logger.LogInfof("unable to parse update rate as int - err: %v", err)
-	// 		return
-	// 	}
-	// 	config.Preferences.VariableUpdateInterval = asInt
-	// 	config.SavePreferences()
-	// 	config.Logger.LogInfof("saved update frequency as %v seconds", asInt)
-	// })
-
-	// if config.Preferences.VariableUpdateInterval > 0 {
-	// 	updateRateSelect.SetSelected(strconv.Itoa(config.Preferences.VariableUpdateInterval))
-	// }
-
-	// updateRateForm := container.New(
-	// 	layout.NewFormLayout(),
-	// 	widget.NewLabel("Update every"),
-	// 	container.New(layout.NewHBoxLayout(),
-	// 		updateRateSelect,
-	// 		widget.NewLabel("seconds"),
-	// 	),
-	// )
-	// updateRateRow := container.New(layout.NewBorderLayout(nil, nil, updateRateForm, nil), updateRateForm)
-
 	variablesSection := container.NewPadded(container.New(
 		layout.NewVBoxLayout(),
 		header,
@@ -101,8 +76,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			twitchVariableValueColumn,
 			twitchVariableDescriptionColumn,
 		),
-		// horizontalSpacer(20),
-		// updateRateRow,
 	))
 
 	// set up a listener to update widgets whenever the ticker updates stream variables

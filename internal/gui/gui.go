@@ -11,7 +11,6 @@ import (
 type GuiWrapper struct {
 	App           fyne.App
 	PrimaryWindow fyne.Window
-	Clipboard     fyne.Clipboard
 }
 
 var Gui *GuiWrapper
@@ -28,7 +27,6 @@ func init() {
 	Gui = &GuiWrapper{
 		App:           a,
 		PrimaryWindow: primaryWindow,
-		Clipboard:     a.Clipboard(),
 	}
 
 	menuMap := map[string]func() *fyne.Container{
