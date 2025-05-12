@@ -31,9 +31,9 @@ func init() {
 	}
 
 	menuMap := map[string]func() *fyne.Container{
+		"Dashboard":     Gui.getDashboardSection,
 		"Twitch Config": Gui.getTwitchConfigSection,
 		"Variables":     Gui.getVariablesSection,
-		"Dashboard":     Gui.getDashboardSection,
 	}
 	menuItemNames := []string{"Dashboard", "Twitch Config", "Variables"}
 	menuList := widget.NewList(
