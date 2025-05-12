@@ -28,6 +28,7 @@ func init() {
 	Gui = &GuiWrapper{
 		App:           a,
 		PrimaryWindow: primaryWindow,
+		Clipboard:     a.Clipboard(),
 	}
 
 	menuMap := map[string]func() *fyne.Container{
