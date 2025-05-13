@@ -104,9 +104,50 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
-	// TODO - ai-generated variables section
+	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
+	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
+	aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
+	aiGeneratedVariablePromptColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Prompt"))
 
-	return container.NewPadded(container.New(
+	aiGeneratedVariables := config.Preferences.AiGeneratedVariables
+
+	for idx, aiGenVar := range aiGeneratedVariables {
+		name := aiGenVar.Name
+
+		nameLabel := widget.NewLabel(generatePlaceholderString(name))
+		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
+			labelObj := aiGeneratedVariableNameColumn.Objects[idx+1]
+			if entry, ok := labelObj.(*widget.Label); ok {
+				// TODO - also add a brief popup to confirm copying to clipboard
+				g.App.Clipboard().SetContent(entry.Text)
+			}
+		})
+
+		aiGeneratedVariableNameColumn.Objects = append(
+			aiGeneratedVariableNameColumn.Objects,
+			nameLabel,
+		)
+
+		aiGeneratedVariableCopyColumn.Objects = append(
+			aiGeneratedVariableCopyColumn.Objects, nameLabelCopyButton,
+		)
+
+		aiGeneratedVariableValueColumn.Objects = append(
+			aiGeneratedVariableValueColumn.Objects,
+			widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Value)),
+		)
+
+		aiGeneratedVariablePromptColumn.Objects = append(
+			aiGeneratedVariablePromptColumn.Objects,
+			widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Prompt)),
+		)
+
+	}
+
+	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", nil)
+	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
+
+	return container.NewPadded(container.NewScroll(container.New(
 		layout.NewVBoxLayout(),
 		twitchVariablesHeader,
 		container.New(
@@ -118,7 +159,18 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		),
 		horizontalSpacer(8),
 		aiGeneratedVariablesHeader,
-	))
+		container.New(
+			layout.NewVBoxLayout(),
+			container.New(
+				layout.NewHBoxLayout(),
+				aiGeneratedVariableCopyColumn,
+				aiGeneratedVariableNameColumn,
+				aiGeneratedVariableValueColumn,
+				aiGeneratedVariablePromptColumn,
+			),
+			addAiGeneratedVariableBtnRow,
+		),
+	)))
 }
 
 func generatePlaceholderString(varName string) string {

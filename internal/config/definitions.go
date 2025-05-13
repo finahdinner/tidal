@@ -38,6 +38,7 @@ type TwitchVariableT struct {
 }
 
 type LlmVariableT struct {
+	Name   string `json:"name"`
 	Value  string `json:"value"`
 	Prompt string `json:"prompt"`
 }
