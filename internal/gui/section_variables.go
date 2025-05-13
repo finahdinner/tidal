@@ -157,7 +157,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		promptEntryMain := getMultilineEntry("prompt entry main", saveBtn)
 		promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn)
 		promptPreview := getMultilinePreview([]*widget.Entry{promptEntryMain, promptEntrySuffix}, twitchVariablesStringReplacer, saveBtn)
-		c := container.New(
+		form := container.New(
 			layout.NewFormLayout(),
 			widget.NewLabel("Main Prompt"),
 			promptEntryMain,
@@ -166,6 +166,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			widget.NewLabel("Preview"),
 			promptPreview,
 		)
+		c := container.New(layout.NewVBoxLayout(), form, container.New(layout.NewBorderLayout(nil, nil, nil, saveBtn), saveBtn))
 		g.openSecondaryWindow("Add AI-Generated Variable", c, promptWindowSize)
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
@@ -201,7 +202,6 @@ func getMultilineEntry(text string, saveBtn *widget.Button) *widget.Entry {
 	e := widget.NewMultiLineEntry()
 	e.SetText(text)
 	e.SetMinRowsVisible(multilineEntryHeight)
-	// e.Resize(fyne.NewSize(300, e.MinSize().Height))
 	e.OnChanged = func(_ string) {
 		saveBtn.Enable()
 	}
