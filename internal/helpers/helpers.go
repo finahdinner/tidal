@@ -49,3 +49,16 @@ func NumFieldsInStruct(val any) (int, error) {
 	}
 	return -1, fmt.Errorf("%v is not a struct", val)
 }
+
+// only works for homogenous structs
+func GenerateMapFromHomogenousStruct[ParentType any, FieldValueType any](strct ParentType) map[string]FieldValueType {
+	fields := reflect.TypeOf(strct)
+	vals := reflect.ValueOf(strct)
+	res := map[string]FieldValueType{}
+	for idx := range vals.NumField() {
+		fieldName := fields.Field(idx).Name
+		value := vals.Field(idx).Interface().(FieldValueType)
+		res[fieldName] = value
+	}
+	return res
+}

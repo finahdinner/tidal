@@ -12,13 +12,19 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
+	"github.com/finahdinner/tidal/internal/helpers"
 )
 
 const (
 	varNamePlaceholderPrefix = "{{"
 	varNamePlaceholderSuffix = "}}"
 	varPlaceholderValue      = "-"
+
+	multilineEntryHeight              = 3
+	promptEmptyStreamValuePlaceholder = "<<N/A>>"
 )
+
+var promptWindowSize fyne.Size = fyne.NewSize(600, 400)
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
@@ -35,7 +41,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	fields := reflect.TypeOf(*twitchVariables)
 	vals := reflect.ValueOf(*twitchVariables)
 
-	for idx := range reflect.ValueOf(*twitchVariables).NumField() {
+	for idx := range vals.NumField() {
 
 		varName := fields.Field(idx).Name
 		varPlaceholderName := generatePlaceholderString(varName)
@@ -108,6 +114,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	aiGeneratedVariablePromptColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Prompt"))
+	aiGeneratedVariableRemoveColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
 
 	aiGeneratedVariables := config.Preferences.AiGeneratedVariables
 
@@ -144,9 +151,22 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	}
 
+	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
 	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
-		aiGeneratedVariableContainer := container.New(nil)
-		g.openSecondaryWindow("Add AI-Generated Variable", aiGeneratedVariableContainer)
+		saveBtn := widget.NewButton("Save", nil) // TODO - save to config.json
+		promptEntryMain := getMultilineEntry("prompt entry main", saveBtn)
+		promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn)
+		promptPreview := getMultilinePreview([]*widget.Entry{promptEntryMain, promptEntrySuffix}, twitchVariablesStringReplacer, saveBtn)
+		c := container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Main Prompt"),
+			promptEntryMain,
+			widget.NewLabel("Prompt suffix"),
+			promptEntrySuffix,
+			widget.NewLabel("Preview"),
+			promptPreview,
+		)
+		g.openSecondaryWindow("Add AI-Generated Variable", c, promptWindowSize)
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
@@ -170,10 +190,58 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				aiGeneratedVariableNameColumn,
 				aiGeneratedVariableValueColumn,
 				aiGeneratedVariablePromptColumn,
+				aiGeneratedVariableRemoveColumn,
 			),
 			addAiGeneratedVariableBtnRow,
 		),
 	)))
+}
+
+func getMultilineEntry(text string, saveBtn *widget.Button) *widget.Entry {
+	e := widget.NewMultiLineEntry()
+	e.SetText(text)
+	e.SetMinRowsVisible(multilineEntryHeight)
+	e.OnChanged = func(_ string) {
+		saveBtn.Enable()
+	}
+	return e
+}
+
+func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *strings.Replacer, saveBtn *widget.Button) *widget.Entry {
+	e := widget.NewMultiLineEntry()
+	e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
+	e.SetMinRowsVisible(3)
+	e.Disable()
+	for _, entry := range parentEntryWidgets {
+		entry.OnChanged = func(text string) {
+			e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
+		}
+	}
+	return e
+}
+
+func buildStringFromEntryWidgets(entryWidgets []*widget.Entry, variableReplacer *strings.Replacer) string {
+	promptParts := []string{}
+	for _, e := range entryWidgets {
+		if e.Text != "" {
+			promptParts = append(promptParts, e.Text)
+		}
+	}
+	concatenatedPrompt := strings.Join(promptParts, "\n")
+	return variableReplacer.Replace(concatenatedPrompt)
+}
+
+func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) *strings.Replacer {
+	replacementList := []string{}
+	twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[config.TwitchVariablesT, config.TwitchVariableT](twitchVariables)
+	for name, val := range twitchVariablesMap {
+		value := val.Value
+		if value == "" {
+			value = "<<N/A>>"
+		}
+		replacementList = append(replacementList, generatePlaceholderString(name), value)
+	}
+	return strings.NewReplacer(replacementList...)
 }
 
 func generatePlaceholderString(varName string) string {

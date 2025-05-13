@@ -32,13 +32,14 @@ func showErrorDialog(err error, dialogText string, window fyne.Window) {
 // 	dialog.ShowInformation(title, message, window)
 // }
 
-func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObject) {
+func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObject, minSize fyne.Size) {
 	if g.SecondaryWindow == nil {
 		g.SecondaryWindow = g.App.NewWindow(title)
 		g.SecondaryWindow.SetOnClosed(func() {
 			g.SecondaryWindow = nil
 		})
 		g.SecondaryWindow.SetContent(canvasObj)
+		g.SecondaryWindow.Resize(minSize)
 	}
 	g.SecondaryWindow.Show()
 	g.SecondaryWindow.RequestFocus()
