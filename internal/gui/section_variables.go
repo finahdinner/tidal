@@ -144,7 +144,10 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	}
 
-	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", nil)
+	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
+		aiGeneratedVariableContainer := container.New(nil)
+		g.openSecondaryWindow("Add AI-Generated Variable", aiGeneratedVariableContainer)
+	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
 	return container.NewPadded(container.NewScroll(container.New(

@@ -31,3 +31,15 @@ func showErrorDialog(err error, dialogText string, window fyne.Window) {
 // 	config.Logger.LogInfof("%s: %s", title, message)
 // 	dialog.ShowInformation(title, message, window)
 // }
+
+func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObject) {
+	if g.SecondaryWindow == nil {
+		g.SecondaryWindow = g.App.NewWindow(title)
+		g.SecondaryWindow.SetOnClosed(func() {
+			g.SecondaryWindow = nil
+		})
+		g.SecondaryWindow.SetContent(canvasObj)
+	}
+	g.SecondaryWindow.Show()
+	g.SecondaryWindow.RequestFocus()
+}

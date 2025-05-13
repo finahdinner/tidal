@@ -9,8 +9,9 @@ import (
 )
 
 type GuiWrapper struct {
-	App           fyne.App
-	PrimaryWindow fyne.Window
+	App             fyne.App
+	PrimaryWindow   fyne.Window
+	SecondaryWindow fyne.Window
 }
 
 var Gui *GuiWrapper
