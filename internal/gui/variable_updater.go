@@ -12,20 +12,20 @@ import (
 
 const updateVariablesTimeout = 5 * time.Second
 
-var updaterTicker *time.Ticker
-var updaterTickerDone chan struct{}
-var updateVariablesSectionSignal = make(chan struct{}, 1)
+var twitchVariableUpdaterTicker *time.Ticker
+var twitchVariableUpdaterTickerDone chan struct{}
+var updateTwitchVariablesSectionSignal = make(chan struct{}, 1)
 
-func startUpdatingVariables(interval int) error {
+func startUpdatingTwitchVariables(interval int) error {
 	if interval < 0 {
 		return errors.New("interval value must be a positive integer")
 	}
-	if updaterTicker != nil {
+	if twitchVariableUpdaterTicker != nil {
 		return errors.New("ticker already running - stop it first")
 	}
 
-	updaterTicker = time.NewTicker(time.Duration(interval) * time.Second)
-	updaterTickerDone = make(chan struct{})
+	twitchVariableUpdaterTicker = time.NewTicker(time.Duration(interval) * time.Second)
+	twitchVariableUpdaterTickerDone = make(chan struct{})
 
 	errChan := make(chan error, 1)
 	doneChan := make(chan struct{})
@@ -35,7 +35,7 @@ func startUpdatingVariables(interval int) error {
 		ctx := context.Background()
 
 		// initial update, before the ticker
-		if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
+		if err := callUpdateTwitchVariablesWithTimeout(ctx); err != nil {
 			config.Logger.LogInfof("failed - err: %v", err)
 			if errors.Is(err, twitch.Err401Unauthorised) {
 				errChan <- err
@@ -45,12 +45,12 @@ func startUpdatingVariables(interval int) error {
 
 		for {
 			select {
-			case <-updaterTickerDone:
+			case <-twitchVariableUpdaterTickerDone:
 				config.Logger.LogInfo("updaterTickerDone closed")
 				doneChan <- struct{}{}
 				return
-			case <-updaterTicker.C:
-				if err := callUpdateStreamVariablesWithTimeout(ctx); err != nil {
+			case <-twitchVariableUpdaterTicker.C:
+				if err := callUpdateTwitchVariablesWithTimeout(ctx); err != nil {
 					config.Logger.LogInfof("failed - err: %v", err)
 					if errors.Is(err, twitch.Err401Unauthorised) {
 						errChan <- err
@@ -59,7 +59,7 @@ func startUpdatingVariables(interval int) error {
 					continue
 				}
 				select {
-				case updateVariablesSectionSignal <- struct{}{}:
+				case updateTwitchVariablesSectionSignal <- struct{}{}:
 					// signal to update widgets in variables section
 				default:
 					// reached if updateSignalChan is full
@@ -79,21 +79,21 @@ func startUpdatingVariables(interval int) error {
 }
 
 func stopUpdaterTicker() {
-	if updaterTicker != nil {
+	if twitchVariableUpdaterTicker != nil {
 		config.Logger.LogInfo("ticker 'updaterTicker' stopped")
-		updaterTicker.Stop()
-		updaterTicker = nil
+		twitchVariableUpdaterTicker.Stop()
+		twitchVariableUpdaterTicker = nil
 	}
-	if updaterTickerDone != nil {
+	if twitchVariableUpdaterTickerDone != nil {
 		config.Logger.LogInfo("chan 'updaterTickerDone' closed")
-		close(updaterTickerDone)
-		updaterTickerDone = nil
+		close(twitchVariableUpdaterTickerDone)
+		twitchVariableUpdaterTickerDone = nil
 	}
 }
 
-// Attempts to update the stream variables, but cancels if the timeout limit is exceeded
-func callUpdateStreamVariablesWithTimeout(ctx context.Context) error {
+// Attempts to update the twitch variables, but cancels if the timeout limit is exceeded
+func callUpdateTwitchVariablesWithTimeout(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, updateVariablesTimeout)
 	defer cancel()
-	return twitch.UpdateStreamVariables(ctx)
+	return twitch.UpdateTwitchVariables(ctx)
 }

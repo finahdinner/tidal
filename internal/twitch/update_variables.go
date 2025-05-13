@@ -12,7 +12,7 @@ import (
 	"github.com/finahdinner/tidal/internal/helpers"
 )
 
-func UpdateStreamVariables(ctx context.Context) error {
+func UpdateTwitchVariables(ctx context.Context) error {
 
 	prefs := config.Preferences
 
@@ -121,30 +121,30 @@ func UpdateStreamVariables(ctx context.Context) error {
 	prevPrefs := config.Preferences
 
 	if rawApiResponses.StreamInfo != nil {
-		prefs.StreamVariables.NumViewers.Value = strconv.Itoa(rawApiResponses.StreamInfo.ViewerCount)
-		prefs.StreamVariables.StreamCategory.Value = rawApiResponses.StreamInfo.GameName
+		prefs.TwitchVariables.NumViewers.Value = strconv.Itoa(rawApiResponses.StreamInfo.ViewerCount)
+		prefs.TwitchVariables.StreamCategory.Value = rawApiResponses.StreamInfo.GameName
 		streamStartedAt := rawApiResponses.StreamInfo.StartedAt
 		t, err := time.Parse(time.RFC3339, streamStartedAt)
 		if err == nil {
 			secondsSinceStreamStart := int(time.Since(t).Seconds())
-			prefs.StreamVariables.StreamUptime.Value = strconv.Itoa(secondsSinceStreamStart)
+			prefs.TwitchVariables.StreamUptime.Value = strconv.Itoa(secondsSinceStreamStart)
 		}
 	} else {
-		prefs.StreamVariables.NumViewers.Value = ""
-		prefs.StreamVariables.StreamCategory.Value = ""
-		prefs.StreamVariables.StreamUptime.Value = ""
+		prefs.TwitchVariables.NumViewers.Value = ""
+		prefs.TwitchVariables.StreamCategory.Value = ""
+		prefs.TwitchVariables.StreamUptime.Value = ""
 	}
 
 	if rawApiResponses.SubscribersInfo != nil {
-		prefs.StreamVariables.NumSubscribers.Value = strconv.Itoa(rawApiResponses.SubscribersInfo.Total)
+		prefs.TwitchVariables.NumSubscribers.Value = strconv.Itoa(rawApiResponses.SubscribersInfo.Total)
 	} else {
-		prefs.StreamVariables.NumSubscribers.Value = ""
+		prefs.TwitchVariables.NumSubscribers.Value = ""
 	}
 
 	if rawApiResponses.FollowersInfo != nil {
-		prefs.StreamVariables.NumFollowers.Value = strconv.Itoa(rawApiResponses.FollowersInfo.Total)
+		prefs.TwitchVariables.NumFollowers.Value = strconv.Itoa(rawApiResponses.FollowersInfo.Total)
 	} else {
-		prefs.StreamVariables.NumFollowers.Value = ""
+		prefs.TwitchVariables.NumFollowers.Value = ""
 	}
 
 	config.Preferences = prefs

@@ -44,7 +44,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	startTidalButton.OnTapped = func() {
 		config.Logger.LogInfo("starting the ticker")
 
-		if !config.Preferences.IsValidForUpdatingStreamVariables() {
+		if !config.Preferences.IsValidForUpdatingTwitchVariables() {
 			showErrorDialog(
 				errors.New("twitch configuration is not populated"),
 				"You must first configure your Twitch credentials before starting Tidal.",
@@ -64,7 +64,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		}
 
 		go func() {
-			if err := startUpdatingVariables(updateInterval); err != nil {
+			if err := startUpdatingTwitchVariables(updateInterval); err != nil {
 				fyne.Do(func() {
 					startTidalButton.Enable()
 					stopTidalButton.Disable()

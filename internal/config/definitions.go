@@ -2,8 +2,8 @@ package config
 
 type PreferencesFormat struct {
 	TwitchConfig           TwitchConfigT    `json:"twitch_config"`
-	StreamVariables        StreamVariablesT `json:"stream_variables"`
-	LlmVariables           []LlmVariableT   `json:"llm_variables"`
+	TwitchVariables        TwitchVariablesT `json:"twitch_variables"`
+	AiGeneratedVariables   []LlmVariableT   `json:"ai_generated_variables"`
 	VariableUpdateInterval int              `json:"variable_update_interval"`
 	ActivityConsoleOutput  string           `json:"activity_console_output"`
 }
@@ -24,15 +24,15 @@ type CredentialsT struct {
 	ExpiryUnixTimestamp    int64    `json:"expiry_unix_timestamp"`
 }
 
-type StreamVariablesT struct {
-	StreamCategory StreamVariableT `json:"stream_category"`
-	StreamUptime   StreamVariableT `json:"stream_uptime"`
-	NumViewers     StreamVariableT `json:"num_viewers"`
-	NumSubscribers StreamVariableT `json:"num_subscribers"`
-	NumFollowers   StreamVariableT `json:"num_followers"`
+type TwitchVariablesT struct {
+	StreamCategory TwitchVariableT `json:"stream_category"`
+	StreamUptime   TwitchVariableT `json:"stream_uptime"`
+	NumViewers     TwitchVariableT `json:"num_viewers"`
+	NumSubscribers TwitchVariableT `json:"num_subscribers"`
+	NumFollowers   TwitchVariableT `json:"num_followers"`
 }
 
-type StreamVariableT struct {
+type TwitchVariableT struct {
 	Value       string `json:"value"`
 	Description string `json:"description"`
 }
@@ -42,8 +42,8 @@ type LlmVariableT struct {
 	Prompt string `json:"prompt"`
 }
 
-// Ensure fields are populated enough to make requests to update stream variables
-func (pf *PreferencesFormat) IsValidForUpdatingStreamVariables() bool {
+// Ensure fields are populated enough to make requests to update twitch variables
+func (pf *PreferencesFormat) IsValidForUpdatingTwitchVariables() bool {
 	return pf.TwitchConfig.UserName != "" &&
 		pf.TwitchConfig.UserId != "" &&
 		pf.TwitchConfig.ClientId != "" &&

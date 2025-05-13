@@ -15,27 +15,27 @@ import (
 )
 
 const (
-	streamVarNamePlaceholderPrefix = "{{"
-	streamVarNamePlaceholderSuffix = "}}"
-	streamVarPlaceholderValue      = "-"
+	varNamePlaceholderPrefix = "{{"
+	varNamePlaceholderSuffix = "}}"
+	varPlaceholderValue      = "-"
 )
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
-	header := canvas.NewText("Variables", theme.Color(theme.ColorNameForeground))
-	header.TextSize = headerSize
+	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
+	twitchVariablesHeader.TextSize = headerSize
 
 	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
-	streamVariables := &config.Preferences.StreamVariables
+	twitchVariables := &config.Preferences.TwitchVariables
 
-	fields := reflect.TypeOf(*streamVariables)
-	vals := reflect.ValueOf(*streamVariables)
+	fields := reflect.TypeOf(*twitchVariables)
+	vals := reflect.ValueOf(*twitchVariables)
 
-	for idx := range reflect.ValueOf(*streamVariables).NumField() {
+	for idx := range reflect.ValueOf(*twitchVariables).NumField() {
 
 		varName := fields.Field(idx).Name
 		varPlaceholderName := generatePlaceholderString(varName)
@@ -56,47 +56,35 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			twitchVariableCopyColumn.Objects, nameLabelCopyButton,
 		)
 
-		streamVariable := vals.Field(idx).Interface().(config.StreamVariableT)
+		twitchVariable := vals.Field(idx).Interface().(config.TwitchVariableT)
 
 		twitchVariableValueColumn.Objects = append(
-			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(streamVariable.Value)),
+			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(twitchVariable.Value)),
 		)
 		twitchVariableDescriptionColumn.Objects = append(
-			twitchVariableDescriptionColumn.Objects, widget.NewLabel(streamVariable.Description),
+			twitchVariableDescriptionColumn.Objects, widget.NewLabel(twitchVariable.Description),
 		)
 	}
 
-	variablesSection := container.NewPadded(container.New(
-		layout.NewVBoxLayout(),
-		header,
-		container.New(
-			layout.NewHBoxLayout(),
-			twitchVariableCopyColumn,
-			twitchVariableNameColumn,
-			twitchVariableValueColumn,
-			twitchVariableDescriptionColumn,
-		),
-	))
-
-	// set up a listener to update widgets whenever the ticker updates stream variables
+	// set up a listener to update widgets whenever the ticker updates twitch variables
 	go func() {
-		for range updateVariablesSectionSignal {
+		for range updateTwitchVariablesSectionSignal {
 			config.Logger.LogInfo("updating stream variable widgets")
 
 			for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
 
 				varPlaceholderName := twitchVariableNameColumn.Objects[rowIdx].(*widget.Label).Text
 				varName := getVarNameFromPlaceholderString(varPlaceholderName)
-				streamVariablesV := reflect.ValueOf(config.Preferences.StreamVariables)
-				streamVariablesT := streamVariablesV.Type()
-				streamVariableObjType := reflect.TypeOf(config.StreamVariableT{})
+				twitchVariablesV := reflect.ValueOf(config.Preferences.TwitchVariables)
+				twitchVariablesT := twitchVariablesV.Type()
+				twitchVariableObjType := reflect.TypeOf(config.TwitchVariableT{})
 
-				for fieldIdx := range streamVariablesT.NumField() {
-					fieldName := streamVariablesT.Field(fieldIdx).Name
+				for fieldIdx := range twitchVariablesT.NumField() {
+					fieldName := twitchVariablesT.Field(fieldIdx).Name
 					if fieldName == varName {
-						// populate the value on this row with StreamVariableT.Value
-						valueField := streamVariablesV.Field(fieldIdx)
-						if valueField.Kind() == reflect.Struct && valueField.Type() == streamVariableObjType {
+						// populate the value on this row with TwitchVariableT.Value
+						valueField := twitchVariablesV.Field(fieldIdx)
+						if valueField.Kind() == reflect.Struct && valueField.Type() == twitchVariableObjType {
 							valueField := valueField.FieldByName("Value")
 							if valueField.IsValid() {
 								newValue := valueField.String()
@@ -113,20 +101,37 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		}
 	}()
 
-	return variablesSection
+	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
+	aiGeneratedVariablesHeader.TextSize = headerSize
+
+	// TODO - ai-generated variables section
+
+	return container.NewPadded(container.New(
+		layout.NewVBoxLayout(),
+		twitchVariablesHeader,
+		container.New(
+			layout.NewHBoxLayout(),
+			twitchVariableCopyColumn,
+			twitchVariableNameColumn,
+			twitchVariableValueColumn,
+			twitchVariableDescriptionColumn,
+		),
+		horizontalSpacer(8),
+		aiGeneratedVariablesHeader,
+	))
 }
 
 func generatePlaceholderString(varName string) string {
-	return fmt.Sprintf("%v%v%v", streamVarNamePlaceholderPrefix, varName, streamVarNamePlaceholderSuffix)
+	return fmt.Sprintf("%v%v%v", varNamePlaceholderPrefix, varName, varNamePlaceholderSuffix)
 }
 
 func getVarNameFromPlaceholderString(placeholderString string) string {
-	return strings.Replace(strings.Replace(placeholderString, streamVarNamePlaceholderPrefix, "", 1), streamVarNamePlaceholderSuffix, "", 1)
+	return strings.Replace(strings.Replace(placeholderString, varNamePlaceholderPrefix, "", 1), varNamePlaceholderSuffix, "", 1)
 }
 
 func valueOrPlaceholderValue(txt string) string {
 	if txt == "" {
-		return streamVarPlaceholderValue
+		return varPlaceholderValue
 	}
 	return txt
 }

@@ -14,29 +14,29 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 			ExpiryUnixTimestamp:    0,
 		},
 	},
-	StreamVariables: StreamVariablesT{
-		StreamCategory: StreamVariableT{
+	TwitchVariables: TwitchVariablesT{
+		StreamCategory: TwitchVariableT{
 			Value:       "",
 			Description: "Game or category currently being streamed",
 		},
-		StreamUptime: StreamVariableT{
+		StreamUptime: TwitchVariableT{
 			Value:       "",
 			Description: "Current stream duration, in seconds",
 		},
-		NumViewers: StreamVariableT{
+		NumViewers: TwitchVariableT{
 			Value:       "",
 			Description: "Current number of viewers of the stream",
 		},
-		NumSubscribers: StreamVariableT{
+		NumSubscribers: TwitchVariableT{
 			Value:       "",
 			Description: "Current number of subscribers to the channel",
 		},
-		NumFollowers: StreamVariableT{
+		NumFollowers: TwitchVariableT{
 			Value:       "",
 			Description: "Current number of followers of the channel",
 		},
 	},
-	LlmVariables:           []LlmVariableT{},
+	AiGeneratedVariables:   []LlmVariableT{},
 	VariableUpdateInterval: 10,
 	ActivityConsoleOutput:  "",
 }
