@@ -20,11 +20,11 @@ const (
 	varNamePlaceholderSuffix = "}}"
 	varPlaceholderValue      = "-"
 
-	multilineEntryHeight              = 3
+	multilineEntryHeight              = 4
 	promptEmptyStreamValuePlaceholder = "<<N/A>>"
 )
 
-var promptWindowSize fyne.Size = fyne.NewSize(600, 400)
+var promptWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
 
 func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
@@ -201,6 +201,7 @@ func getMultilineEntry(text string, saveBtn *widget.Button) *widget.Entry {
 	e := widget.NewMultiLineEntry()
 	e.SetText(text)
 	e.SetMinRowsVisible(multilineEntryHeight)
+	// e.Resize(fyne.NewSize(300, e.MinSize().Height))
 	e.OnChanged = func(_ string) {
 		saveBtn.Enable()
 	}
@@ -208,9 +209,8 @@ func getMultilineEntry(text string, saveBtn *widget.Button) *widget.Entry {
 }
 
 func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *strings.Replacer, saveBtn *widget.Button) *widget.Entry {
-	e := widget.NewMultiLineEntry()
+	e := getMultilineEntry("", saveBtn)
 	e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
-	e.SetMinRowsVisible(3)
 	e.Disable()
 	for _, entry := range parentEntryWidgets {
 		entry.OnChanged = func(text string) {
