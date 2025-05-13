@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 
@@ -20,7 +21,7 @@ const (
 	varNamePlaceholderSuffix = "}}"
 	varPlaceholderValue      = "-"
 
-	multilineEntryHeight              = 4
+	multilineEntryHeight              = 5
 	promptEmptyStreamValuePlaceholder = "<<N/A>>"
 )
 
@@ -154,9 +155,15 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
 	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
 		saveBtn := widget.NewButton("Save", nil) // TODO - save to config.json
-		promptEntryMain := getMultilineEntry("prompt entry main", saveBtn)
-		promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn)
-		promptPreview := getMultilinePreview([]*widget.Entry{promptEntryMain, promptEntrySuffix}, twitchVariablesStringReplacer, saveBtn)
+		promptEntryMain := getMultilineEntry("prompt entry main", saveBtn, multilineEntryHeight)
+		promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn, multilineEntryHeight)
+		promptPreviewLineHeight := int(math.Trunc((1.5 * multilineEntryHeight)))
+		promptPreview := getMultilinePreview(
+			[]*widget.Entry{promptEntryMain, promptEntrySuffix},
+			twitchVariablesStringReplacer,
+			saveBtn,
+			promptPreviewLineHeight,
+		)
 		form := container.New(
 			layout.NewFormLayout(),
 			widget.NewLabel("Main Prompt"),
@@ -198,18 +205,18 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	)))
 }
 
-func getMultilineEntry(text string, saveBtn *widget.Button) *widget.Entry {
+func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int) *widget.Entry {
 	e := widget.NewMultiLineEntry()
 	e.SetText(text)
-	e.SetMinRowsVisible(multilineEntryHeight)
+	e.SetMinRowsVisible(lineHeight)
 	e.OnChanged = func(_ string) {
 		saveBtn.Enable()
 	}
 	return e
 }
 
-func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *strings.Replacer, saveBtn *widget.Button) *widget.Entry {
-	e := getMultilineEntry("", saveBtn)
+func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *strings.Replacer, saveBtn *widget.Button, lineHeight int) *widget.Entry {
+	e := getMultilineEntry("", saveBtn, lineHeight)
 	e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
 	e.Disable()
 	for _, entry := range parentEntryWidgets {
