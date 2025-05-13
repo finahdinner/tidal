@@ -1,11 +1,12 @@
 package config
 
 type PreferencesFormat struct {
-	TwitchConfig           TwitchConfigT    `json:"twitch_config"`
-	TwitchVariables        TwitchVariablesT `json:"twitch_variables"`
-	AiGeneratedVariables   []LlmVariableT   `json:"ai_generated_variables"`
-	VariableUpdateInterval int              `json:"variable_update_interval"`
-	ActivityConsoleOutput  string           `json:"activity_console_output"`
+	TwitchConfig                      TwitchConfigT    `json:"twitch_config"`
+	TwitchVariables                   TwitchVariablesT `json:"twitch_variables"`
+	TwitchVariableUpdateInterval      int              `json:"twitch_variable_update_interval"`
+	AiGeneratedVariables              []LlmVariableT   `json:"ai_generated_variables"`
+	AiGeneratedVariableUpdateInterval int              `json:"ai_generated_variable_update_interval"`
+	ActivityConsoleOutput             string           `json:"activity_console_output"`
 }
 
 type TwitchConfigT struct {
