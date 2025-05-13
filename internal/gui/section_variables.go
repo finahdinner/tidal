@@ -216,9 +216,11 @@ func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int) *wid
 }
 
 func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *strings.Replacer, saveBtn *widget.Button, lineHeight int) *widget.Entry {
-	e := getMultilineEntry("", saveBtn, lineHeight)
-	e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
-	e.Disable()
+	e := getMultilineEntry(
+		buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer),
+		saveBtn,
+		lineHeight,
+	)
 	for _, entry := range parentEntryWidgets {
 		entry.OnChanged = func(text string) {
 			e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
