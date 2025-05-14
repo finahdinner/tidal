@@ -27,10 +27,10 @@ func showErrorDialog(err error, dialogText string, window fyne.Window) {
 	dialog.ShowError(errors.New(dialogText), window)
 }
 
-// func showInfoDialog(title string, message string, window fyne.Window) {
-// 	config.Logger.LogInfof("%s: %s", title, message)
-// 	dialog.ShowInformation(title, message, window)
-// }
+func showInfoDialog(title string, message string, window fyne.Window) {
+	config.Logger.LogInfof("%s: %s", title, message)
+	dialog.ShowInformation(title, message, window)
+}
 
 func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObject, promptWindowSize fyne.Size) {
 	if g.SecondaryWindow == nil {

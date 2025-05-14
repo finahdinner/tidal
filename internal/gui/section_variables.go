@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -114,9 +115,8 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
-	aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
+	// aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
-	// aiGeneratedVariablePromptColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Prompt"))
 	aiGeneratedVariableRemoveColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
 
 	aiGeneratedVariables := config.Preferences.AiGeneratedVariables
@@ -142,19 +142,26 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			aiGeneratedVariableCopyColumn.Objects, nameLabelCopyButton,
 		)
 
-		aiGeneratedVariableValueColumn.Objects = append(
-			aiGeneratedVariableValueColumn.Objects,
-			widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Value)),
-		)
-
-		// aiGeneratedVariablePromptColumn.Objects = append(
-		// 	aiGeneratedVariablePromptColumn.Objects,
-		// 	widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Prompt)),
+		// aiGeneratedVariableValueColumn.Objects = append(
+		// 	aiGeneratedVariableValueColumn.Objects,
+		// 	widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Value)),
 		// )
 
+		aiGeneratedEditColumn.Objects = append(
+			aiGeneratedEditColumn.Objects,
+			widget.NewButton("Edit", nil), // TODO - add functionality to this
+		)
+
+		aiGeneratedVariableRemoveColumn.Objects = append(
+			aiGeneratedVariableRemoveColumn.Objects,
+			widget.NewButton("Remove", nil), // TODO - add functionality to this
+		)
 	}
 
 	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
+
+	// TODO - generalise this variable edit/config canvas object (put it into a func)
+	// so the same func can be called when clicking the edit button (line 152 above)
 	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
 		saveBtn := widget.NewButton("Save", nil)
 		variableNameEntry := widget.NewEntry()
@@ -168,8 +175,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			promptPreviewLineHeight,
 		)
 		saveBtn.OnTapped = func() {
-			// TODO - save to config.json + add row
-			// check for no name conflicts with current variables
 			existingVariableNamesLower := make(map[string]struct{})
 			for _, variable := range config.Preferences.AiGeneratedVariables {
 				existingVariableNamesLower[strings.ToLower(variable.Name)] = struct{}{}
@@ -182,9 +187,8 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			}
 			log.Printf("currNames: %v", existingVariableNamesLower)
 
-			newVarName := variableNameEntry.Text
+			newVarName := strings.TrimSpace(variableNameEntry.Text)
 			if _, exists := existingVariableNamesLower[strings.ToLower(newVarName)]; exists {
-				config.Logger.LogInfof("variable name %v already exists - cannot save", newVarName)
 				showErrorDialog(
 					fmt.Errorf("variable name %q already exists - choose a new name", newVarName),
 					fmt.Sprintf("Unable to save - variable name %q already exists", newVarName),
@@ -193,14 +197,37 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				return
 			}
 
-			// config.Preferences.AiGeneratedVariables = append(
-			// 	config.Preferences.AiGeneratedVariables,
-			// 	config.LlmVariableT{
-			// 		Name:
-			// 	}
-			// )
-			// prompt :=
-			// 	g.closeSecondaryWindow()
+			promptMainText := strings.TrimSpace(promptEntryMain.Text)
+			promptSuffixText := strings.TrimSpace(promptEntrySuffix.Text)
+
+			if promptMainText == "" {
+				showErrorDialog(
+					errors.New("main prompt must not be empty - cannot save"),
+					"Unable to save - main prompt must not be empty",
+					g.SecondaryWindow,
+				)
+				return
+			}
+
+			config.Preferences.AiGeneratedVariables = append(
+				config.Preferences.AiGeneratedVariables,
+				config.LlmVariableT{
+					Name:         newVarName,
+					Value:        "",
+					PromptMain:   promptMainText,
+					PromptSuffix: promptSuffixText,
+				},
+			)
+			config.SavePreferences()
+
+			// TODO - add a new row to the variables section
+
+			g.closeSecondaryWindow()
+			showInfoDialog(
+				"Variable successfully saved",
+				fmt.Sprintf("AI-generated variable %q has successfully been saved.", newVarName),
+				g.PrimaryWindow,
+			)
 		}
 
 		form := container.New(
@@ -237,11 +264,11 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				layout.NewHBoxLayout(),
 				aiGeneratedVariableCopyColumn,
 				aiGeneratedVariableNameColumn,
-				aiGeneratedVariableValueColumn,
+				// aiGeneratedVariableValueColumn,
 				aiGeneratedEditColumn,
-				// aiGeneratedVariablePromptColumn,
 				aiGeneratedVariableRemoveColumn,
 			),
+			horizontalSpacer(3),
 			addAiGeneratedVariableBtnRow,
 		),
 	)))
