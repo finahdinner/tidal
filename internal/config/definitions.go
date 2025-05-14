@@ -39,9 +39,10 @@ type TwitchVariableT struct {
 }
 
 type LlmVariableT struct {
-	Name   string `json:"name"`
-	Value  string `json:"value"`
-	Prompt string `json:"prompt"`
+	Name         string `json:"name"`
+	Value        string `json:"value"`
+	PromptMain   string `json:"prompt_main"`
+	PromptSuffix string `json:"prompt_suffix"`
 }
 
 // Ensure fields are populated enough to make requests to update twitch variables

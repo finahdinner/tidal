@@ -44,3 +44,10 @@ func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObje
 	g.SecondaryWindow.Show()
 	g.SecondaryWindow.RequestFocus()
 }
+
+func (g *GuiWrapper) closeSecondaryWindow() {
+	if g.SecondaryWindow != nil {
+		g.SecondaryWindow.Close()
+		g.SecondaryWindow = nil
+	}
+}

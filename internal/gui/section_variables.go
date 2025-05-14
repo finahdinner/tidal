@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"reflect"
 	"strings"
@@ -114,7 +115,8 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
-	aiGeneratedVariablePromptColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Prompt"))
+	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
+	// aiGeneratedVariablePromptColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Prompt"))
 	aiGeneratedVariableRemoveColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
 
 	aiGeneratedVariables := config.Preferences.AiGeneratedVariables
@@ -145,16 +147,17 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Value)),
 		)
 
-		aiGeneratedVariablePromptColumn.Objects = append(
-			aiGeneratedVariablePromptColumn.Objects,
-			widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Prompt)),
-		)
+		// aiGeneratedVariablePromptColumn.Objects = append(
+		// 	aiGeneratedVariablePromptColumn.Objects,
+		// 	widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Prompt)),
+		// )
 
 	}
 
 	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
 	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
-		saveBtn := widget.NewButton("Save", nil) // TODO - save to config.json
+		saveBtn := widget.NewButton("Save", nil)
+		variableNameEntry := widget.NewEntry()
 		promptEntryMain := getMultilineEntry("prompt entry main", saveBtn, multilineEntryHeight)
 		promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn, multilineEntryHeight)
 		promptPreviewLineHeight := int(math.Trunc((1.5 * multilineEntryHeight)))
@@ -164,8 +167,46 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			saveBtn,
 			promptPreviewLineHeight,
 		)
+		saveBtn.OnTapped = func() {
+			// TODO - save to config.json + add row
+			// check for no name conflicts with current variables
+			existingVariableNamesLower := make(map[string]struct{})
+			for _, variable := range config.Preferences.AiGeneratedVariables {
+				existingVariableNamesLower[strings.ToLower(variable.Name)] = struct{}{}
+			}
+			twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[
+				config.TwitchVariablesT, config.TwitchVariableT,
+			](config.Preferences.TwitchVariables)
+			for name := range twitchVariablesMap {
+				existingVariableNamesLower[strings.ToLower(name)] = struct{}{}
+			}
+			log.Printf("currNames: %v", existingVariableNamesLower)
+
+			newVarName := variableNameEntry.Text
+			if _, exists := existingVariableNamesLower[strings.ToLower(newVarName)]; exists {
+				config.Logger.LogInfof("variable name %v already exists - cannot save", newVarName)
+				showErrorDialog(
+					fmt.Errorf("variable name %q already exists - choose a new name", newVarName),
+					fmt.Sprintf("Unable to save - variable name %q already exists", newVarName),
+					g.SecondaryWindow,
+				)
+				return
+			}
+
+			// config.Preferences.AiGeneratedVariables = append(
+			// 	config.Preferences.AiGeneratedVariables,
+			// 	config.LlmVariableT{
+			// 		Name:
+			// 	}
+			// )
+			// prompt :=
+			// 	g.closeSecondaryWindow()
+		}
+
 		form := container.New(
 			layout.NewFormLayout(),
+			widget.NewLabel("Name"),
+			variableNameEntry,
 			widget.NewLabel("Main Prompt"),
 			promptEntryMain,
 			widget.NewLabel("Prompt suffix"),
@@ -197,7 +238,8 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				aiGeneratedVariableCopyColumn,
 				aiGeneratedVariableNameColumn,
 				aiGeneratedVariableValueColumn,
-				aiGeneratedVariablePromptColumn,
+				aiGeneratedEditColumn,
+				// aiGeneratedVariablePromptColumn,
 				aiGeneratedVariableRemoveColumn,
 			),
 			addAiGeneratedVariableBtnRow,
