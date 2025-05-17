@@ -89,7 +89,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy Name"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
-	// aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
 	aiGeneratedVariableRemoveColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
 
@@ -281,7 +280,45 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 
 		aiGeneratedVariableRemoveColumn.Objects = append(
 			aiGeneratedVariableRemoveColumn.Objects,
-			widget.NewButton("Remove", nil), // TODO - add functionality to this
+			widget.NewButton("Remove", func() {
+				variableIdx := -1
+				existingVars := config.Preferences.AiGeneratedVariables
+				for idx, val := range existingVars {
+					if val.Name == name {
+						variableIdx = idx
+						break
+					}
+				}
+				if variableIdx == -1 {
+					showErrorDialog(
+						fmt.Errorf("unable to find variable with name %q - cannot remove", name),
+						fmt.Sprintf("Unable to remove variable %q - cannot be found in existing variables", name),
+						g.SecondaryWindow,
+					)
+					return
+				}
+				// remove the variable at that index
+				config.Preferences.AiGeneratedVariables = append(
+					existingVars[:variableIdx],
+					existingVars[variableIdx+1:]...,
+				)
+				config.SavePreferences()
+
+				g.populateRowsWithExistingAiGeneratedVariables(
+					config.Preferences.AiGeneratedVariables,
+					twitchVariablesStringReplacer,
+					aiGeneratedVariableCopyColumn,
+					aiGeneratedVariableNameColumn,
+					aiGeneratedEditColumn,
+					aiGeneratedVariableRemoveColumn,
+				)
+
+				showInfoDialog(
+					"Variable successfully removed",
+					fmt.Sprintf("AI-generated variable %q has successfully been removed.", name),
+					g.PrimaryWindow,
+				)
+			}),
 		)
 	}
 }
@@ -399,7 +436,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		}
 		config.SavePreferences()
 
-		// TODO - add a new row to the variables section
 		g.populateRowsWithExistingAiGeneratedVariables(
 			config.Preferences.AiGeneratedVariables,
 			twitchVariablesStringReplacer,
