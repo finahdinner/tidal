@@ -163,86 +163,11 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	// TODO - generalise this variable edit/config canvas object (put it into a func)
 	// so the same func can be called when clicking the edit button (line 152 above)
 	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
-		saveBtn := widget.NewButton("Save", nil)
-		variableNameEntry := widget.NewEntry()
-		promptEntryMain := getMultilineEntry("prompt entry main", saveBtn, multilineEntryHeight)
-		promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn, multilineEntryHeight)
-		promptPreviewLineHeight := int(math.Trunc((1.5 * multilineEntryHeight)))
-		promptPreview := getMultilinePreview(
-			[]*widget.Entry{promptEntryMain, promptEntrySuffix},
-			twitchVariablesStringReplacer,
-			saveBtn,
-			promptPreviewLineHeight,
+		g.openSecondaryWindow(
+			"Add AI-Generated Variable",
+			g.getAiGeneratedVariableConfigSection(twitchVariablesStringReplacer),
+			promptWindowSize,
 		)
-		saveBtn.OnTapped = func() {
-			existingVariableNamesLower := make(map[string]struct{})
-			for _, variable := range config.Preferences.AiGeneratedVariables {
-				existingVariableNamesLower[strings.ToLower(variable.Name)] = struct{}{}
-			}
-			twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[
-				config.TwitchVariablesT, config.TwitchVariableT,
-			](config.Preferences.TwitchVariables)
-			for name := range twitchVariablesMap {
-				existingVariableNamesLower[strings.ToLower(name)] = struct{}{}
-			}
-			log.Printf("currNames: %v", existingVariableNamesLower)
-
-			newVarName := strings.TrimSpace(variableNameEntry.Text)
-			if _, exists := existingVariableNamesLower[strings.ToLower(newVarName)]; exists {
-				showErrorDialog(
-					fmt.Errorf("variable name %q already exists - choose a new name", newVarName),
-					fmt.Sprintf("Unable to save - variable name %q already exists", newVarName),
-					g.SecondaryWindow,
-				)
-				return
-			}
-
-			promptMainText := strings.TrimSpace(promptEntryMain.Text)
-			promptSuffixText := strings.TrimSpace(promptEntrySuffix.Text)
-
-			if promptMainText == "" {
-				showErrorDialog(
-					errors.New("main prompt must not be empty - cannot save"),
-					"Unable to save - main prompt must not be empty",
-					g.SecondaryWindow,
-				)
-				return
-			}
-
-			config.Preferences.AiGeneratedVariables = append(
-				config.Preferences.AiGeneratedVariables,
-				config.LlmVariableT{
-					Name:         newVarName,
-					Value:        "",
-					PromptMain:   promptMainText,
-					PromptSuffix: promptSuffixText,
-				},
-			)
-			config.SavePreferences()
-
-			// TODO - add a new row to the variables section
-
-			g.closeSecondaryWindow()
-			showInfoDialog(
-				"Variable successfully saved",
-				fmt.Sprintf("AI-generated variable %q has successfully been saved.", newVarName),
-				g.PrimaryWindow,
-			)
-		}
-
-		form := container.New(
-			layout.NewFormLayout(),
-			widget.NewLabel("Name"),
-			variableNameEntry,
-			widget.NewLabel("Main Prompt"),
-			promptEntryMain,
-			widget.NewLabel("Prompt suffix"),
-			promptEntrySuffix,
-			widget.NewLabel("Preview"),
-			promptPreview,
-		)
-		c := container.New(layout.NewVBoxLayout(), form, container.New(layout.NewBorderLayout(nil, nil, nil, saveBtn), saveBtn))
-		g.openSecondaryWindow("Add AI-Generated Variable", c, promptWindowSize)
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
@@ -296,6 +221,95 @@ func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *s
 		}
 	}
 	return e
+}
+
+func (g *GuiWrapper) getAiGeneratedVariableConfigSection(twitchVariablesStringReplacer *strings.Replacer) *fyne.Container {
+	saveBtn := widget.NewButton("Save", nil)
+	variableNameEntry := widget.NewEntry()
+	promptEntryMain := getMultilineEntry("prompt entry main", saveBtn, multilineEntryHeight)
+	promptEntrySuffix := getMultilineEntry("prompt entry suffix", saveBtn, multilineEntryHeight)
+	promptPreviewLineHeight := int(math.Trunc((1.5 * multilineEntryHeight)))
+	promptPreview := getMultilinePreview(
+		[]*widget.Entry{promptEntryMain, promptEntrySuffix},
+		twitchVariablesStringReplacer,
+		saveBtn,
+		promptPreviewLineHeight,
+	)
+	saveBtn.OnTapped = func() {
+		newVarName := strings.TrimSpace(variableNameEntry.Text)
+		if newVarName == "" {
+			showErrorDialog(
+				errors.New("new variable name is empty - cannot save"),
+				"Unable to save - variable name must not be empty",
+				g.SecondaryWindow,
+			)
+			return
+		}
+		existingVariableNamesLower := make(map[string]struct{})
+		for _, variable := range config.Preferences.AiGeneratedVariables {
+			existingVariableNamesLower[strings.ToLower(variable.Name)] = struct{}{}
+		}
+		twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[
+			config.TwitchVariablesT, config.TwitchVariableT,
+		](config.Preferences.TwitchVariables)
+		for name := range twitchVariablesMap {
+			existingVariableNamesLower[strings.ToLower(name)] = struct{}{}
+		}
+		log.Printf("currNames: %v", existingVariableNamesLower)
+
+		if _, exists := existingVariableNamesLower[strings.ToLower(newVarName)]; exists {
+			showErrorDialog(
+				fmt.Errorf("variable name %q already exists - choose a new name", newVarName),
+				fmt.Sprintf("Unable to save - variable name %q already exists", newVarName),
+				g.SecondaryWindow,
+			)
+			return
+		}
+
+		promptMainText := strings.TrimSpace(promptEntryMain.Text)
+		promptSuffixText := strings.TrimSpace(promptEntrySuffix.Text)
+
+		if promptMainText == "" {
+			showErrorDialog(
+				errors.New("main prompt must not be empty - cannot save"),
+				"Unable to save - main prompt must not be empty",
+				g.SecondaryWindow,
+			)
+			return
+		}
+
+		config.Preferences.AiGeneratedVariables = append(
+			config.Preferences.AiGeneratedVariables,
+			config.LlmVariableT{
+				Name:         newVarName,
+				Value:        "",
+				PromptMain:   promptMainText,
+				PromptSuffix: promptSuffixText,
+			},
+		)
+		config.SavePreferences()
+
+		// TODO - add a new row to the variables section
+		g.closeSecondaryWindow()
+		showInfoDialog(
+			"Variable successfully saved",
+			fmt.Sprintf("AI-generated variable %q has successfully been saved.", newVarName),
+			g.PrimaryWindow,
+		)
+	}
+
+	form := container.New(
+		layout.NewFormLayout(),
+		widget.NewLabel("Name"),
+		variableNameEntry,
+		widget.NewLabel("Main Prompt"),
+		promptEntryMain,
+		widget.NewLabel("Prompt suffix"),
+		promptEntrySuffix,
+		widget.NewLabel("Preview"),
+		promptPreview,
+	)
+	return container.New(layout.NewVBoxLayout(), form, container.New(layout.NewBorderLayout(nil, nil, nil, saveBtn), saveBtn))
 }
 
 func buildStringFromEntryWidgets(entryWidgets []*widget.Entry, variableReplacer *strings.Replacer) string {
