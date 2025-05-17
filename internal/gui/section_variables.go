@@ -3,9 +3,11 @@ package gui
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"math"
 	"reflect"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -33,7 +35,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
 	twitchVariablesHeader.TextSize = headerSize
 
-	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy Name"))
+	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
@@ -87,7 +89,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
-	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy Name"))
+	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
 	aiGeneratedVariableRemoveColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
@@ -150,6 +152,27 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	)))
 }
 
+func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Container) *fyne.Container {
+	nameLabelCopyButtonBg := canvas.NewRectangle(theme.Color(theme.ColorNameButton))
+	nameLabelCopyButtonBtn := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), nil)
+	nameLabelCopyButtonBtn.OnTapped = func() {
+		labelObj := variableNameColumn.Objects[rowIdx+1]
+		if entry, ok := labelObj.(*widget.Label); ok {
+			g.App.Clipboard().SetContent(entry.Text)
+			nameLabelCopyButtonBg.FillColor = color.RGBA{0, 255, 0, 255} // green
+		} else {
+			nameLabelCopyButtonBg.FillColor = color.RGBA{255, 0, 0, 255} // red
+		}
+		time.AfterFunc(500*time.Millisecond, func() {
+			fyne.Do(func() {
+				nameLabelCopyButtonBg.FillColor = theme.Color(theme.ColorNameButton)
+				nameLabelCopyButtonBtn.Refresh()
+			})
+		})
+	}
+	return container.New(layout.NewStackLayout(), nameLabelCopyButtonBg, nameLabelCopyButtonBtn)
+}
+
 func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int) *widget.Entry {
 	e := widget.NewMultiLineEntry()
 	e.SetText(text)
@@ -196,13 +219,7 @@ func (g *GuiWrapper) populateRowsWithExistingTwitchVariables(
 		varPlaceholderName := generatePlaceholderString(varName)
 
 		nameLabel := widget.NewLabel(varPlaceholderName)
-		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
-			labelObj := twitchVariableNameColumn.Objects[idx+1]
-			if entry, ok := labelObj.(*widget.Label); ok {
-				// TODO - also add a brief popup to confirm copying to clipboard
-				g.App.Clipboard().SetContent(entry.Text)
-			}
-		})
+		nameLabelCopyButton := g.getNewCopyButton(idx, twitchVariableNameColumn)
 
 		twitchVariableNameColumn.Objects = append(
 			twitchVariableNameColumn.Objects, nameLabel,
@@ -240,13 +257,7 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 		name := aiGenVar.Name
 
 		nameLabel := widget.NewLabel(generatePlaceholderString(name))
-		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
-			labelObj := aiGeneratedVariableNameColumn.Objects[idx+1]
-			if entry, ok := labelObj.(*widget.Label); ok {
-				// TODO - also add a brief popup to confirm copying to clipboard
-				g.App.Clipboard().SetContent(entry.Text)
-			}
-		})
+		nameLabelCopyButton := g.getNewCopyButton(idx, aiGeneratedVariableNameColumn)
 
 		aiGeneratedVariableNameColumn.Objects = append(
 			aiGeneratedVariableNameColumn.Objects,
