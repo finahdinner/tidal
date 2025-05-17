@@ -33,7 +33,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
 	twitchVariablesHeader.TextSize = headerSize
 
-	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
+	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy Name"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
@@ -41,39 +41,13 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariables := &config.Preferences.TwitchVariables
 	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
 
-	fields := reflect.TypeOf(*twitchVariables)
-	vals := reflect.ValueOf(*twitchVariables)
-
-	for idx := range vals.NumField() {
-
-		varName := fields.Field(idx).Name
-		varPlaceholderName := generatePlaceholderString(varName)
-
-		nameLabel := widget.NewLabel(varPlaceholderName)
-		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
-			labelObj := twitchVariableNameColumn.Objects[idx+1]
-			if entry, ok := labelObj.(*widget.Label); ok {
-				// TODO - also add a brief popup to confirm copying to clipboard
-				g.App.Clipboard().SetContent(entry.Text)
-			}
-		})
-
-		twitchVariableNameColumn.Objects = append(
-			twitchVariableNameColumn.Objects, nameLabel,
-		)
-		twitchVariableCopyColumn.Objects = append(
-			twitchVariableCopyColumn.Objects, nameLabelCopyButton,
-		)
-
-		twitchVariable := vals.Field(idx).Interface().(config.TwitchVariableT)
-
-		twitchVariableValueColumn.Objects = append(
-			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(twitchVariable.Value)),
-		)
-		twitchVariableDescriptionColumn.Objects = append(
-			twitchVariableDescriptionColumn.Objects, widget.NewLabel(twitchVariable.Description),
-		)
-	}
+	g.populateRowsWithExistingTwitchVariables(
+		twitchVariables,
+		twitchVariableCopyColumn,
+		twitchVariableNameColumn,
+		twitchVariableValueColumn,
+		twitchVariableDescriptionColumn,
+	)
 
 	// set up a listener to update widgets whenever the ticker updates twitch variables
 	go func() {
@@ -113,7 +87,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
-	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
+	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy Name"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	// aiGeneratedVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
 	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
@@ -121,61 +95,15 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	aiGeneratedVariables := config.Preferences.AiGeneratedVariables
 
-	for idx, aiGenVar := range aiGeneratedVariables {
-		name := aiGenVar.Name
+	g.populateRowsWithExistingAiGeneratedVariables(
+		aiGeneratedVariables,
+		twitchVariablesStringReplacer,
+		aiGeneratedVariableCopyColumn,
+		aiGeneratedVariableNameColumn,
+		aiGeneratedEditColumn,
+		aiGeneratedVariableRemoveColumn,
+	)
 
-		nameLabel := widget.NewLabel(generatePlaceholderString(name))
-		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
-			labelObj := aiGeneratedVariableNameColumn.Objects[idx+1]
-			if entry, ok := labelObj.(*widget.Label); ok {
-				// TODO - also add a brief popup to confirm copying to clipboard
-				g.App.Clipboard().SetContent(entry.Text)
-			}
-		})
-
-		aiGeneratedVariableNameColumn.Objects = append(
-			aiGeneratedVariableNameColumn.Objects,
-			nameLabel,
-		)
-
-		aiGeneratedVariableCopyColumn.Objects = append(
-			aiGeneratedVariableCopyColumn.Objects, nameLabelCopyButton,
-		)
-
-		// aiGeneratedVariableValueColumn.Objects = append(
-		// 	aiGeneratedVariableValueColumn.Objects,
-		// 	widget.NewLabel(valueOrPlaceholderValue(aiGenVar.Value)),
-		// )
-
-		aiGeneratedEditColumn.Objects = append(
-			aiGeneratedEditColumn.Objects,
-			widget.NewButton("Edit", func() {
-				g.openSecondaryWindow(
-					"Edit AI-Generated Variable",
-					g.getAiGeneratedVariableSection(
-						true,
-						twitchVariablesStringReplacer,
-						name,
-						aiGenVar.PromptMain,
-						aiGenVar.PromptSuffix,
-						aiGeneratedVariableCopyColumn,
-						aiGeneratedVariableNameColumn,
-						aiGeneratedEditColumn,
-						aiGeneratedVariableRemoveColumn,
-					),
-					promptWindowSize,
-				)
-			}),
-		)
-
-		aiGeneratedVariableRemoveColumn.Objects = append(
-			aiGeneratedVariableRemoveColumn.Objects,
-			widget.NewButton("Remove", nil), // TODO - add functionality to this
-		)
-	}
-
-	// TODO - generalise this variable edit/config canvas object (put it into a func)
-	// so the same func can be called when clicking the edit button (line 152 above)
 	addAiGeneratedVariableBtn := widget.NewButton("Add Variable", func() {
 		g.openSecondaryWindow(
 			"Add AI-Generated Variable",
@@ -245,6 +173,117 @@ func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *s
 		}
 	}
 	return e
+}
+
+func (g *GuiWrapper) populateRowsWithExistingTwitchVariables(
+	twitchVariables *config.TwitchVariablesT,
+	twitchVariableCopyColumn *fyne.Container,
+	twitchVariableNameColumn *fyne.Container,
+	twitchVariableValueColumn *fyne.Container,
+	twitchVariableDescriptionColumn *fyne.Container,
+) {
+
+	twitchVariableCopyColumn.Objects = twitchVariableCopyColumn.Objects[:1]
+	twitchVariableNameColumn.Objects = twitchVariableNameColumn.Objects[:1]
+	twitchVariableValueColumn.Objects = twitchVariableValueColumn.Objects[:1]
+	twitchVariableDescriptionColumn.Objects = twitchVariableDescriptionColumn.Objects[:1]
+
+	fields := reflect.TypeOf(*twitchVariables)
+	vals := reflect.ValueOf(*twitchVariables)
+
+	for idx := range vals.NumField() {
+
+		varName := fields.Field(idx).Name
+		varPlaceholderName := generatePlaceholderString(varName)
+
+		nameLabel := widget.NewLabel(varPlaceholderName)
+		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
+			labelObj := twitchVariableNameColumn.Objects[idx+1]
+			if entry, ok := labelObj.(*widget.Label); ok {
+				// TODO - also add a brief popup to confirm copying to clipboard
+				g.App.Clipboard().SetContent(entry.Text)
+			}
+		})
+
+		twitchVariableNameColumn.Objects = append(
+			twitchVariableNameColumn.Objects, nameLabel,
+		)
+		twitchVariableCopyColumn.Objects = append(
+			twitchVariableCopyColumn.Objects, nameLabelCopyButton,
+		)
+
+		twitchVariable := vals.Field(idx).Interface().(config.TwitchVariableT)
+
+		twitchVariableValueColumn.Objects = append(
+			twitchVariableValueColumn.Objects, widget.NewLabel(valueOrPlaceholderValue(twitchVariable.Value)),
+		)
+		twitchVariableDescriptionColumn.Objects = append(
+			twitchVariableDescriptionColumn.Objects, widget.NewLabel(twitchVariable.Description),
+		)
+	}
+}
+
+func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
+	aiGeneratedVariables []config.LlmVariableT,
+	twitchVariablesStringReplacer *strings.Replacer,
+	aiGeneratedVariableCopyColumn *fyne.Container,
+	aiGeneratedVariableNameColumn *fyne.Container,
+	aiGeneratedEditColumn *fyne.Container,
+	aiGeneratedVariableRemoveColumn *fyne.Container,
+) {
+
+	aiGeneratedVariableCopyColumn.Objects = aiGeneratedVariableCopyColumn.Objects[:1]
+	aiGeneratedVariableNameColumn.Objects = aiGeneratedVariableNameColumn.Objects[:1]
+	aiGeneratedEditColumn.Objects = aiGeneratedEditColumn.Objects[:1]
+	aiGeneratedVariableRemoveColumn.Objects = aiGeneratedVariableRemoveColumn.Objects[:1]
+
+	for idx, aiGenVar := range aiGeneratedVariables {
+		name := aiGenVar.Name
+
+		nameLabel := widget.NewLabel(generatePlaceholderString(name))
+		nameLabelCopyButton := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
+			labelObj := aiGeneratedVariableNameColumn.Objects[idx+1]
+			if entry, ok := labelObj.(*widget.Label); ok {
+				// TODO - also add a brief popup to confirm copying to clipboard
+				g.App.Clipboard().SetContent(entry.Text)
+			}
+		})
+
+		aiGeneratedVariableNameColumn.Objects = append(
+			aiGeneratedVariableNameColumn.Objects,
+			nameLabel,
+		)
+
+		aiGeneratedVariableCopyColumn.Objects = append(
+			aiGeneratedVariableCopyColumn.Objects, nameLabelCopyButton,
+		)
+
+		aiGeneratedEditColumn.Objects = append(
+			aiGeneratedEditColumn.Objects,
+			widget.NewButton("Edit", func() {
+				g.openSecondaryWindow(
+					"Edit AI-Generated Variable",
+					g.getAiGeneratedVariableSection(
+						true,
+						twitchVariablesStringReplacer,
+						name,
+						aiGenVar.PromptMain,
+						aiGenVar.PromptSuffix,
+						aiGeneratedVariableCopyColumn,
+						aiGeneratedVariableNameColumn,
+						aiGeneratedEditColumn,
+						aiGeneratedVariableRemoveColumn,
+					),
+					promptWindowSize,
+				)
+			}),
+		)
+
+		aiGeneratedVariableRemoveColumn.Objects = append(
+			aiGeneratedVariableRemoveColumn.Objects,
+			widget.NewButton("Remove", nil), // TODO - add functionality to this
+		)
+	}
 }
 
 func (g *GuiWrapper) getAiGeneratedVariableSection(
@@ -358,10 +397,18 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 				},
 			)
 		}
-
 		config.SavePreferences()
 
 		// TODO - add a new row to the variables section
+		g.populateRowsWithExistingAiGeneratedVariables(
+			config.Preferences.AiGeneratedVariables,
+			twitchVariablesStringReplacer,
+			aiGeneratedVariableCopyColumn,
+			aiGeneratedVariableNameColumn,
+			aiGeneratedEditColumn,
+			aiGeneratedVariableRemoveColumn,
+		)
+
 		g.closeSecondaryWindow()
 		showInfoDialog(
 			"Variable successfully saved",
