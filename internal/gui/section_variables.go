@@ -40,6 +40,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
 	twitchVariables := &config.Preferences.TwitchVariables
+	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
 
 	fields := reflect.TypeOf(*twitchVariables)
 	vals := reflect.ValueOf(*twitchVariables)
@@ -149,7 +150,23 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 		aiGeneratedEditColumn.Objects = append(
 			aiGeneratedEditColumn.Objects,
-			widget.NewButton("Edit", nil), // TODO - add functionality to this
+			widget.NewButton("Edit", func() {
+				g.openSecondaryWindow(
+					"Edit AI-Generated Variable",
+					g.getAiGeneratedVariableSection(
+						true,
+						twitchVariablesStringReplacer,
+						name,
+						aiGenVar.PromptMain,
+						aiGenVar.PromptSuffix,
+						aiGeneratedVariableCopyColumn,
+						aiGeneratedVariableNameColumn,
+						aiGeneratedEditColumn,
+						aiGeneratedVariableRemoveColumn,
+					),
+					promptWindowSize,
+				)
+			}),
 		)
 
 		aiGeneratedVariableRemoveColumn.Objects = append(
@@ -157,8 +174,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			widget.NewButton("Remove", nil), // TODO - add functionality to this
 		)
 	}
-
-	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
 
 	// TODO - generalise this variable edit/config canvas object (put it into a func)
 	// so the same func can be called when clicking the edit button (line 152 above)
