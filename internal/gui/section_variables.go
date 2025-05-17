@@ -3,7 +3,6 @@ package gui
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math"
 	"reflect"
 	"strings"
@@ -301,7 +300,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		for name := range twitchVariablesMap {
 			existingVariableNamesLower[strings.ToLower(name)] = struct{}{}
 		}
-		log.Printf("currNames: %v", existingVariableNamesLower)
 
 		// if creating a variable and the name is taken
 		if !editExisting {
@@ -317,9 +315,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 
 		promptMainText := strings.TrimSpace(promptEntryMain.Text)
 		promptSuffixText := strings.TrimSpace(promptEntrySuffix.Text)
-
-		log.Printf("promptMainText: %v", promptMainText)
-		log.Printf("promptSuffixText: %v", promptSuffixText)
 
 		if promptMainText == "" {
 			showErrorDialog(
