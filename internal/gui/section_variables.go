@@ -318,6 +318,9 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		promptMainText := strings.TrimSpace(promptEntryMain.Text)
 		promptSuffixText := strings.TrimSpace(promptEntrySuffix.Text)
 
+		log.Printf("promptMainText: %v", promptMainText)
+		log.Printf("promptSuffixText: %v", promptSuffixText)
+
 		if promptMainText == "" {
 			showErrorDialog(
 				errors.New("main prompt must not be empty - cannot save"),
@@ -327,15 +330,40 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 			return
 		}
 
-		config.Preferences.AiGeneratedVariables = append(
-			config.Preferences.AiGeneratedVariables,
-			config.LlmVariableT{
+		if editExisting {
+			existingVarIdx := -1
+			for idx, val := range config.Preferences.AiGeneratedVariables {
+				if val.Name == varName {
+					existingVarIdx = idx
+					break
+				}
+			}
+			if existingVarIdx == -1 {
+				showErrorDialog(
+					fmt.Errorf("unable to find existing variable with name %q", varName),
+					fmt.Sprintf("Unable to save variable - existing variable with name %q not found", varName),
+					g.SecondaryWindow,
+				)
+				return
+			}
+			config.Preferences.AiGeneratedVariables[existingVarIdx] = config.LlmVariableT{
 				Name:         varName,
-				Value:        "",
+				Value:        "", // reset the value
 				PromptMain:   promptMainText,
 				PromptSuffix: promptSuffixText,
-			},
-		)
+			}
+		} else {
+			config.Preferences.AiGeneratedVariables = append(
+				config.Preferences.AiGeneratedVariables,
+				config.LlmVariableT{
+					Name:         varName,
+					Value:        "",
+					PromptMain:   promptMainText,
+					PromptSuffix: promptSuffixText,
+				},
+			)
+		}
+
 		config.SavePreferences()
 
 		// TODO - add a new row to the variables section
