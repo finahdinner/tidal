@@ -89,6 +89,13 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
+	aiGeneratedVariablesSettingsContainer := widget.NewButtonWithIcon("", theme.SettingsIcon(), nil)
+	aiGeneratedVariablesHeaderRow := container.New(
+		layout.NewBorderLayout(nil, nil, aiGeneratedVariablesHeader, aiGeneratedVariablesSettingsContainer),
+		aiGeneratedVariablesHeader,
+		aiGeneratedVariablesSettingsContainer,
+	)
+
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
