@@ -142,7 +142,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			twitchVariableDescriptionColumn,
 		),
 		horizontalSpacer(8),
-		aiGeneratedVariablesHeader,
+		aiGeneratedVariablesHeaderRow,
 		container.New(
 			layout.NewVBoxLayout(),
 			container.New(
