@@ -35,6 +35,14 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
 	twitchVariablesHeader.TextSize = headerSize
 
+	twitchVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), nil)
+	twitchVariablesHeaderRow := container.New(
+		layout.NewHBoxLayout(),
+		twitchVariablesSettingsButton,
+		verticalSpacer(1),
+		twitchVariablesHeader,
+	)
+
 	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
@@ -89,11 +97,12 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
-	aiGeneratedVariablesSettingsContainer := widget.NewButtonWithIcon("", theme.SettingsIcon(), nil)
+	aiGeneratedVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), nil)
 	aiGeneratedVariablesHeaderRow := container.New(
-		layout.NewBorderLayout(nil, nil, aiGeneratedVariablesHeader, aiGeneratedVariablesSettingsContainer),
+		layout.NewHBoxLayout(),
+		aiGeneratedVariablesSettingsButton,
+		verticalSpacer(1),
 		aiGeneratedVariablesHeader,
-		aiGeneratedVariablesSettingsContainer,
 	)
 
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
@@ -133,7 +142,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	return container.NewPadded(container.NewScroll(container.New(
 		layout.NewVBoxLayout(),
-		twitchVariablesHeader,
+		twitchVariablesHeaderRow,
 		container.New(
 			layout.NewHBoxLayout(),
 			twitchVariableCopyColumn,
