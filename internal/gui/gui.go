@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"errors"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -35,28 +37,54 @@ func init() {
 		"Variables": Gui.getVariablesSection,
 	}
 	menuItemNames := []string{"Dashboard", "Variables"}
-	menuList := widget.NewList(
-		func() int {
-			return len(menuItemNames)
-		},
-		func() fyne.CanvasObject {
-			return widget.NewLabel("Example Label Spacer")
-		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(menuItemNames[i])
-		},
-	)
 
 	contentContainer := container.New(layout.NewStackLayout())
+	menuButtons := container.New(layout.NewGridLayoutWithColumns(len(menuItemNames)))
 
-	menuList.OnSelected = func(id widget.ListItemID) {
-		selectedItem := menuItemNames[id]
-		contentContainer.Objects = []fyne.CanvasObject{menuMap[selectedItem]()}
-		contentContainer.Refresh()
+	for btnIdx, menuItemName := range menuItemNames {
+		newBtn := widget.NewButton(menuItemName, nil)
+		newBtn.OnTapped = func() {
+			for otherBtnIdx, otherBtn := range menuButtons.Objects {
+				otherBtn := otherBtn.(*widget.Button)
+				if btnIdx != otherBtnIdx {
+					otherBtn.Enable()
+				}
+			}
+			contentContainer.Objects = []fyne.CanvasObject{menuMap[menuItemName]()}
+			contentContainer.Refresh()
+			newBtn.Disable()
+		}
+		menuButtons.Objects = append(menuButtons.Objects, newBtn)
 	}
-	menuList.Select(0)
 
-	mainSplit := container.New(layout.NewBorderLayout(nil, nil, menuList, nil), menuList, contentContainer)
+	if len(menuButtons.Objects) == 0 {
+		showErrorDialog(
+			errors.New("unable to preload subsections"),
+			"Unable to preload subsections",
+			Gui.SecondaryWindow,
+		)
+		return
+	}
+
+	// by default, open the first section
+	if btn, ok := menuButtons.Objects[0].(*widget.Button); ok {
+		btn.OnTapped() // trigger its onTap function
+	} else {
+		showErrorDialog(
+			errors.New("unable to load default subsection"),
+			"Unable to load default subsection",
+			Gui.SecondaryWindow,
+		)
+		return
+	}
+
+	mainSplit := container.New(
+		layout.NewBorderLayout(menuButtons, nil, nil, nil),
+		menuButtons,
+		contentContainer,
+	)
+
+	// mainSplit := container.New(layout.NewBorderLayout(nil, nil, menuList, nil), menuList, contentContainer)
 
 	Gui.PrimaryWindow.SetContent(mainSplit)
 	Gui.PrimaryWindow.Show()
