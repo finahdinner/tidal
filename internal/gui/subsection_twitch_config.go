@@ -18,7 +18,9 @@ import (
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
-func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
+var twitchConfigWindowSize fyne.Size = fyne.NewSize(800, 1) // height 1 lets the layout determine the height
+
+func (g *GuiWrapper) getTwitchConfigSubsection() *fyne.Container {
 
 	channelUsernameEntry := widget.NewEntry()
 	channelUserIdEntry := widget.NewPasswordEntry()
@@ -44,22 +46,19 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 		widget.NewLabel("Client ID"), appClientIdEntry,
 		widget.NewLabel("Client Secret"), appClientSecretEntry,
 		widget.NewLabel("Redirect URI"), appClientRedirectUri,
-		horizontalSpacer(20), layout.NewSpacer(),
+		horizontalSpacer(10), layout.NewSpacer(),
 		widget.NewLabel("Twitch User ID"), channelUserIdEntry,
 		widget.NewLabel("Access Token"), channelAccessTokenEntry,
 	)
-
-	applicationHeader := canvas.NewText("Application", theme.Color(theme.ColorNameForeground))
-	applicationHeader.TextSize = headerSize
 
 	channelHeader := canvas.NewText("Twitch Channel", theme.Color(theme.ColorNameForeground))
 	channelHeader.TextSize = headerSize
 
 	innerContainer := container.New(
 		layout.NewVBoxLayout(),
-		applicationHeader,
 		horizontalSpacer(10),
 		configForm,
+		horizontalSpacer(4),
 	)
 
 	saveConfigButton := widget.NewButton("Save", nil)
@@ -105,7 +104,7 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 			showErrorDialog(
 				err,
 				fmt.Sprintf("unable to save twitch config:\n%v", err),
-				g.PrimaryWindow,
+				g.SecondaryWindow,
 			)
 			return
 		}
@@ -128,7 +127,7 @@ func (g *GuiWrapper) getTwitchConfigSection() *fyne.Container {
 				showErrorDialog(
 					err,
 					fmt.Sprintf("unable to authenticate using twitch credentials:\n%v", err),
-					g.PrimaryWindow,
+					g.SecondaryWindow,
 				)
 				fyne.Do(func() { saveConfigButton.Enable() }) // to encourage to change settings + save again
 			}

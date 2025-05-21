@@ -35,7 +35,9 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
 	twitchVariablesHeader.TextSize = headerSize
 
-	twitchVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), nil)
+	twitchVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {
+		g.openSecondaryWindow("Twitch Configuration", g.getTwitchConfigSubsection(), &twitchConfigWindowSize)
+	})
 	twitchVariablesHeaderRow := container.New(
 		layout.NewHBoxLayout(),
 		twitchVariablesSettingsButton,
