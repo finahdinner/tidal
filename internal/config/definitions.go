@@ -4,6 +4,7 @@ type PreferencesFormat struct {
 	TwitchConfig                      TwitchConfigT    `json:"twitch_config"`
 	TwitchVariables                   TwitchVariablesT `json:"twitch_variables"`
 	TwitchVariableUpdateInterval      int              `json:"twitch_variable_update_interval"`
+	LlmConfig                         LlmConfigT       `json:"llm_config"`
 	AiGeneratedVariables              []LlmVariableT   `json:"ai_generated_variables"`
 	AiGeneratedVariableUpdateInterval int              `json:"ai_generated_variable_update_interval"`
 	ActivityConsoleOutput             string           `json:"activity_console_output"`
@@ -36,6 +37,11 @@ type TwitchVariablesT struct {
 type TwitchVariableT struct {
 	Value       string `json:"value"`
 	Description string `json:"description"`
+}
+
+type LlmConfigT struct {
+	Provider string `json:"provider"`
+	ApiKey   string `json:"api_key"`
 }
 
 type LlmVariableT struct {

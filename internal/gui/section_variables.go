@@ -97,7 +97,9 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
-	aiGeneratedVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), nil)
+	aiGeneratedVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {
+		g.openSecondaryWindow("LLM Configuration", g.getLlmConfigSubsection(), &llmConfigWindowSize)
+	})
 	aiGeneratedVariablesHeaderRow := container.New(
 		layout.NewHBoxLayout(),
 		aiGeneratedVariablesSettingsButton,
@@ -135,7 +137,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				aiGeneratedEditColumn,
 				aiGeneratedVariableRemoveColumn,
 			),
-			promptWindowSize,
+			&promptWindowSize,
 		)
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
@@ -300,7 +302,7 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 						aiGeneratedEditColumn,
 						aiGeneratedVariableRemoveColumn,
 					),
-					promptWindowSize,
+					&promptWindowSize,
 				)
 			}),
 		)

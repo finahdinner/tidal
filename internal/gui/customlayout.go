@@ -32,13 +32,15 @@ func showInfoDialog(title string, message string, window fyne.Window) {
 	dialog.ShowInformation(title, message, window)
 }
 
-func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObject, promptWindowSize fyne.Size) {
+func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObject, promptWindowSize *fyne.Size) {
 	if g.SecondaryWindow == nil {
 		g.SecondaryWindow = g.App.NewWindow(title)
 		g.SecondaryWindow.SetOnClosed(func() {
 			g.SecondaryWindow = nil
 		})
-		g.SecondaryWindow.Resize(promptWindowSize)
+		if promptWindowSize != nil {
+			g.SecondaryWindow.Resize(*promptWindowSize)
+		}
 		g.SecondaryWindow.SetContent(canvasObj)
 	}
 	g.SecondaryWindow.Show()

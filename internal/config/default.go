@@ -37,6 +37,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		},
 	},
 	TwitchVariableUpdateInterval:      10,
+	LlmConfig:                         LlmConfigT{},
 	AiGeneratedVariables:              []LlmVariableT{},
 	AiGeneratedVariableUpdateInterval: 60,
 	ActivityConsoleOutput:             "",
