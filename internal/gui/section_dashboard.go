@@ -35,9 +35,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	consoleBg.Resize(consoleTextGrid.MinSize())
 	console := container.NewScroll(container.NewStack(consoleBg, consoleTextGrid))
 
-	uptimeLabel := widget.NewLabel("Uptime: <placeholder>")
-
-	startTidalButton := widget.NewButton("Start Tidal", nil)
+	startTidalButton := widget.NewButton("Start Tidal", nil) // TODO - disable this if no title is set up
 	stopTidalButton := widget.NewButton("Stop Tidal", nil)
 	stopTidalButton.Disable()
 
@@ -86,7 +84,15 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	}
 
 	buttonContainer := container.New(layout.NewFormLayout(), startTidalButton, stopTidalButton)
-	bottomRow := container.New(layout.NewBorderLayout(nil, nil, uptimeLabel, buttonContainer), uptimeLabel, buttonContainer)
+
+	// uptimeLabel := widget.NewLabel("Uptime: <placeholder>")
+	titleSetupButton := widget.NewButtonWithIcon("Title setup", theme.SettingsIcon(), nil) // TODO - make this button do something
+
+	bottomRow := container.New(
+		layout.NewBorderLayout(nil, nil, titleSetupButton, buttonContainer),
+		titleSetupButton,
+		buttonContainer,
+	)
 
 	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(headerContainer, bottomRow, nil, nil), headerContainer, bottomRow, console))
 	return dashboardSection
