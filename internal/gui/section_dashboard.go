@@ -23,10 +23,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		return dashboardSection
 	}
 
-	header := canvas.NewText("Dashboard", theme.Color(theme.ColorNameForeground))
-	header.TextSize = headerSize
-	headerContainer := container.NewVBox(header, horizontalSpacer(5))
-
 	consoleTextGrid := widget.NewTextGrid()
 	consoleTextGrid.SetText(config.Preferences.ActivityConsoleOutput)
 
@@ -94,6 +90,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		buttonContainer,
 	)
 
-	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(headerContainer, bottomRow, nil, nil), headerContainer, bottomRow, console))
+	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, console))
 	return dashboardSection
 }
