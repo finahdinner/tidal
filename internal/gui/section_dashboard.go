@@ -82,8 +82,9 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	buttonContainer := container.New(layout.NewFormLayout(), startTidalButton, stopTidalButton)
 
 	// uptimeLabel := widget.NewLabel("Uptime: <placeholder>")
-	titleSetupButton := widget.NewButtonWithIcon("Title setup", theme.SettingsIcon(), nil) // TODO - make this button do something
-
+	titleSetupButton := widget.NewButtonWithIcon("Title setup", theme.SettingsIcon(), func() {
+		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
+	})
 	bottomRow := container.New(
 		layout.NewBorderLayout(nil, nil, titleSetupButton, buttonContainer),
 		titleSetupButton,
