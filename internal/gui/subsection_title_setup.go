@@ -1,53 +1,96 @@
 package gui
 
 import (
-	"log"
+	"fmt"
+	"image/color"
 	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/finahdinner/tidal/internal/config"
 )
 
-var titleSetupWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
+var titleSetupWindowSize fyne.Size = fyne.NewSize(700, 1) // height 1 lets the layout determine the height
+
+const minIntervalDurationMinutes = 1
+const maxIntervalDurationMinutes = 1440
 
 func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
+	titleConfig := config.Preferences.TitleConfig
+
 	saveBtn := widget.NewButton("Save", nil)
-
-	titleTemplateEntry := getMultilineEntry("", saveBtn, 6)
-
+	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6)
 	tipLabel := widget.NewLabel(`You can use any Variables in your title template
 Access them using {{VariableName}}`)
 
-	updateFrequencyDigitEntry := widget.NewEntry()
-	updateFrequencyTimePeriodSelector := widget.NewSelect([]string{"Seconds", "Minutes"}, nil)
+	updateIntervalEntry := widget.NewEntry()
+	if config.Preferences.TitleConfig.TitleUpdateIntervalMinutes > 0 {
+		updateIntervalEntry.SetText(strconv.Itoa(titleConfig.TitleUpdateIntervalMinutes))
+	}
+	intervalEntryErrorText := canvas.NewText("", color.RGBA{255, 0, 0, 255})
 
-	// TODO - make a function that handles the calculation to seconds
-	// call the function when either of these widgets is unchanged
-	// if it fails to parse - show a warning label or something
-	updateFrequencyDigitEntry.OnChanged = func(s string) {
-		digitAsInt, err := strconv.Atoi(s)
-		if err != nil {
-			saveBtn.Disable()
+	saveBtn.OnTapped = func() {
+		if !titleConfigValid(titleConfig) {
+			config.Logger.LogErrorf("unable to save title config - titleConfig is invalid")
 			return
 		}
-		saveBtn.Enable()
-		log.Println(intVal)
+		config.Preferences.TitleConfig = titleConfig
+		config.SavePreferences() // TODO - do I need to check for the error?
+		g.closeSecondaryWindow()
 	}
 
-	updateFrequencyTimePeriodSelector.OnChanged = func(s string) {
-		if s != "" {
+	titleTemplateEntry.OnChanged = func(s string) {
+		saveBtn.Disable()
+		s = strings.TrimSpace(s)
+		if s == "" {
+			return
+		}
+		titleConfig.TitleTemplate = s
+		if titleConfigValid(titleConfig) {
 			saveBtn.Enable()
-		} else {
-			saveBtn.Disable()
+		}
+	}
+
+	updateIntervalEntry.OnChanged = func(s string) {
+		saveBtn.Disable()
+		intervalEntryErrorText.Text = ""
+		s = strings.TrimSpace(s)
+		if s == "" {
+			return
+		}
+		if titleConfig.TitleTemplate == "" {
+			return
+		}
+		updateIntervalMinutes, err := strconv.Atoi(s)
+		if err != nil {
+			config.Logger.LogErrorf("unable to convert text %q to an int - err: %v", s, err)
+			return
+		}
+		if updateIntervalMinutes < minIntervalDurationMinutes ||
+			updateIntervalMinutes > maxIntervalDurationMinutes {
+			config.Logger.LogDebugf("updateIntervalMinutes must be %v<=x<=%v", minIntervalDurationMinutes, maxIntervalDurationMinutes)
+			intervalEntryErrorText.Text = fmt.Sprintf("Interval must be between %v and %v, inclusive.", minIntervalDurationMinutes, maxIntervalDurationMinutes)
+			return
+		}
+		titleConfig.TitleUpdateIntervalMinutes = updateIntervalMinutes
+		if titleConfigValid(titleConfig) {
+			saveBtn.Enable()
 		}
 	}
 
 	updateFrequencyContainer := container.New(
-		layout.NewHBoxLayout(),
-		updateFrequencyDigitEntry, updateFrequencyTimePeriodSelector,
+		layout.NewFormLayout(),
+		container.New(
+			layout.NewGridLayoutWithColumns(2),
+			updateIntervalEntry,
+			widget.NewLabel("Minutes"),
+		),
+		intervalEntryErrorText,
 	)
 
 	return container.New(
@@ -58,9 +101,11 @@ Access them using {{VariableName}}`)
 		tipLabel,
 		widget.NewLabel("Update every "),
 		updateFrequencyContainer,
-		horizontalSpacer(3),
-		layout.NewSpacer(),
 		layout.NewSpacer(),
 		saveBtn,
 	)
+}
+
+func titleConfigValid(titleConfig config.TitleConfigT) bool {
+	return titleConfig.TitleTemplate != "" && titleConfig.TitleUpdateIntervalMinutes <= maxIntervalDurationMinutes && titleConfig.TitleUpdateIntervalMinutes >= minIntervalDurationMinutes
 }

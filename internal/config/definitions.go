@@ -1,13 +1,13 @@
 package config
 
 type PreferencesFormat struct {
-	TwitchConfig                      TwitchConfigT    `json:"twitch_config"`
-	TwitchVariables                   TwitchVariablesT `json:"twitch_variables"`
-	TwitchVariableUpdateInterval      int              `json:"twitch_variable_update_interval"`
-	LlmConfig                         LlmConfigT       `json:"llm_config"`
-	AiGeneratedVariables              []LlmVariableT   `json:"ai_generated_variables"`
-	AiGeneratedVariableUpdateInterval int              `json:"ai_generated_variable_update_interval"`
-	ActivityConsoleOutput             string           `json:"activity_console_output"`
+	TwitchConfig                 TwitchConfigT    `json:"twitch_config"`
+	TwitchVariables              TwitchVariablesT `json:"twitch_variables"`
+	TwitchVariableUpdateInterval int              `json:"twitch_variable_update_interval"`
+	LlmConfig                    LlmConfigT       `json:"llm_config"`
+	AiGeneratedVariables         []LlmVariableT   `json:"ai_generated_variables"`
+	TitleConfig                  TitleConfigT     `json:"title_config"`
+	ActivityConsoleOutput        string           `json:"activity_console_output"`
 }
 
 type TwitchConfigT struct {
@@ -49,6 +49,11 @@ type LlmVariableT struct {
 	Value        string `json:"value"`
 	PromptMain   string `json:"prompt_main"`
 	PromptSuffix string `json:"prompt_suffix"`
+}
+
+type TitleConfigT struct {
+	TitleTemplate              string `json:"title_template"`
+	TitleUpdateIntervalMinutes int    `json:"title_update_interval_minutes"`
 }
 
 // Ensure fields are populated enough to make requests to update twitch variables
