@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 )
 
 const (
@@ -64,6 +65,15 @@ func GetStringReplacerFromMap(m map[string]string, allowEmptyReplacements bool, 
 		}
 	}
 	return strings.NewReplacer(replacementList...), nil
+}
+
+// convert seconds to HH:MM::SS
+func GetTimeStringFromSeconds(totalSeconds int) string {
+	duration := time.Duration(totalSeconds) * time.Second
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes()) % 60
+	seconds := int(duration.Seconds()) % 60
+	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
 func PortInUse(hostAndPort string) bool {

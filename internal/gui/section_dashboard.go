@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -12,6 +13,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
+	"github.com/finahdinner/tidal/internal/helpers"
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
@@ -36,6 +38,11 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	stopTidalButton := widget.NewButton("Stop Tidal", nil)
 	stopTidalButton.Disable()
 
+	var uptimeTicker *time.Ticker
+	uptimeTickerDone := make(chan bool, 1)
+
+	uptimeLabel := widget.NewLabel("")
+
 	startTidalButton.OnTapped = func() {
 		config.Logger.LogInfo("starting the ticker")
 
@@ -49,10 +56,36 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		}
 
 		go func() {
+			go func() {
+				uptimeSeconds := 0
+				fyne.Do(func() {
+					uptimeLabel.SetText(fmt.Sprintf("Uptime: %s", helpers.GetTimeStringFromSeconds(uptimeSeconds)))
+				})
+				uptimeTicker = time.NewTicker(1 * time.Second)
+				defer uptimeTicker.Stop()
+				for {
+					select {
+					case <-uptimeTickerDone:
+						fmt.Println("stopping upTimeTicker")
+						return
+					case <-uptimeTicker.C:
+						uptimeSeconds += 1
+						// TODO - proper time format
+						fyne.Do(func() {
+							uptimeLabel.SetText(fmt.Sprintf("Uptime: %s", helpers.GetTimeStringFromSeconds(uptimeSeconds)))
+						})
+						fmt.Printf("uptimeSeconds: %v seconds\n", uptimeSeconds)
+					}
+				}
+			}()
 			if err := startUpdater(); err != nil {
+				stopUpdater()
+				uptimeTickerDone <- true
+				uptimeTicker = nil
 				fyne.Do(func() {
 					startTidalButton.Enable()
 					stopTidalButton.Disable()
+					uptimeLabel.SetText("")
 				})
 				if errors.Is(err, twitch.Err401Unauthorised) {
 					showErrorDialog(err, "Twitch API returned 401 Unauthorised.\nEnsure you have set up your Twitch credentials correctly.", g.PrimaryWindow)
@@ -68,6 +101,9 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	stopTidalButton.OnTapped = func() {
 		stopUpdater()
+		uptimeTickerDone <- true
+		uptimeTicker = nil
+		uptimeLabel.SetText("")
 		config.Logger.LogInfo("tidal stopped")
 		stopTidalButton.Disable()
 		startTidalButton.Enable()
@@ -75,13 +111,18 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	buttonContainer := container.New(layout.NewFormLayout(), startTidalButton, stopTidalButton)
 
-	// uptimeLabel := widget.NewLabel("Uptime: <placeholder>")
 	titleSetupButton := widget.NewButtonWithIcon("Title setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
 	})
-	bottomRow := container.New(
-		layout.NewBorderLayout(nil, nil, titleSetupButton, buttonContainer),
+	bottomLeftContainer := container.New(
+		layout.NewHBoxLayout(),
 		titleSetupButton,
+		uptimeLabel,
+	)
+
+	bottomRow := container.New(
+		layout.NewBorderLayout(nil, nil, bottomLeftContainer, buttonContainer),
+		bottomLeftContainer,
 		buttonContainer,
 	)
 
