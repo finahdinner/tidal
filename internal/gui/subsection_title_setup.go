@@ -25,8 +25,17 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6)
 	titleTemplateEntry.Scroll = fyne.ScrollVerticalOnly
 	titleTemplateEntry.Wrapping = fyne.TextWrapWord
-	tipLabel := widget.NewLabel(`You can use any Variables in your title template
-Access them using {{VariableName}}`)
+	tipLabel := widget.NewLabelWithStyle("You can use any Variables in your title template\nAccess them using {{VariableName}}", fyne.TextAlignLeading, fyne.TextStyle{Italic: true})
+
+	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
+		titleConfig.UpdateImmediatelyOnStart = b
+	})
+	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
+
+	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
+		titleConfig.ThrowErrorIfEmptyValue = b
+	})
+	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyValue)
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
@@ -93,28 +102,18 @@ Access them using {{VariableName}}`)
 		intervalEntryErrorText,
 	)
 
-	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
-		titleConfig.UpdateImmediatelyOnStart = b
-	})
-	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
-
-	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
-		titleConfig.ThrowErrorIfEmptyValue = b
-	})
-	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyValue)
-
 	return container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Title Template"),
 		titleTemplateEntry,
 		layout.NewSpacer(),
 		tipLabel,
-		widget.NewLabel("Update every "),
-		updateFrequencyContainer,
 		layout.NewSpacer(),
 		updateImmediatelyCheck,
 		layout.NewSpacer(),
 		throwErrorIfEmptyVariable,
+		widget.NewLabel("Update every "),
+		updateFrequencyContainer,
 		layout.NewSpacer(),
 		saveBtn,
 	)
