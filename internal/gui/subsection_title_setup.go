@@ -23,6 +23,8 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
 	saveBtn := widget.NewButton("Save", nil)
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6)
+	titleTemplateEntry.Scroll = fyne.ScrollVerticalOnly
+	titleTemplateEntry.Wrapping = fyne.TextWrapWord
 	tipLabel := widget.NewLabel(`You can use any Variables in your title template
 Access them using {{VariableName}}`)
 
