@@ -215,6 +215,7 @@ func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *s
 			e.SetText(buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer))
 		}
 	}
+	e.Disable()
 	return e
 }
 
