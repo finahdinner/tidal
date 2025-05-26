@@ -122,9 +122,6 @@ func updateTitle(ctx context.Context) error {
 		}
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(aiGeneratedVariableUsedMap))
-
 	promptsMap := map[string]string{}
 	twitchVariableStringReplacer, err := getTwitchVariablesStringReplacer(config.Preferences.TwitchVariables)
 	if err != nil {
@@ -138,7 +135,6 @@ func updateTitle(ctx context.Context) error {
 		}
 		prompt = twitchVariableStringReplacer.Replace(prompt)
 		promptsMap[placeholderStr] = prompt
-		wg.Add(1)
 	}
 
 	llmProvider := config.Preferences.LlmConfig.Provider
@@ -150,14 +146,17 @@ func updateTitle(ctx context.Context) error {
 	}
 
 	responsesMap := map[string]string{}
-	var responsesMapMutex sync.Mutex
 
+	var wg sync.WaitGroup
+	var responsesMapMutex sync.Mutex
 	doneChan := make(chan struct{})
-	errChan := make(chan error)
+	errChan := make(chan error, 1)
 
 	for placeholderStr, prompt := range promptsMap {
+		wg.Add(1)
 		go func(placeholderStr, prompt string) {
 			defer wg.Done()
+			config.Logger.LogDebugf("sending prompt: %q", prompt)
 			response, err := llmHandler.GetResponseText(prompt, llmResponseTimeout)
 			if err != nil {
 				errChan <- fmt.Errorf("unable to get response text for %v - err: %w", prompt, err)

@@ -66,7 +66,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 				for {
 					select {
 					case <-uptimeTickerDone:
-						fmt.Println("stopping upTimeTicker")
 						return
 					case <-uptimeTicker.C:
 						uptimeSeconds += 1
@@ -74,7 +73,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 						fyne.Do(func() {
 							uptimeLabel.SetText(fmt.Sprintf("Uptime: %s", helpers.GetTimeStringFromSeconds(uptimeSeconds)))
 						})
-						fmt.Printf("uptimeSeconds: %v seconds\n", uptimeSeconds)
 					}
 				}
 			}()
