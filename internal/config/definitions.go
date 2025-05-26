@@ -8,7 +8,7 @@ type PreferencesFormat struct {
 	TwitchVariableUpdateIntervalSeconds int              `json:"twitch_variable_update_interval_seconds"`
 	LlmConfig                           LlmConfigT       `json:"llm_config"`
 	AiGeneratedVariables                []LlmVariableT   `json:"ai_generated_variables"`
-	TitleConfig                         TitleConfigT     `json:"title_config"`
+	Title                               TitleT           `json:"title_config"`
 	ActivityConsoleOutput               string           `json:"activity_console_output"`
 }
 
@@ -53,7 +53,8 @@ type LlmVariableT struct {
 	PromptSuffix string `json:"prompt_suffix"`
 }
 
-type TitleConfigT struct {
+type TitleT struct {
+	Value                      string `json:"value"`
 	TitleTemplate              string `json:"title_template"`
 	TitleUpdateIntervalMinutes int    `json:"title_update_interval_minutes"`
 }
@@ -68,7 +69,7 @@ func (pf *PreferencesFormat) IsValidForUpdatingTwitchVariables() bool {
 		pf.TwitchConfig.Credentials.UserAccessToken != "" &&
 		pf.TwitchConfig.Credentials.UserAccessRefreshToken != "" &&
 		len(pf.TwitchConfig.Credentials.UserAccessScope) > 0 &&
-		pf.TitleConfig.TitleTemplate != "" &&
-		pf.TitleConfig.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes &&
-		pf.TitleConfig.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes
+		pf.Title.TitleTemplate != "" &&
+		pf.Title.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes &&
+		pf.Title.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes
 }

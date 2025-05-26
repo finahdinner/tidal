@@ -19,7 +19,7 @@ var titleSetupWindowSize fyne.Size = fyne.NewSize(700, 1) // height 1 lets the l
 
 func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
-	titleConfig := config.Preferences.TitleConfig
+	titleConfig := config.Preferences.Title
 
 	saveBtn := widget.NewButton("Save", nil)
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6)
@@ -27,7 +27,7 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 Access them using {{VariableName}}`)
 
 	updateIntervalEntry := widget.NewEntry()
-	if config.Preferences.TitleConfig.TitleUpdateIntervalMinutes > 0 {
+	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
 		updateIntervalEntry.SetText(strconv.Itoa(titleConfig.TitleUpdateIntervalMinutes))
 	}
 	intervalEntryErrorText := canvas.NewText("", color.RGBA{255, 0, 0, 255})
@@ -37,7 +37,7 @@ Access them using {{VariableName}}`)
 			config.Logger.LogErrorf("unable to save title config - titleConfig is invalid")
 			return
 		}
-		config.Preferences.TitleConfig = titleConfig
+		config.Preferences.Title = titleConfig
 		config.SavePreferences() // TODO - do I need to check for the error?
 		g.closeSecondaryWindow()
 	}
@@ -104,6 +104,6 @@ Access them using {{VariableName}}`)
 	)
 }
 
-func titleConfigValid(titleConfig config.TitleConfigT) bool {
+func titleConfigValid(titleConfig config.TitleT) bool {
 	return titleConfig.TitleTemplate != "" && titleConfig.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes && titleConfig.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes
 }

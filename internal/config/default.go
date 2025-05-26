@@ -39,7 +39,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 	TwitchVariableUpdateIntervalSeconds: 10,
 	LlmConfig:                           LlmConfigT{},
 	AiGeneratedVariables:                []LlmVariableT{},
-	TitleConfig: TitleConfigT{
+	Title: TitleT{
 		TitleTemplate:              "",
 		TitleUpdateIntervalMinutes: 1,
 	},

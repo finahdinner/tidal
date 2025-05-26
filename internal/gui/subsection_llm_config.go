@@ -8,14 +8,14 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
+	"github.com/finahdinner/tidal/pkg/llm"
 )
 
 var llmConfigWindowSize fyne.Size = fyne.NewSize(400, 1) // height 1 lets the layout determine the height
 
 func (g *GuiWrapper) getLlmConfigSubsection() *fyne.Container {
 
-	llmProviders := []string{"Google Gemini"}
-	llmProviderSelect := widget.NewSelect(llmProviders, nil)
+	llmProviderSelect := widget.NewSelect(llm.LlmProviders, nil)
 	llmProviderSelect.SetSelected(config.Preferences.LlmConfig.Provider)
 
 	llmApiKeyEntry := widget.NewPasswordEntry()
