@@ -194,8 +194,10 @@ func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Conta
 	return container.New(layout.NewStackLayout(), nameLabelCopyButtonBg, nameLabelCopyButtonBtn)
 }
 
-func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int) *widget.Entry {
+func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int, scrollDirection fyne.ScrollDirection, textWrapBehaviour fyne.TextWrap) *widget.Entry {
 	e := widget.NewMultiLineEntry()
+	e.Scroll = scrollDirection
+	e.Wrapping = textWrapBehaviour
 	e.SetText(text)
 	e.SetMinRowsVisible(lineHeight)
 	e.OnChanged = func(_ string) {
@@ -204,11 +206,20 @@ func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int) *wid
 	return e
 }
 
-func getMultilinePreview(parentEntryWidgets []*widget.Entry, variableReplacer *strings.Replacer, saveBtn *widget.Button, lineHeight int) *widget.Entry {
+func getMultilinePreview(
+	parentEntryWidgets []*widget.Entry,
+	variableReplacer *strings.Replacer,
+	saveBtn *widget.Button,
+	lineHeight int,
+	scrollDirection fyne.ScrollDirection,
+	textWrapBehaviour fyne.TextWrap,
+) *widget.Entry {
 	e := getMultilineEntry(
 		buildStringFromEntryWidgets(parentEntryWidgets, variableReplacer),
 		saveBtn,
 		lineHeight,
+		scrollDirection,
+		textWrapBehaviour,
 	)
 	for _, entry := range parentEntryWidgets {
 		entry.OnChanged = func(text string) {
@@ -376,14 +387,16 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		variableNameEntry.Disable()
 	}
 
-	promptEntryMain := getMultilineEntry(promptMainText, saveBtn, multilineEntryHeight)
-	promptEntrySuffix := getMultilineEntry(promptSuffixText, saveBtn, multilineEntryHeight)
+	promptEntryMain := getMultilineEntry(promptMainText, saveBtn, multilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
+	promptEntrySuffix := getMultilineEntry(promptSuffixText, saveBtn, multilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 	promptPreviewLineHeight := int(math.Trunc((1.5 * multilineEntryHeight)))
 	promptPreview := getMultilinePreview(
 		[]*widget.Entry{promptEntryMain, promptEntrySuffix},
 		twitchVariablesStringReplacer,
 		saveBtn,
 		promptPreviewLineHeight,
+		fyne.ScrollVerticalOnly,
+		fyne.TextWrapWord,
 	)
 
 	saveBtn.OnTapped = func() {
