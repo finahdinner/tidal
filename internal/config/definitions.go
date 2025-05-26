@@ -3,13 +3,13 @@ package config
 import "github.com/finahdinner/tidal/internal/helpers"
 
 type PreferencesFormat struct {
-	TwitchConfig                        TwitchConfigT    `json:"twitch_config"`
-	TwitchVariables                     TwitchVariablesT `json:"twitch_variables"`
-	TwitchVariableUpdateIntervalSeconds int              `json:"twitch_variable_update_interval_seconds"`
-	LlmConfig                           LlmConfigT       `json:"llm_config"`
-	AiGeneratedVariables                []LlmVariableT   `json:"ai_generated_variables"`
-	Title                               TitleT           `json:"title_config"`
-	ActivityConsoleOutput               string           `json:"activity_console_output"`
+	TwitchConfig    TwitchConfigT    `json:"twitch_config"`
+	TwitchVariables TwitchVariablesT `json:"twitch_variables"`
+	// TwitchVariableUpdateIntervalSeconds int              `json:"twitch_variable_update_interval_seconds"`
+	LlmConfig             LlmConfigT     `json:"llm_config"`
+	AiGeneratedVariables  []LlmVariableT `json:"ai_generated_variables"`
+	Title                 TitleT         `json:"title_config"`
+	ActivityConsoleOutput string         `json:"activity_console_output"`
 }
 
 type TwitchConfigT struct {

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"errors"
+	"fmt"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -42,30 +43,24 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 			showErrorDialog(
 				errors.New("twitch configuration is not populated"),
 				"You must first configure your Twitch credentials before starting Tidal.",
-				Gui.PrimaryWindow,
-			)
-			return
-		}
-
-		updateInterval := config.Preferences.TwitchVariableUpdateIntervalSeconds
-		if updateInterval <= 0 {
-			showErrorDialog(
-				errors.New("updateInterval is not a positive integer"),
-				"Unexpected Error\nCorrupted configuration - updateInterval is not a positive integer.",
-				Gui.PrimaryWindow,
+				g.PrimaryWindow,
 			)
 			return
 		}
 
 		go func() {
-			if err := startUpdatingTwitchVariables(updateInterval); err != nil {
+			// TODO - have a preference for choosing whether to immediately start or not
+			if err := startUpdater(true); err != nil {
 				fyne.Do(func() {
 					startTidalButton.Enable()
 					stopTidalButton.Disable()
 				})
 				if errors.Is(err, twitch.Err401Unauthorised) {
-					showErrorDialog(err, "Twitch API returned 401 Unauthorised.\nEnsure you have set up your Twitch credentials correctly.", Gui.PrimaryWindow)
+					showErrorDialog(err, "Twitch API returned 401 Unauthorised.\nEnsure you have set up your Twitch credentials correctly.", g.PrimaryWindow)
+				} else {
+					showErrorDialog(err, fmt.Sprintf("Error encountered during title update process - err: %w", err), g.PrimaryWindow)
 				}
+				return
 			}
 		}()
 		startTidalButton.Disable()
@@ -73,8 +68,8 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	}
 
 	stopTidalButton.OnTapped = func() {
-		config.Logger.LogInfo("attempting to stop the ticker")
-		stopUpdaterTicker()
+		stopUpdater()
+		config.Logger.LogInfo("tidal stopped")
 		stopTidalButton.Disable()
 		startTidalButton.Enable()
 	}

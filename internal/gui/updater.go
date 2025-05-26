@@ -15,7 +15,7 @@ import (
 )
 
 const llmResponseTimeout = 5 * time.Second
-const titleUpdateTimeout = 10 * time.Second
+const singleCycleTimeout = 10 * time.Second
 
 var updaterTicker *time.Ticker
 var updaterTickerDone chan struct{}
@@ -26,7 +26,7 @@ var updateDashboardSectionSignal = make(chan struct{}, 1)
 // Begins a ticker to update the twitch title
 func startUpdater(immediatelyStart bool) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), titleUpdateTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), singleCycleTimeout)
 	defer cancel()
 
 	if updaterTicker != nil {

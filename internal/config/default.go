@@ -36,9 +36,8 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 			Description: "Current number of followers of the channel",
 		},
 	},
-	TwitchVariableUpdateIntervalSeconds: 10,
-	LlmConfig:                           LlmConfigT{},
-	AiGeneratedVariables:                []LlmVariableT{},
+	LlmConfig:            LlmConfigT{},
+	AiGeneratedVariables: []LlmVariableT{},
 	Title: TitleT{
 		TitleTemplate:              "",
 		TitleUpdateIntervalMinutes: 1,
