@@ -28,16 +28,6 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	titleTemplateEntry.SetText(titleConfig.TitleTemplate)
 	tipLabel := widget.NewLabelWithStyle("You can use any Variables in your title template\nAccess them using {{VariableName}}", fyne.TextAlignLeading, fyne.TextStyle{Italic: true})
 
-	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
-		titleConfig.UpdateImmediatelyOnStart = b
-	})
-	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
-
-	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
-		titleConfig.ThrowErrorIfEmptyValue = b
-	})
-	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyValue)
-
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
 		updateIntervalEntry.SetText(strconv.Itoa(titleConfig.TitleUpdateIntervalMinutes))
@@ -103,18 +93,28 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		intervalEntryErrorText,
 	)
 
+	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
+		titleConfig.UpdateImmediatelyOnStart = b
+	})
+	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
+
+	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
+		titleConfig.ThrowErrorIfEmptyValue = b
+	})
+	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyValue)
+
 	return container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Title Template"),
 		titleTemplateEntry,
 		layout.NewSpacer(),
 		tipLabel,
+		widget.NewLabel("Update every "),
+		updateFrequencyContainer,
 		layout.NewSpacer(),
 		updateImmediatelyCheck,
 		layout.NewSpacer(),
 		throwErrorIfEmptyVariable,
-		widget.NewLabel("Update every "),
-		updateFrequencyContainer,
 		layout.NewSpacer(),
 		saveBtn,
 	)
