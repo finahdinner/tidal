@@ -59,6 +59,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 				} else {
 					showErrorDialog(err, fmt.Sprintf("Error encountered during title update process - err: %v", err), g.PrimaryWindow)
 				}
+				g.App.SendNotification(fyne.NewNotification("Tidal stopped", "Please check the app."))
 			}
 		}()
 		startTidalButton.Disable()
