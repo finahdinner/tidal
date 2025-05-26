@@ -17,6 +17,7 @@ const (
 	twitchApiUsersUrl         = "https://api.twitch.tv/helix/users"
 	twitchApiStreamsUrl       = "https://api.twitch.tv/helix/streams"
 	twitchApiSubscriptionsUrl = "https://api.twitch.tv/helix/subscriptions"
+	twitchApiChannelsUrl      = "https://api.twitch.tv/helix/channels"
 	twitchApiFollowersUrl     = "https://api.twitch.tv/helix/channels/followers"
 )
 

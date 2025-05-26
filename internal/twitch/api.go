@@ -1,6 +1,7 @@
 package twitch
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -55,6 +56,44 @@ func GetFollowers(ctx context.Context, prefs config.PreferencesFormat) (*getChan
 		return &followersApiResponse, err
 	}
 	return &followersApiResponse, nil
+}
+
+// PATCH request to /channels endpoint
+func UpdateStreamTitle(ctx context.Context, prefs config.PreferencesFormat) error {
+	params := url.Values{}
+	params.Add("broadcaster_id", config.Preferences.TwitchConfig.UserId)
+	queryUrl := fmt.Sprintf("%s?%s", twitchApiChannelsUrl, params.Encode())
+	config.Logger.LogInfof("queryUrl: %v", queryUrl)
+
+	reqBody := map[string]string{
+		"title": prefs.Title.Value,
+	}
+	reqBodyJson, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("unable to parse reqBody - err: %w", err)
+	}
+	config.Logger.LogInfof("reqBodyJson: %v", reqBodyJson)
+
+	// make a PATCH request
+	req, err := http.NewRequestWithContext(ctx, "PATCH", queryUrl, bytes.NewBuffer(reqBodyJson))
+	if err != nil {
+		return fmt.Errorf("unable to construct request using url %q and body %v", queryUrl, reqBodyJson)
+	}
+
+	req.Header.Set("Client-Id", prefs.TwitchConfig.ClientId)
+	req.Header.Set("Authorization", "Bearer "+prefs.TwitchConfig.Credentials.UserAccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("request for %v failed - err: %w", req.URL, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unable to update content - http code %v", resp.Status)
+	}
+	return nil
 }
 
 func makeGetRequest[T any](ctx context.Context, queryUrl string, mimeType string, prefs config.PreferencesFormat) (T, error) {

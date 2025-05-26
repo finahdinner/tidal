@@ -87,7 +87,7 @@ func startUpdater(immediatelyStart bool) error {
 		}
 	}()
 
-	// reacher when the ticker stops
+	// reached when the ticker stops
 	select {
 	case err := <-errChan:
 		return fmt.Errorf("ticker stopped due to error - err: %w", err)
@@ -96,6 +96,7 @@ func startUpdater(immediatelyStart bool) error {
 	}
 }
 
+// One single update cycle - updates Twitch variables then updates the title
 func updateCycle(ctx context.Context) error {
 	if err := twitch.UpdateTwitchVariables(ctx); err != nil {
 		if errors.Is(err, twitch.Err401Unauthorised) {
@@ -105,6 +106,7 @@ func updateCycle(ctx context.Context) error {
 	if err := updateTitle(ctx); err != nil {
 		return fmt.Errorf("unable to update title - err: %w", err)
 	}
+	return nil
 }
 
 // Assumes Twitch variables have been updated already
@@ -177,18 +179,28 @@ func updateTitle(ctx context.Context) error {
 
 	aiGeneratedVariableResponseReplacer, err := getAiGeneratedVariableResponseReplacer(responsesMap)
 	if err != nil {
-		return errors.New("unable to create a string replacer for AI-generated variable responses")
+		return fmt.Errorf("unable to create a string replacer for AI-generated variable responses - err: %w", err)
 	}
+
+	newAiGeneratedVariables := config.Preferences.AiGeneratedVariables
+	newTitleConfig := config.Preferences.Title
 
 	// update preferences with llm variable values AND the new title
 	for placeholderStr, response := range responsesMap {
-		for idx, v := range config.Preferences.AiGeneratedVariables {
+		for idx, v := range newAiGeneratedVariables {
 			if v.Name == helpers.GetVarNameFromPlaceholderString(placeholderStr) {
-				config.Preferences.AiGeneratedVariables[idx].Value = response
+				newAiGeneratedVariables[idx].Value = response
 			}
 		}
 	}
-	config.Preferences.Title.Value = aiGeneratedVariableResponseReplacer.Replace(titleTemplate)
+	newTitleConfig.Value = aiGeneratedVariableResponseReplacer.Replace(titleTemplate)
+
+	if err := twitch.UpdateStreamTitle(ctx, config.Preferences); err != nil {
+		return fmt.Errorf("unable to update stream title - err: %w", err)
+	}
+
+	config.Preferences.AiGeneratedVariables = newAiGeneratedVariables
+	config.Preferences.Title = newTitleConfig
 	config.SavePreferences()
 
 	return nil
