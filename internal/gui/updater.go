@@ -125,7 +125,10 @@ func updateTitle(ctx context.Context) error {
 	wg.Add(len(aiGeneratedVariableUsedMap))
 
 	promptsMap := map[string]string{}
-	twitchVariableStringReplacer := getTwitchVariablesStringReplacer(config.Preferences.TwitchVariables)
+	twitchVariableStringReplacer, err := getTwitchVariablesStringReplacer(config.Preferences.TwitchVariables)
+	if err != nil {
+		return fmt.Errorf("unable to get twitch variables string replacer - err: %v", err)
+	}
 
 	for placeholderStr, v := range aiGeneratedVariableUsedMap {
 		prompt := v.PromptMain
@@ -177,11 +180,6 @@ func updateTitle(ctx context.Context) error {
 		//
 	}
 
-	aiGeneratedVariableResponseReplacer, err := getAiGeneratedVariableResponseReplacer(responsesMap)
-	if err != nil {
-		return fmt.Errorf("unable to create a string replacer for AI-generated variable responses - err: %w", err)
-	}
-
 	newPreferences := config.Preferences
 
 	// update preferences with llm variable values AND the new title
@@ -192,7 +190,39 @@ func updateTitle(ctx context.Context) error {
 			}
 		}
 	}
-	newPreferences.Title.Value = aiGeneratedVariableResponseReplacer.Replace(titleTemplate)
+
+	// used to replace ALL mentioned variables with their respective value
+	fullVariableReplacementMap := responsesMap
+
+	allTwitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[
+		config.TwitchVariablesT, config.TwitchVariableT,
+	](config.Preferences.TwitchVariables)
+
+	twitchVariablesUsedInTitleMap := map[string]config.TwitchVariableT{}
+	for varName, twitchVar := range allTwitchVariablesMap {
+		varNamePlaceholder := helpers.GenerateVarPlaceholderString(varName)
+		if strings.Contains(titleTemplate, varNamePlaceholder) {
+			twitchVariablesUsedInTitleMap[varName] = twitchVar
+		}
+	}
+	config.Logger.LogDebugf("twitchVariablesUsedInTitleMap: %v", twitchVariablesUsedInTitleMap)
+
+	for varName, twitchVar := range twitchVariablesUsedInTitleMap {
+		replaceFrom := helpers.GenerateVarPlaceholderString(varName)
+		if _, exists := fullVariableReplacementMap[replaceFrom]; exists {
+			return fmt.Errorf("conflicting variable name: %q", replaceFrom)
+		}
+		fullVariableReplacementMap[replaceFrom] = twitchVar.Value
+	}
+	config.Logger.LogDebugf("fullVariableReplacementMap: %v", fullVariableReplacementMap)
+
+	allVariablesReplacer, err := helpers.GetStringReplacerFromMap(fullVariableReplacementMap, false, false)
+	if err != nil {
+		return fmt.Errorf("unable to construct allVariablesReplacer - err: %w", err)
+	}
+
+	// new title
+	newPreferences.Title.Value = allVariablesReplacer.Replace(titleTemplate)
 
 	config.Logger.LogDebugf("attempting to update stream title to %q", newPreferences.Title.Value)
 	if err := twitch.UpdateStreamTitle(ctx, newPreferences); err != nil {
@@ -206,16 +236,16 @@ func updateTitle(ctx context.Context) error {
 	return nil
 }
 
-func getAiGeneratedVariableResponseReplacer(responsesMap map[string]string) (*strings.Replacer, error) {
-	replacementList := []string{}
-	for placeholderStr, response := range responsesMap {
-		if placeholderStr == "" || response == "" {
-			return nil, fmt.Errorf("mapping of %q to %q is not valid - must both be non-empty", placeholderStr, response)
-		}
-		replacementList = append(replacementList, placeholderStr, response)
-	}
-	return strings.NewReplacer(replacementList...), nil
-}
+// func getAiGeneratedVariableResponseReplacer(responsesMap map[string]string) (*strings.Replacer, error) {
+// 	replacementList := []string{}
+// 	for placeholderStr, response := range responsesMap {
+// 		if placeholderStr == "" || response == "" {
+// 			return nil, fmt.Errorf("mapping of %q to %q is not valid - must both be non-empty", placeholderStr, response)
+// 		}
+// 		replacementList = append(replacementList, placeholderStr, response)
+// 	}
+// 	return strings.NewReplacer(replacementList...), nil
+// }
 
 func stopUpdater() {
 	if updaterTicker != nil {

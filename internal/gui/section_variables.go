@@ -47,7 +47,12 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
 	twitchVariables := &config.Preferences.TwitchVariables
-	twitchVariablesStringReplacer := getTwitchVariablesStringReplacer(*twitchVariables)
+
+	twitchVariablesStringReplacer, err := getTwitchVariablesStringReplacer(*twitchVariables)
+	if err != nil {
+		config.Logger.LogErrorf("unable to get twitch variables string replacer - err: %v", err)
+		return nil
+	}
 
 	g.populateRowsWithExistingTwitchVariables(
 		twitchVariables,
@@ -505,17 +510,21 @@ func buildStringFromEntryWidgets(entryWidgets []*widget.Entry, variableReplacer 
 	return variableReplacer.Replace(concatenatedPrompt)
 }
 
-func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) *strings.Replacer {
-	replacementList := []string{}
+func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) (*strings.Replacer, error) {
 	twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[config.TwitchVariablesT, config.TwitchVariableT](twitchVariables)
-	for name, val := range twitchVariablesMap {
-		value := val.Value
-		if value == "" {
-			value = "<<N/A>>"
+	twitchVariablesValuesMap := map[string]string{}
+	for varName, v := range twitchVariablesMap {
+		val := v.Value
+		if val == "" {
+			val = promptEmptyStreamValuePlaceholder
 		}
-		replacementList = append(replacementList, helpers.GenerateVarPlaceholderString(name), value)
+		twitchVariablesValuesMap[varName] = val
 	}
-	return strings.NewReplacer(replacementList...)
+	twitchVariablesStringReplacer, err := helpers.GetStringReplacerFromMap(twitchVariablesValuesMap, true, false)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create string replacer map for twitch variables - err: %w", err)
+	}
+	return twitchVariablesStringReplacer, nil
 }
 
 func valueOrPlaceholderValue(txt string) string {

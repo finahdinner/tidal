@@ -36,6 +36,36 @@ func GetVarNameFromPlaceholderString(placeholderString string) string {
 	return strings.Replace(strings.Replace(placeholderString, VarNamePlaceholderPrefix, "", 1), VarNamePlaceholderSuffix, "", 1)
 }
 
+func GetStringReplacerFromMap(m map[string]string, allowEmptyReplacements bool, allowSubstrings bool) (*strings.Replacer, error) {
+	replacementList := []string{}
+	replaceFromKeys := make([]string, 0, len(m))
+
+	for replaceFrom, replaceTo := range m {
+		if replaceFrom == "" {
+			return nil, fmt.Errorf("mapping of %q to %q is not valid - replaceFrom must not be empty", replaceFrom, replaceTo)
+		}
+		if !allowEmptyReplacements && replaceTo == "" {
+			return nil, fmt.Errorf("mapping of %q to %q is not valid - they must both be populated", replaceFrom, replaceTo)
+		}
+		replacementList = append(replacementList, replaceFrom, replaceTo)
+		replaceFromKeys = append(replaceFromKeys, replaceFrom)
+	}
+	// check if any replaceFrom is a substring of any other replaceFrom
+	if !allowSubstrings {
+		for _, k := range replaceFromKeys {
+			for _, j := range replaceFromKeys {
+				if k == j {
+					continue
+				}
+				if strings.Contains(k, j) {
+					return nil, fmt.Errorf("invalid replacement map: key %q contains key %q as a substring", k, j)
+				}
+			}
+		}
+	}
+	return strings.NewReplacer(replacementList...), nil
+}
+
 func PortInUse(hostAndPort string) bool {
 	listener, err := net.Listen("tcp", hostAndPort)
 	if err != nil {

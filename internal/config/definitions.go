@@ -57,6 +57,8 @@ type TitleT struct {
 	Value                      string `json:"value"`
 	TitleTemplate              string `json:"title_template"`
 	TitleUpdateIntervalMinutes int    `json:"title_update_interval_minutes"`
+	UpdateImmediatelyOnStart   bool   `json:"update_immediately_on_start"`
+	ThrowErrorIfEmptyValue     bool   `json:"throw_error_if_empty_value"`
 }
 
 // Ensure fields are populated enough to make requests to update twitch variables
