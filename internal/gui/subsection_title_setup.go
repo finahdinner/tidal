@@ -93,6 +93,16 @@ Access them using {{VariableName}}`)
 		intervalEntryErrorText,
 	)
 
+	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
+		titleConfig.UpdateImmediatelyOnStart = b
+	})
+	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
+
+	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
+		titleConfig.ThrowErrorIfEmptyValue = b
+	})
+	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyValue)
+
 	return container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Title Template"),
@@ -101,6 +111,10 @@ Access them using {{VariableName}}`)
 		tipLabel,
 		widget.NewLabel("Update every "),
 		updateFrequencyContainer,
+		layout.NewSpacer(),
+		updateImmediatelyCheck,
+		layout.NewSpacer(),
+		throwErrorIfEmptyVariable,
 		layout.NewSpacer(),
 		saveBtn,
 	)
