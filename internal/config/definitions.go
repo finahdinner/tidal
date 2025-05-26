@@ -1,5 +1,7 @@
 package config
 
+import "github.com/finahdinner/tidal/internal/helpers"
+
 type PreferencesFormat struct {
 	TwitchConfig                 TwitchConfigT    `json:"twitch_config"`
 	TwitchVariables              TwitchVariablesT `json:"twitch_variables"`
@@ -65,5 +67,8 @@ func (pf *PreferencesFormat) IsValidForUpdatingTwitchVariables() bool {
 		pf.TwitchConfig.ClientRedirectUri != "" &&
 		pf.TwitchConfig.Credentials.UserAccessToken != "" &&
 		pf.TwitchConfig.Credentials.UserAccessRefreshToken != "" &&
-		len(pf.TwitchConfig.Credentials.UserAccessScope) > 0
+		len(pf.TwitchConfig.Credentials.UserAccessScope) > 0 &&
+		pf.TitleConfig.TitleTemplate != "" &&
+		pf.TitleConfig.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes &&
+		pf.TitleConfig.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes
 }

@@ -12,12 +12,10 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
+	"github.com/finahdinner/tidal/internal/helpers"
 )
 
 var titleSetupWindowSize fyne.Size = fyne.NewSize(700, 1) // height 1 lets the layout determine the height
-
-const minIntervalDurationMinutes = 1
-const maxIntervalDurationMinutes = 1440
 
 func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
@@ -71,10 +69,10 @@ Access them using {{VariableName}}`)
 			config.Logger.LogErrorf("unable to convert text %q to an int - err: %v", s, err)
 			return
 		}
-		if updateIntervalMinutes < minIntervalDurationMinutes ||
-			updateIntervalMinutes > maxIntervalDurationMinutes {
-			config.Logger.LogDebugf("updateIntervalMinutes must be %v<=x<=%v", minIntervalDurationMinutes, maxIntervalDurationMinutes)
-			intervalEntryErrorText.Text = fmt.Sprintf("Interval must be between %v and %v, inclusive.", minIntervalDurationMinutes, maxIntervalDurationMinutes)
+		if updateIntervalMinutes < helpers.MinTitleUpdateIntervalMinutes ||
+			updateIntervalMinutes > helpers.MaxTitleUpdateIntervalMinutes {
+			config.Logger.LogDebugf("updateIntervalMinutes must be %v<=x<=%v", helpers.MinTitleUpdateIntervalMinutes, helpers.MaxTitleUpdateIntervalMinutes)
+			intervalEntryErrorText.Text = fmt.Sprintf("Interval must be between %v and %v, inclusive.", helpers.MinTitleUpdateIntervalMinutes, helpers.MaxTitleUpdateIntervalMinutes)
 			return
 		}
 		titleConfig.TitleUpdateIntervalMinutes = updateIntervalMinutes
@@ -107,5 +105,5 @@ Access them using {{VariableName}}`)
 }
 
 func titleConfigValid(titleConfig config.TitleConfigT) bool {
-	return titleConfig.TitleTemplate != "" && titleConfig.TitleUpdateIntervalMinutes <= maxIntervalDurationMinutes && titleConfig.TitleUpdateIntervalMinutes >= minIntervalDurationMinutes
+	return titleConfig.TitleTemplate != "" && titleConfig.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes && titleConfig.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes
 }

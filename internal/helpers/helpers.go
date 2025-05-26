@@ -9,6 +9,9 @@ import (
 	"runtime"
 )
 
+const MinTitleUpdateIntervalMinutes = 1
+const MaxTitleUpdateIntervalMinutes = 1440
+
 func GenerateCsrfToken(length int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	res := make([]byte, length)
