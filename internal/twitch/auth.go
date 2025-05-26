@@ -56,7 +56,7 @@ func SendGetRequestForAuthCode(csrfToken string) {
 	params.Add("force_verify", "true") // re-authorise each time
 	params.Add("redirect_uri", config.Preferences.TwitchConfig.ClientRedirectUri)
 	params.Add("response_type", "code")
-	params.Add("scope", "channel:read:subscriptions") // add to the scopes if required
+	params.Add("scope", "channel:read:subscriptions channel:manage:broadcast") // add to the scopes if required
 	params.Add("state", csrfToken)
 
 	fullAuthUrl := fmt.Sprintf("%s?%s", twitchApiAuthoriseUrl, params.Encode())

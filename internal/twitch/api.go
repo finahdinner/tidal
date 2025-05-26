@@ -72,7 +72,7 @@ func UpdateStreamTitle(ctx context.Context, prefs config.PreferencesFormat) erro
 	if err != nil {
 		return fmt.Errorf("unable to parse reqBody - err: %w", err)
 	}
-	config.Logger.LogInfof("reqBodyJson: %v", reqBodyJson)
+	config.Logger.LogInfof("reqBodyJson: %v", string(reqBodyJson))
 
 	// make a PATCH request
 	req, err := http.NewRequestWithContext(ctx, "PATCH", queryUrl, bytes.NewBuffer(reqBodyJson))

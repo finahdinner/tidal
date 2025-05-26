@@ -182,25 +182,25 @@ func updateTitle(ctx context.Context) error {
 		return fmt.Errorf("unable to create a string replacer for AI-generated variable responses - err: %w", err)
 	}
 
-	newAiGeneratedVariables := config.Preferences.AiGeneratedVariables
-	newTitleConfig := config.Preferences.Title
+	newPreferences := config.Preferences
 
 	// update preferences with llm variable values AND the new title
 	for placeholderStr, response := range responsesMap {
-		for idx, v := range newAiGeneratedVariables {
+		for idx, v := range newPreferences.AiGeneratedVariables {
 			if v.Name == helpers.GetVarNameFromPlaceholderString(placeholderStr) {
-				newAiGeneratedVariables[idx].Value = response
+				newPreferences.AiGeneratedVariables[idx].Value = response
 			}
 		}
 	}
-	newTitleConfig.Value = aiGeneratedVariableResponseReplacer.Replace(titleTemplate)
+	newPreferences.Title.Value = aiGeneratedVariableResponseReplacer.Replace(titleTemplate)
 
-	if err := twitch.UpdateStreamTitle(ctx, config.Preferences); err != nil {
+	config.Logger.LogDebugf("attempting to update stream title to %q", newPreferences.Title.Value)
+	if err := twitch.UpdateStreamTitle(ctx, newPreferences); err != nil {
 		return fmt.Errorf("unable to update stream title - err: %w", err)
 	}
+	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
 
-	config.Preferences.AiGeneratedVariables = newAiGeneratedVariables
-	config.Preferences.Title = newTitleConfig
+	config.Preferences = newPreferences
 	config.SavePreferences()
 
 	return nil
