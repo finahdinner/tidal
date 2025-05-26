@@ -49,8 +49,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		}
 
 		go func() {
-			// TODO - have a preference for choosing whether to immediately start or not
-			if err := startUpdater(true); err != nil {
+			if err := startUpdater(); err != nil {
 				fyne.Do(func() {
 					startTidalButton.Enable()
 					stopTidalButton.Disable()

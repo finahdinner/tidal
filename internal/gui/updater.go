@@ -24,7 +24,7 @@ var updateVariablesSectionSignal = make(chan struct{}, 1)
 var updateDashboardSectionSignal = make(chan struct{}, 1)
 
 // Begins a ticker to update the twitch title
-func startUpdater(immediatelyStart bool) error {
+func startUpdater() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), singleCycleTimeout)
 	defer cancel()
@@ -51,7 +51,7 @@ func startUpdater(immediatelyStart bool) error {
 
 	go func() {
 		defer close(doneChan)
-		if immediatelyStart {
+		if config.Preferences.Title.UpdateImmediatelyOnStart {
 			if err := updateCycle(ctx); err != nil {
 				errChan <- fmt.Errorf("unable to complete update cycle - err: %w", err)
 			}
@@ -216,7 +216,9 @@ func updateTitle(ctx context.Context) error {
 	}
 	config.Logger.LogDebugf("fullVariableReplacementMap: %v", fullVariableReplacementMap)
 
-	allVariablesReplacer, err := helpers.GetStringReplacerFromMap(fullVariableReplacementMap, false, false)
+	allVariablesReplacer, err := helpers.GetStringReplacerFromMap(
+		fullVariableReplacementMap, !config.Preferences.Title.ThrowErrorIfEmptyValue, false,
+	)
 	if err != nil {
 		return fmt.Errorf("unable to construct allVariablesReplacer - err: %w", err)
 	}
