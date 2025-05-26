@@ -20,10 +20,6 @@ import (
 )
 
 const (
-	varNamePlaceholderPrefix = "{{"
-	varNamePlaceholderSuffix = "}}"
-	varPlaceholderValue      = "-"
-
 	multilineEntryHeight              = 5
 	promptEmptyStreamValuePlaceholder = "<<N/A>>"
 )
@@ -69,7 +65,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			for rowIdx := 1; rowIdx < len(twitchVariableValueColumn.Objects); rowIdx++ {
 
 				varPlaceholderName := twitchVariableNameColumn.Objects[rowIdx].(*widget.Label).Text
-				varName := getVarNameFromPlaceholderString(varPlaceholderName)
+				varName := helpers.GetVarNameFromPlaceholderString(varPlaceholderName)
 				twitchVariablesV := reflect.ValueOf(config.Preferences.TwitchVariables)
 				twitchVariablesT := twitchVariablesV.Type()
 				twitchVariableObjType := reflect.TypeOf(config.TwitchVariableT{})
@@ -236,7 +232,7 @@ func (g *GuiWrapper) populateRowsWithExistingTwitchVariables(
 	for idx := range vals.NumField() {
 
 		varName := fields.Field(idx).Name
-		varPlaceholderName := generatePlaceholderString(varName)
+		varPlaceholderName := helpers.GenerateVarPlaceholderString(varName)
 
 		nameLabel := widget.NewLabel(varPlaceholderName)
 		nameLabelCopyButton := g.getNewCopyButton(idx, twitchVariableNameColumn)
@@ -276,7 +272,7 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 	for idx, aiGenVar := range aiGeneratedVariables {
 		name := aiGenVar.Name
 
-		nameLabel := widget.NewLabel(generatePlaceholderString(name))
+		nameLabel := widget.NewLabel(helpers.GenerateVarPlaceholderString(name))
 		nameLabelCopyButton := g.getNewCopyButton(idx, aiGeneratedVariableNameColumn)
 
 		aiGeneratedVariableNameColumn.Objects = append(
@@ -517,22 +513,14 @@ func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) *
 		if value == "" {
 			value = "<<N/A>>"
 		}
-		replacementList = append(replacementList, generatePlaceholderString(name), value)
+		replacementList = append(replacementList, helpers.GenerateVarPlaceholderString(name), value)
 	}
 	return strings.NewReplacer(replacementList...)
 }
 
-func generatePlaceholderString(varName string) string {
-	return fmt.Sprintf("%v%v%v", varNamePlaceholderPrefix, varName, varNamePlaceholderSuffix)
-}
-
-func getVarNameFromPlaceholderString(placeholderString string) string {
-	return strings.Replace(strings.Replace(placeholderString, varNamePlaceholderPrefix, "", 1), varNamePlaceholderSuffix, "", 1)
-}
-
 func valueOrPlaceholderValue(txt string) string {
 	if txt == "" {
-		return varPlaceholderValue
+		return helpers.VariablePlaceholderValue
 	}
 	return txt
 }

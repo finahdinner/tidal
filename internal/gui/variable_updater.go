@@ -10,7 +10,7 @@ import (
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
-const updateVariablesTimeout = 5 * time.Second
+const updateVariablesTimeout = 3 * time.Second
 
 var twitchVariableUpdaterTicker *time.Ticker
 var twitchVariableUpdaterTickerDone chan struct{}

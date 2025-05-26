@@ -47,7 +47,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 			return
 		}
 
-		updateInterval := config.Preferences.TwitchVariableUpdateInterval
+		updateInterval := config.Preferences.TwitchVariableUpdateIntervalSeconds
 		if updateInterval <= 0 {
 			showErrorDialog(
 				errors.New("updateInterval is not a positive integer"),

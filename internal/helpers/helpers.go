@@ -7,10 +7,17 @@ import (
 	"os/exec"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
-const MinTitleUpdateIntervalMinutes = 1
-const MaxTitleUpdateIntervalMinutes = 1440
+const (
+	MinTitleUpdateIntervalMinutes = 1
+	MaxTitleUpdateIntervalMinutes = 1440
+
+	VarNamePlaceholderPrefix = "{{"
+	VarNamePlaceholderSuffix = "}}"
+	VariablePlaceholderValue = "-"
+)
 
 func GenerateCsrfToken(length int) string {
 	chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -19,6 +26,14 @@ func GenerateCsrfToken(length int) string {
 		res[i] = chars[rand.IntN(len(chars))]
 	}
 	return string(res)[:length]
+}
+
+func GenerateVarPlaceholderString(varName string) string {
+	return fmt.Sprintf("%v%v%v", VarNamePlaceholderPrefix, varName, VarNamePlaceholderSuffix)
+}
+
+func GetVarNameFromPlaceholderString(placeholderString string) string {
+	return strings.Replace(strings.Replace(placeholderString, VarNamePlaceholderPrefix, "", 1), VarNamePlaceholderSuffix, "", 1)
 }
 
 func PortInUse(hostAndPort string) bool {
