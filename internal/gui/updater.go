@@ -17,8 +17,6 @@ import (
 const llmResponseTimeout = 5 * time.Second
 const titleUpdateTimeout = 10 * time.Second
 
-// const updateTitleTimeout = 10 * time.Second
-
 var updaterTicker *time.Ticker
 var updaterTickerDone chan struct{}
 
@@ -45,45 +43,67 @@ func startUpdater(immediatelyStart bool) error {
 	}
 	updateIntervalSeconds := updateIntervalMinutes * 60
 
-	if immediatelyStart {
-		if err := twitch.UpdateTwitchVariables(ctx); err != nil {
-			return fmt.Errorf("unable to update twitch variables - err: %w", err)
-		}
-		if err := updateTitle(ctx); err != nil {
-			return fmt.Errorf("unable to update title - err: %w", err)
-		}
-	}
-
 	updaterTicker = time.NewTicker(time.Duration(updateIntervalSeconds) * time.Second)
 	updaterTickerDone = make(chan struct{})
 
-	err401Chan := make(chan error, 1)
+	errChan := make(chan error, 1)
 	doneChan := make(chan struct{})
 
 	go func() {
 		defer close(doneChan)
 		if immediatelyStart {
-			if err := twitch.UpdateTwitchVariables(ctx); err != nil {
-				if errors.Is(err, twitch.Err401Unauthorised) {
-					err401Chan <- fmt.Errorf("unable to update twitch variables - err: %w", err)
-				}
-				return
-			}
-			if err := updateTitle(ctx); err != nil {
-				errChan <- fmt.Errorf("unable to update title - err: %w", err)
-				return
+			if err := updateCycle(ctx); err != nil {
+				errChan <- fmt.Errorf("unable to complete update cycle - err: %w", err)
 			}
 		}
-		// run with the ticker
 
+		for {
+			select {
+			case <-updaterTickerDone:
+				config.Logger.LogInfo("updateTicker finished")
+				return
+			case <-updaterTicker.C:
+				if err := updateCycle(ctx); err != nil {
+					errChan <- fmt.Errorf("unable to complete update cycle - err: %w", err)
+					continue
+				}
+
+				select {
+				case updateVariablesSectionSignal <- struct{}{}:
+					// signal to update widgets in variables sections
+				default:
+					// reached if updateVariablesSectionSignal is full
+					config.Logger.LogDebug("updateVariablesSectionSignal chan is full - skipping")
+				}
+
+				select {
+				case updateDashboardSectionSignal <- struct{}{}:
+					// signal to update dashboard section
+				default:
+					// reached if updateDashboardSectionSignal is full
+					config.Logger.LogDebug("updateDashboardSectionSignal chan is full - skipping")
+				}
+			}
+		}
 	}()
 
 	// reacher when the ticker stops
 	select {
-	case err401 := <-err401Chan:
-		return fmt.Errorf("unauthorised (401) - err: %w", err401)
+	case err := <-errChan:
+		return fmt.Errorf("ticker stopped due to error - err: %w", err)
 	case <-doneChan:
 		return nil
+	}
+}
+
+func updateCycle(ctx context.Context) error {
+	if err := twitch.UpdateTwitchVariables(ctx); err != nil {
+		if errors.Is(err, twitch.Err401Unauthorised) {
+			return fmt.Errorf("unable to update twitch variables - err: %w", err)
+		}
+	}
+	if err := updateTitle(ctx); err != nil {
+		return fmt.Errorf("unable to update title - err: %w", err)
 	}
 }
 
