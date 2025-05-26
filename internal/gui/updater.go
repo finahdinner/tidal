@@ -90,6 +90,7 @@ func startUpdater() error {
 	// reached when the ticker stops
 	select {
 	case err := <-errChan:
+		stopUpdater()
 		return fmt.Errorf("ticker stopped due to error - err: %w", err)
 	case <-doneChan:
 		return nil
@@ -237,17 +238,6 @@ func updateTitle(ctx context.Context) error {
 
 	return nil
 }
-
-// func getAiGeneratedVariableResponseReplacer(responsesMap map[string]string) (*strings.Replacer, error) {
-// 	replacementList := []string{}
-// 	for placeholderStr, response := range responsesMap {
-// 		if placeholderStr == "" || response == "" {
-// 			return nil, fmt.Errorf("mapping of %q to %q is not valid - must both be non-empty", placeholderStr, response)
-// 		}
-// 		replacementList = append(replacementList, placeholderStr, response)
-// 	}
-// 	return strings.NewReplacer(replacementList...), nil
-// }
 
 func stopUpdater() {
 	if updaterTicker != nil {

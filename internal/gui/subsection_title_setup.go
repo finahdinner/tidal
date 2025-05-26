@@ -22,9 +22,10 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	titleConfig := config.Preferences.Title
 
 	saveBtn := widget.NewButton("Save", nil)
-	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6)
+	titleTemplateEntry := getMultilineEntry("", saveBtn, 6)
 	titleTemplateEntry.Scroll = fyne.ScrollVerticalOnly
 	titleTemplateEntry.Wrapping = fyne.TextWrapWord
+	titleTemplateEntry.SetText(titleConfig.TitleTemplate)
 	tipLabel := widget.NewLabelWithStyle("You can use any Variables in your title template\nAccess them using {{VariableName}}", fyne.TextAlignLeading, fyne.TextStyle{Italic: true})
 
 	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
