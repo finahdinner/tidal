@@ -145,7 +145,9 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
-	return container.NewPadded(container.NewScroll(container.New(
+	selectedSubsection := container.NewPadded()
+
+	streamVariablesSubsection := container.New(
 		layout.NewVBoxLayout(),
 		twitchVariablesHeaderRow,
 		container.New(
@@ -155,7 +157,10 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 			twitchVariableValueColumn,
 			twitchVariableDescriptionColumn,
 		),
-		horizontalSpacer(8),
+	)
+
+	aiGeneratedVariablesSubsection := container.New(
+		layout.NewVBoxLayout(),
 		aiGeneratedVariablesHeaderRow,
 		container.New(
 			layout.NewVBoxLayout(),
@@ -163,14 +168,42 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				layout.NewHBoxLayout(),
 				aiGeneratedVariableCopyColumn,
 				aiGeneratedVariableNameColumn,
-				// aiGeneratedVariableValueColumn,
 				aiGeneratedEditColumn,
 				aiGeneratedVariableRemoveColumn,
 			),
 			horizontalSpacer(3),
 			addAiGeneratedVariableBtnRow,
 		),
-	)))
+	)
+
+	switchToStreamVarsBtn := widget.NewButton("Stream", nil)
+	switchToAiGeneratedVarsBtn := widget.NewButton("AI-Generated", nil)
+
+	switchToStreamVarsBtn.OnTapped = func() {
+		switchToStreamVarsBtn.Disable()
+		switchToAiGeneratedVarsBtn.Enable()
+		selectedSubsection.Objects = []fyne.CanvasObject{streamVariablesSubsection}
+	}
+
+	switchToAiGeneratedVarsBtn.OnTapped = func() {
+		switchToAiGeneratedVarsBtn.Disable()
+		switchToStreamVarsBtn.Enable()
+		selectedSubsection.Objects = []fyne.CanvasObject{aiGeneratedVariablesSubsection}
+	}
+
+	sidebarSwitcher := container.New(
+		layout.NewGridLayoutWithRows(2),
+		switchToStreamVarsBtn,
+		switchToAiGeneratedVarsBtn,
+	)
+
+	switchToStreamVarsBtn.OnTapped() // tap this button to start
+
+	return container.New(
+		layout.NewBorderLayout(nil, nil, sidebarSwitcher, nil),
+		sidebarSwitcher,
+		container.NewScroll(selectedSubsection),
+	)
 }
 
 func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Container) *fyne.Container {
