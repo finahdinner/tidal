@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -217,14 +218,22 @@ func updateTitle(ctx context.Context) error {
 	config.Logger.LogDebugf("fullVariableReplacementMap: %v", fullVariableReplacementMap)
 
 	allVariablesReplacer, err := helpers.GetStringReplacerFromMap(
-		fullVariableReplacementMap, !config.Preferences.Title.ThrowErrorIfEmptyValue, false,
+		fullVariableReplacementMap, !config.Preferences.Title.ThrowErrorIfEmptyVariable, false,
 	)
 	if err != nil {
 		return fmt.Errorf("unable to construct allVariablesReplacer - err: %w", err)
 	}
 
-	// new title
-	newPreferences.Title.Value = allVariablesReplacer.Replace(titleTemplate)
+	newTitle := allVariablesReplacer.Replace(titleTemplate)
+
+	// check there are no "placeholder" values (non-existent variables) left
+	if containsPlaceholders, err := textContainsPlaceholders(newTitle); err != nil {
+		return fmt.Errorf("unable to check if newTitle contains placeholders - err: %w", err)
+	} else if containsPlaceholders && config.Preferences.Title.ThrowErrorIfNonExistentVariable {
+		return fmt.Errorf("non-existent variable in resulting twitch title - err: %w", err)
+	}
+
+	newPreferences.Title.Value = newTitle
 
 	config.Logger.LogDebugf("attempting to update stream title to %q", newPreferences.Title.Value)
 	if err := twitch.UpdateStreamTitle(ctx, newPreferences); err != nil {
@@ -249,4 +258,12 @@ func stopUpdater() {
 		close(updaterTickerDone)
 		updaterTickerDone = nil
 	}
+}
+
+func textContainsPlaceholders(text string) (bool, error) {
+	r, err := regexp.Compile(fmt.Sprintf("%s.*%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix))
+	if err != nil {
+		return false, fmt.Errorf("unable to compile regex - err: %w", err)
+	}
+	return r.MatchString(text), nil
 }

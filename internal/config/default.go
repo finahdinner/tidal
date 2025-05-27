@@ -39,11 +39,12 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 	LlmConfig:            LlmConfigT{},
 	AiGeneratedVariables: []LlmVariableT{},
 	Title: TitleT{
-		Value:                      "",
-		TitleTemplate:              "",
-		TitleUpdateIntervalMinutes: 1,
-		UpdateImmediatelyOnStart:   true,
-		ThrowErrorIfEmptyValue:     true,
+		Value:                           "",
+		TitleTemplate:                   "",
+		TitleUpdateIntervalMinutes:      1,
+		UpdateImmediatelyOnStart:        true,
+		ThrowErrorIfEmptyVariable:       true,
+		ThrowErrorIfNonExistentVariable: true,
 	},
 	ActivityConsoleOutput: "",
 }

@@ -54,11 +54,12 @@ type LlmVariableT struct {
 }
 
 type TitleT struct {
-	Value                      string `json:"value"`
-	TitleTemplate              string `json:"title_template"`
-	TitleUpdateIntervalMinutes int    `json:"title_update_interval_minutes"`
-	UpdateImmediatelyOnStart   bool   `json:"update_immediately_on_start"`
-	ThrowErrorIfEmptyValue     bool   `json:"throw_error_if_empty_value"`
+	Value                           string `json:"value"`
+	TitleTemplate                   string `json:"title_template"`
+	TitleUpdateIntervalMinutes      int    `json:"title_update_interval_minutes"`
+	UpdateImmediatelyOnStart        bool   `json:"update_immediately_on_start"`
+	ThrowErrorIfEmptyVariable       bool   `json:"throw_error_if_empty_variable"`
+	ThrowErrorIfNonExistentVariable bool   `json:"throw_error_if_non_existent_variable"`
 }
 
 // Ensure fields are populated enough to make requests to update twitch variables

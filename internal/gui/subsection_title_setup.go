@@ -96,9 +96,14 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
 
 	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
-		titleConfig.ThrowErrorIfEmptyValue = b
+		titleConfig.ThrowErrorIfEmptyVariable = b
 	})
-	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyValue)
+	throwErrorIfEmptyVariable.SetChecked(titleConfig.ThrowErrorIfEmptyVariable)
+
+	throwErrorIfNonExistentVariable := widget.NewCheck("Throw error if using a non-existent variable", func(b bool) {
+		titleConfig.ThrowErrorIfNonExistentVariable = b
+	})
+	throwErrorIfNonExistentVariable.SetChecked(titleConfig.ThrowErrorIfNonExistentVariable)
 
 	return container.New(
 		layout.NewFormLayout(),
@@ -112,6 +117,8 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		updateImmediatelyCheck,
 		layout.NewSpacer(),
 		throwErrorIfEmptyVariable,
+		layout.NewSpacer(),
+		throwErrorIfNonExistentVariable,
 		layout.NewSpacer(),
 		saveBtn,
 	)
