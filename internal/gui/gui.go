@@ -24,7 +24,7 @@ func init() {
 	a.Settings().SetTheme(&tidalTheme{})
 
 	primaryWindow := a.NewWindow("Tidal")
-	primaryWindow.Resize(fyne.NewSize(1000, 600))
+	primaryWindow.Resize(fyne.NewSize(900, 600))
 	primaryWindow.SetMaster()
 
 	Gui = &GuiWrapper{
