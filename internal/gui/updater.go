@@ -141,6 +141,9 @@ func updateTitle(ctx context.Context) error {
 	llmProvider := config.Preferences.LlmConfig.Provider
 	apiKey := config.Preferences.LlmConfig.ApiKey
 
+	// TODO - add a check/error msg if the prompMap is not empty
+	// and the llm provider/api key hasn't been configured
+
 	llmHandler, err := llm.NewLlmHandler(llmProvider, apiKey)
 	if err != nil {
 		return fmt.Errorf("unable to create new llm handler - err: %w", err)
