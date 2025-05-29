@@ -46,10 +46,19 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	startTidalButton.OnTapped = func() {
 		config.Logger.LogInfo("starting the ticker")
 
-		if !config.Preferences.IsValidForUpdatingTwitchVariables() {
+		if !config.Preferences.HasPopulatedTwitchCredentials() {
 			showErrorDialog(
 				errors.New("twitch configuration is not populated"),
 				"You must first configure your Twitch credentials before starting Tidal.",
+				g.PrimaryWindow,
+			)
+			return
+		}
+
+		if !config.Preferences.HasPopulatedTitleConfig() {
+			showErrorDialog(
+				errors.New("title setup is not populated"),
+				"You must first configure your Title Setup before starting Tidal.",
 				g.PrimaryWindow,
 			)
 			return
@@ -109,7 +118,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	buttonContainer := container.New(layout.NewFormLayout(), startTidalButton, stopTidalButton)
 
-	titleSetupButton := widget.NewButtonWithIcon("Title setup", theme.SettingsIcon(), func() {
+	titleSetupButton := widget.NewButtonWithIcon("Title Setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
 	})
 	bottomLeftContainer := container.New(

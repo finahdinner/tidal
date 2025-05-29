@@ -63,7 +63,7 @@ type TitleT struct {
 }
 
 // Ensure fields are populated enough to make requests to update twitch variables
-func (pf *PreferencesFormat) IsValidForUpdatingTwitchVariables() bool {
+func (pf *PreferencesFormat) HasPopulatedTwitchCredentials() bool {
 	return pf.TwitchConfig.UserName != "" &&
 		pf.TwitchConfig.UserId != "" &&
 		pf.TwitchConfig.ClientId != "" &&
@@ -71,8 +71,12 @@ func (pf *PreferencesFormat) IsValidForUpdatingTwitchVariables() bool {
 		pf.TwitchConfig.ClientRedirectUri != "" &&
 		pf.TwitchConfig.Credentials.UserAccessToken != "" &&
 		pf.TwitchConfig.Credentials.UserAccessRefreshToken != "" &&
-		len(pf.TwitchConfig.Credentials.UserAccessScope) > 0 &&
-		pf.Title.TitleTemplate != "" &&
+		len(pf.TwitchConfig.Credentials.UserAccessScope) > 0
+}
+
+// Ensure Title config fields are populated enough start Tidal
+func (pf *PreferencesFormat) HasPopulatedTitleConfig() bool {
+	return pf.Title.TitleTemplate != "" &&
 		pf.Title.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes &&
 		pf.Title.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes
 }

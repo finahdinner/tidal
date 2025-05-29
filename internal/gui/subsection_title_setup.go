@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"errors"
 	"fmt"
 	"image/color"
 	"strconv"
@@ -34,6 +35,11 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	saveBtn.OnTapped = func() {
 		if !titleConfigValid(titleConfig) {
 			config.Logger.LogErrorf("unable to save title config - titleConfig is invalid")
+			showErrorDialog(
+				errors.New("title config is not valid"),
+				"Title configuration fields are not all valid/populated",
+				g.SecondaryWindow,
+			)
 			return
 		}
 		config.Preferences.Title = titleConfig
