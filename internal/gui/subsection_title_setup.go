@@ -23,6 +23,10 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	titleConfig := config.Preferences.Title
 
 	saveBtn := widget.NewButton("Save", nil)
+	if !titleConfigValid(titleConfig) {
+		saveBtn.Disable()
+	}
+
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 	tipLabel := widget.NewLabelWithStyle("You can use any Variables in your title template\nAccess them using {{VariableName}}", fyne.TextAlignLeading, fyne.TextStyle{Italic: true})
 
@@ -50,9 +54,6 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	titleTemplateEntry.OnChanged = func(s string) {
 		saveBtn.Disable()
 		s = strings.TrimSpace(s)
-		if s == "" {
-			return
-		}
 		titleConfig.TitleTemplate = s
 		if titleConfigValid(titleConfig) {
 			saveBtn.Enable()
@@ -61,14 +62,9 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
 	updateIntervalEntry.OnChanged = func(s string) {
 		saveBtn.Disable()
+		titleConfig.TitleUpdateIntervalMinutes = -1 // will be updated if s is valid
 		intervalEntryErrorText.Text = ""
 		s = strings.TrimSpace(s)
-		if s == "" {
-			return
-		}
-		if titleConfig.TitleTemplate == "" {
-			return
-		}
 		updateIntervalMinutes, err := strconv.Atoi(s)
 		if err != nil {
 			config.Logger.LogErrorf("unable to convert text %q to an int - err: %v", s, err)
