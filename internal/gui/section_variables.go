@@ -541,7 +541,7 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		variableNameEntry,
 		widget.NewLabel("Prompt Body"),
 		promptEntryMain,
-		widget.NewLabel("Prompt suffix"),
+		widget.NewLabel("Prompt Suffix"),
 		promptEntrySuffix,
 		widget.NewLabel("Prompt Preview"),
 		promptPreview,
