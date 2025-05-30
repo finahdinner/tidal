@@ -36,7 +36,11 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 			Description: "Current number of followers of the channel",
 		},
 	},
-	LlmConfig:            LlmConfigT{},
+	LlmConfig: LlmConfigT{
+		DefaultPromptSuffix: "Ensure that your response only contains text relevant to the above information. " +
+			"Do not exceed 100 characters. " +
+			"Ensure your response does not contain profanities and cannot be construed as political or divisive.",
+	},
 	AiGeneratedVariables: []LlmVariableT{},
 	Title: TitleT{
 		Value:                           "",

@@ -42,8 +42,9 @@ type TwitchVariableT struct {
 }
 
 type LlmConfigT struct {
-	Provider string `json:"provider"`
-	ApiKey   string `json:"api_key"`
+	Provider            string `json:"provider"`
+	ApiKey              string `json:"api_key"`
+	DefaultPromptSuffix string `json:"default_prompt_suffix"`
 }
 
 type LlmVariableT struct {
