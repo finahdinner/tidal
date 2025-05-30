@@ -28,7 +28,10 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	}
 
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
-	tipLabel := widget.NewLabelWithStyle("You can use any Variables in your title template\nAccess them using {{VariableName}}", fyne.TextAlignLeading, fyne.TextStyle{Italic: true})
+	tipLabel := widget.NewLabelWithStyle(
+		fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
+		fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
+	)
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
