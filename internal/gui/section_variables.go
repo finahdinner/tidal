@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"math"
 	"reflect"
 	"strings"
 	"time"
@@ -20,7 +19,8 @@ import (
 )
 
 const (
-	multilineEntryHeight              = 5
+	standardMultilineEntryHeight      = 5
+	tallerMultilineEntryHeight        = 7
 	promptEmptyStreamValuePlaceholder = "<<N/A>>"
 )
 
@@ -233,7 +233,9 @@ func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int, scro
 	e.Scroll = scrollDirection
 	e.Wrapping = textWrapBehaviour
 	e.SetText(text)
-	e.SetMinRowsVisible(lineHeight)
+	if lineHeight > 0 {
+		e.SetMinRowsVisible(lineHeight)
+	}
 	e.OnChanged = func(_ string) {
 		saveBtn.Enable()
 	}
@@ -423,14 +425,13 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		variableNameEntry.Disable()
 	}
 
-	promptEntryMain := getMultilineEntry(promptMainText, saveBtn, multilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
-	promptEntrySuffix := getMultilineEntry(promptSuffixText, saveBtn, multilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
-	promptPreviewLineHeight := int(math.Trunc((1.5 * multilineEntryHeight)))
+	promptEntryMain := getMultilineEntry(promptMainText, saveBtn, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
+	promptEntrySuffix := getMultilineEntry(promptSuffixText, saveBtn, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 	promptPreview := getMultilinePreview(
 		[]*widget.Entry{promptEntryMain, promptEntrySuffix},
 		twitchVariablesStringReplacer,
 		saveBtn,
-		promptPreviewLineHeight,
+		tallerMultilineEntryHeight,
 		fyne.ScrollVerticalOnly,
 		fyne.TextWrapWord,
 	)
@@ -548,7 +549,7 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	)
 
 	if editExisting {
-		lastValueEntry := getMultilineEntry(currentValue, nil, multilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
+		lastValueEntry := getMultilineEntry(currentValue, nil, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 		lastValueEntry.Disable()
 		lastValueFormLabel := widget.NewLabelWithStyle(fmt.Sprintf("Last Value\n(%v chars)", len(currentValue)), fyne.TextAlignLeading, fyne.TextStyle{})
 		lastValueFormLabel.TextStyle = fyne.TextStyle{}
