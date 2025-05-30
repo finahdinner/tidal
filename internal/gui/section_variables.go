@@ -133,7 +133,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				false,
 				twitchVariablesStringReplacer,
 				"",
-				"<Add your main prompt here>",
+				"",
 				config.Preferences.LlmConfig.DefaultPromptSuffix,
 				"",
 				aiGeneratedVariableCopyColumn,
