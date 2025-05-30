@@ -113,9 +113,15 @@ func updateCycle(ctx context.Context) error {
 
 // Assumes Twitch variables have been updated already
 func updateTitle(ctx context.Context) error {
-	titleTemplate := config.Preferences.Title.TitleTemplate
-	aiGeneratedVariableUsedMap := map[string]config.LlmVariableT{}
 
+	titleTemplate := config.Preferences.Title.TitleTemplate
+
+	twitchVariableStringReplacer, err := getTwitchVariablesStringReplacer(config.Preferences.TwitchVariables)
+	if err != nil {
+		return fmt.Errorf("unable to get twitch variables string replacer - err: %v", err)
+	}
+
+	aiGeneratedVariableUsedMap := map[string]config.LlmVariableT{}
 	for _, v := range config.Preferences.AiGeneratedVariables {
 		placeholderName := helpers.GenerateVarPlaceholderString(v.Name)
 		if strings.Contains(titleTemplate, placeholderName) {
@@ -123,71 +129,66 @@ func updateTitle(ctx context.Context) error {
 		}
 	}
 
-	promptsMap := map[string]string{}
-	twitchVariableStringReplacer, err := getTwitchVariablesStringReplacer(config.Preferences.TwitchVariables)
-	if err != nil {
-		return fmt.Errorf("unable to get twitch variables string replacer - err: %v", err)
-	}
+	aiGeneratedResponsesMap := map[string]string{}
 
-	for placeholderStr, v := range aiGeneratedVariableUsedMap {
-		prompt := v.PromptMain
-		if v.PromptSuffix != "" {
-			prompt += "\n" + v.PromptSuffix
-		}
-		prompt = twitchVariableStringReplacer.Replace(prompt)
-		promptsMap[placeholderStr] = prompt
-	}
+	if len(aiGeneratedVariableUsedMap) > 0 {
 
-	llmProvider := config.Preferences.LlmConfig.Provider
-	apiKey := config.Preferences.LlmConfig.ApiKey
-
-	// TODO - add a check/error msg if the prompMap is not empty
-	// and the llm provider/api key hasn't been configured
-
-	llmHandler, err := llm.NewLlmHandler(llmProvider, apiKey)
-	if err != nil {
-		return fmt.Errorf("unable to create new llm handler - err: %w", err)
-	}
-
-	responsesMap := map[string]string{}
-
-	var wg sync.WaitGroup
-	var responsesMapMutex sync.Mutex
-	doneChan := make(chan struct{})
-	errChan := make(chan error, 1)
-
-	for placeholderStr, prompt := range promptsMap {
-		wg.Add(1)
-		go func(placeholderStr, prompt string) {
-			defer wg.Done()
-			config.Logger.LogDebugf("sending prompt: %q", prompt)
-			response, err := llmHandler.GetResponseText(prompt, llmResponseTimeout)
-			if err != nil {
-				errChan <- fmt.Errorf("unable to get response text for %v - err: %w", prompt, err)
-				return
+		promptsMap := map[string]string{}
+		for placeholderStr, v := range aiGeneratedVariableUsedMap {
+			prompt := v.PromptMain
+			if v.PromptSuffix != "" {
+				prompt += "\n" + v.PromptSuffix
 			}
-			responsesMapMutex.Lock()
-			responsesMap[placeholderStr] = response
-			responsesMapMutex.Unlock()
-		}(placeholderStr, prompt)
-	}
+			prompt = twitchVariableStringReplacer.Replace(prompt)
+			promptsMap[placeholderStr] = prompt
+		}
 
-	go func() {
-		wg.Wait()
-		close(doneChan)
-	}()
+		llmProvider := config.Preferences.LlmConfig.Provider
+		apiKey := config.Preferences.LlmConfig.ApiKey
 
-	select {
-	case err := <-errChan:
-		return fmt.Errorf("unable to retrieve all LLM responses - err: %w", err)
-	case <-doneChan:
-		//
+		llmHandler, err := llm.NewLlmHandler(llmProvider, apiKey)
+		if err != nil {
+			return fmt.Errorf("unable to create new llm handler - err: %w", err)
+		}
+
+		var wg sync.WaitGroup
+		var responsesMapMutex sync.Mutex
+		doneChan := make(chan struct{})
+		errChan := make(chan error, 1)
+
+		for placeholderStr, prompt := range promptsMap {
+			wg.Add(1)
+			go func(placeholderStr, prompt string) {
+				defer wg.Done()
+				config.Logger.LogDebugf("sending prompt: %q", prompt)
+				response, err := llmHandler.GetResponseText(prompt, llmResponseTimeout)
+				if err != nil {
+					errChan <- fmt.Errorf("unable to get response text for %v - err: %w", prompt, err)
+					return
+				}
+				responsesMapMutex.Lock()
+				aiGeneratedResponsesMap[placeholderStr] = response
+				responsesMapMutex.Unlock()
+			}(placeholderStr, prompt)
+		}
+
+		go func() {
+			wg.Wait()
+			close(doneChan)
+		}()
+
+		select {
+		case err := <-errChan:
+			return fmt.Errorf("unable to retrieve all LLM responses - err: %w", err)
+		case <-doneChan:
+			//
+		}
 	}
 
 	newPreferences := config.Preferences
 
 	// update preferences with llm variable values AND the new title
-	for placeholderStr, response := range responsesMap {
+	for placeholderStr, response := range aiGeneratedResponsesMap {
 		for idx, v := range newPreferences.AiGeneratedVariables {
 			if v.Name == helpers.GetVarNameFromPlaceholderString(placeholderStr) {
 				newPreferences.AiGeneratedVariables[idx].Value = response
@@ -196,7 +197,7 @@ func updateTitle(ctx context.Context) error {
 	}
 
 	// used to replace ALL mentioned variables with their respective value
-	fullVariableReplacementMap := responsesMap
+	fullVariableReplacementMap := aiGeneratedResponsesMap
 
 	allTwitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[
 		config.TwitchVariablesT, config.TwitchVariableT,
