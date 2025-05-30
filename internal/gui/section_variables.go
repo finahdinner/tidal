@@ -43,7 +43,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 
 	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
-	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Value"))
+	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Last Value"))
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
 	twitchVariables := &config.Preferences.TwitchVariables
@@ -135,6 +135,7 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				"",
 				"<Add your main prompt here>",
 				config.Preferences.LlmConfig.DefaultPromptSuffix,
+				"",
 				aiGeneratedVariableCopyColumn,
 				aiGeneratedVariableNameColumn,
 				aiGeneratedEditColumn,
@@ -345,6 +346,7 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 						name,
 						aiGenVar.PromptMain,
 						aiGenVar.PromptSuffix,
+						aiGenVar.Value,
 						aiGeneratedVariableCopyColumn,
 						aiGeneratedVariableNameColumn,
 						aiGeneratedEditColumn,
@@ -406,6 +408,7 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	variableName string,
 	promptMainText string,
 	promptSuffixText string,
+	currentValue string,
 	aiGeneratedVariableCopyColumn *fyne.Container,
 	aiGeneratedVariableNameColumn *fyne.Container,
 	aiGeneratedEditColumn *fyne.Container,
@@ -536,13 +539,22 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		layout.NewFormLayout(),
 		widget.NewLabel("Name"),
 		variableNameEntry,
-		widget.NewLabel("Main Prompt"),
+		widget.NewLabel("Prompt Body"),
 		promptEntryMain,
 		widget.NewLabel("Prompt suffix"),
 		promptEntrySuffix,
-		widget.NewLabel("Preview"),
+		widget.NewLabel("Prompt Preview"),
 		promptPreview,
 	)
+
+	if editExisting {
+		lastValueEntry := getMultilineEntry(currentValue, nil, multilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
+		lastValueEntry.Disable()
+		lastValueFormLabel := widget.NewLabelWithStyle(fmt.Sprintf("Last Value\n(%v chars)", len(currentValue)), fyne.TextAlignLeading, fyne.TextStyle{})
+		lastValueFormLabel.TextStyle = fyne.TextStyle{}
+		form.Objects = append(form.Objects, lastValueFormLabel, lastValueEntry)
+	}
+
 	return container.New(layout.NewVBoxLayout(), form, container.New(layout.NewBorderLayout(nil, nil, nil, saveBtn), saveBtn))
 }
 
