@@ -37,11 +37,6 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
 	validVariablesTipLabel := widget.NewRichText()
 
-	// tipLabel := widget.NewLabelWithStyle(
-	// 	fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
-	// 	fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
-	// )
-
 	allVariablesNamesMap := map[string]struct{}{}
 	twitchVarNamesSlice, _ := config.GetAllTwitchVariables()
 	aiGeneratedVarNamesSlice, _ := config.GetAllAiGeneratedVariables()
