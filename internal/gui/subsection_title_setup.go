@@ -32,7 +32,7 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
 		fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
 	)
-	detectedVariablesWidget := widget.NewRichTextFromMarkdown("")
+	detectedVariablesWidget := widget.NewRichText()
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
@@ -73,24 +73,29 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 			return
 		}
 
-		definedVariableMatches := make([]string, 0, len(allVariablesNamesMap))
-		undefinedVariableMatches := make([]string, 0, len(allVariablesNamesMap))
+		numUndefinedVars := 0
+		detectedVariablesWidget.Segments = []widget.RichTextSegment{}
 		for _, v := range varNames {
-			if _, exists := allVariablesNamesMap[v]; exists {
-				definedVariableMatches = append(definedVariableMatches, v)
-			} else {
-				undefinedVariableMatches = append(undefinedVariableMatches, v)
+			segment := &widget.TextSegment{
+				Text:  v,
+				Style: widget.RichTextStyleInline,
 			}
+			if _, exists := allVariablesNamesMap[v]; exists {
+				segment.Style.ColorName = "green"
+			} else {
+				segment.Style.ColorName = "red"
+				numUndefinedVars++
+			}
+			detectedVariablesWidget.Segments = append(
+				detectedVariablesWidget.Segments,
+				segment,
+			)
+			detectedVariablesWidget.Refresh()
 		}
 
-		if titleConfigValid(titleConfig) && len(undefinedVariableMatches) == 0 {
+		if titleConfigValid(titleConfig) && numUndefinedVars == 0 {
 			saveBtn.Enable()
-		} else {
-			saveBtn.Disable()
 		}
-
-		// TODO - notify of defined and undefined variables
-
 	}
 
 	updateIntervalEntry.OnChanged = func(s string) {

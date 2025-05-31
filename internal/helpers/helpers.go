@@ -129,11 +129,15 @@ func ExtractVariableNamesFromText(text string) ([]string, error) {
 		return nil, fmt.Errorf("unable to compile regex pattern %s - err: %w", fmtStr, err)
 	}
 	matches := r.FindAllStringSubmatch(text, -1)
-	variableNames := make([]string, 0, len(matches))
+	variableNamesMap := make(map[string]struct{}, len(matches))
 	for _, match := range matches {
 		if len(match) > 1 {
-			variableNames = append(variableNames, match[1])
+			variableNamesMap[match[1]] = struct{}{}
 		}
 	}
-	return variableNames, nil
+	variableNamesSlice := make([]string, 0, len(variableNamesMap))
+	for v := range variableNamesMap {
+		variableNamesSlice = append(variableNamesSlice, v)
+	}
+	return variableNamesSlice, nil
 }
