@@ -29,15 +29,18 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	}
 
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
-	tipLabel := widget.NewLabelWithStyle(
-		fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
-		fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
-	)
 
 	variablesDetectedWidget := widget.NewRichText()
 	variablesDetectedWidget.Scroll = fyne.ScrollHorizontalOnly
 	variablesDetected := []string{}
 	variablesDetectedIndices := map[string]int{} // index position in the slice above
+
+	validVariablesTipLabel := widget.NewRichText()
+
+	// tipLabel := widget.NewLabelWithStyle(
+	// 	fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
+	// 	fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
+	// )
 
 	allVariablesNamesMap := map[string]struct{}{}
 	twitchVarNamesSlice, _ := config.GetAllTwitchVariables()
@@ -46,13 +49,17 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		allVariablesNamesMap[v] = struct{}{}
 	}
 
-	updateVariablesDetectedLabel(
+	hasUndefinedVariables := parseForDetectedVariablesAndUpdateUI(
 		titleConfig.TitleTemplate,
 		allVariablesNamesMap,
 		&variablesDetected,
 		variablesDetectedIndices,
 		variablesDetectedWidget,
+		validVariablesTipLabel,
 	)
+	if hasUndefinedVariables {
+		saveBtn.Disable()
+	}
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
@@ -80,12 +87,13 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		s = strings.TrimSpace(s)
 		titleConfig.TitleTemplate = s
 
-		hasUndefinedVariables := updateVariablesDetectedLabel(
+		hasUndefinedVariables := parseForDetectedVariablesAndUpdateUI(
 			titleConfig.TitleTemplate,
 			allVariablesNamesMap,
 			&variablesDetected,
 			variablesDetectedIndices,
 			variablesDetectedWidget,
+			validVariablesTipLabel,
 		)
 
 		if titleConfigValid(titleConfig) && !hasUndefinedVariables {
@@ -144,8 +152,6 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		layout.NewFormLayout(),
 		widget.NewLabel("Title Template"),
 		titleTemplateEntry,
-		layout.NewSpacer(),
-		tipLabel,
 		widget.NewLabel("Variables Detected"),
 		variablesDetectedWidget,
 		widget.NewLabel("Update Every "),
@@ -156,6 +162,8 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		throwErrorIfEmptyVariable,
 		layout.NewSpacer(),
 		throwErrorIfNonExistentVariable,
+		layout.NewSpacer(),
+		validVariablesTipLabel,
 		layout.NewSpacer(),
 		saveBtn,
 	)
@@ -173,12 +181,13 @@ func removeFromStringSlicePreserveOrder(slice *[]string, removalIdx int) error {
 	return nil
 }
 
-func updateVariablesDetectedLabel(
+func parseForDetectedVariablesAndUpdateUI(
 	titleTemplate string,
 	allVariablesNamesMap map[string]struct{},
 	variablesDetectedPtr *[]string,
 	variablesDetectedIndices map[string]int,
 	variablesDetectedWidget *widget.RichText,
+	validVariablesTipLabel *widget.RichText,
 ) bool {
 	tmpVariablesDetected := helpers.ExtractVariableNamesFromText(titleTemplate)
 	tmpVariablesDetectedSet := map[string]struct{}{}
@@ -230,5 +239,22 @@ func updateVariablesDetectedLabel(
 	// modify the actual slice being passed in
 	*variablesDetectedPtr = variablesDetected
 
-	return numUndefinedVars > 0
+	tipLabelSegment := &widget.TextSegment{
+		Text:  "✅ All variables used in your title are valid.",
+		Style: widget.RichTextStyleInline,
+	}
+
+	hasUndefinedVariables := numUndefinedVars > 0
+
+	if hasUndefinedVariables {
+		tipLabelSegment.Text = "❌ One or more variables in your title are not valid/do not exist."
+		tipLabelSegment.Style.ColorName = theme.ColorRed
+	} else {
+		tipLabelSegment.Style.ColorName = theme.ColorGreen
+	}
+
+	validVariablesTipLabel.Segments = []widget.RichTextSegment{tipLabelSegment}
+	validVariablesTipLabel.Refresh()
+
+	return hasUndefinedVariables
 }
