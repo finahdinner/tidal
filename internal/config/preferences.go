@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/finahdinner/tidal/internal/helpers"
 )
 
 const preferencesFileName = "preferences.json"
@@ -54,4 +56,24 @@ func writeJsonIfSuccessful(path string, data any) error {
 	}
 
 	return nil
+}
+
+// Returns a slice of the variable names and a map of the variable names to config.TwitchVariableT objects
+func GetAllTwitchVariables() ([]string, map[string]TwitchVariableT) {
+	varMap := helpers.GenerateMapFromHomogenousStruct[TwitchVariablesT, TwitchVariableT](Preferences.TwitchVariables)
+	varNameSlice := make([]string, 0, len(varMap))
+	for v, _ := range varMap {
+		varNameSlice = append(varNameSlice, v)
+	}
+	return varNameSlice, varMap
+}
+
+func GetAllAiGeneratedVariables() ([]string, map[string]LlmVariableT) {
+	varSlice := make([]string, 0, len(Preferences.AiGeneratedVariables))
+	varMap := make(map[string]LlmVariableT)
+	for _, v := range Preferences.AiGeneratedVariables {
+		varSlice = append(varSlice, v.Name)
+		varMap[v.Name] = v
+	}
+	return varSlice, varMap
 }

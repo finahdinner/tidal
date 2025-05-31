@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -231,9 +230,9 @@ func updateTitle(ctx context.Context) error {
 	newTitle := allVariablesReplacer.Replace(titleTemplate)
 
 	// check there are no "placeholder" values (non-existent variables) left
-	if containsPlaceholders, err := textContainsPlaceholders(newTitle); err != nil {
+	if matchingVariables, err := helpers.ExtractVariableNamesFromText(newTitle); err != nil {
 		return fmt.Errorf("unable to check if newTitle contains placeholders - err: %w", err)
-	} else if containsPlaceholders && config.Preferences.Title.ThrowErrorIfNonExistentVariable {
+	} else if len(matchingVariables) > 0 && config.Preferences.Title.ThrowErrorIfNonExistentVariable {
 		return fmt.Errorf("non-existent variable in resulting twitch title - err: %w", err)
 	}
 
@@ -262,12 +261,4 @@ func stopUpdater() {
 		close(updaterTickerDone)
 		updaterTickerDone = nil
 	}
-}
-
-func textContainsPlaceholders(text string) (bool, error) {
-	r, err := regexp.Compile(fmt.Sprintf("%s.*%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix))
-	if err != nil {
-		return false, fmt.Errorf("unable to compile regex - err: %w", err)
-	}
-	return r.MatchString(text), nil
 }

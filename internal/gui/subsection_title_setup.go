@@ -32,6 +32,7 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
 		fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
 	)
+	detectedVariablesWidget := widget.NewRichTextFromMarkdown("")
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
@@ -54,13 +55,42 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		g.closeSecondaryWindow()
 	}
 
+	allVariablesNamesMap := map[string]struct{}{}
+	twitchVarNamesSlice, _ := config.GetAllTwitchVariables()
+	aiGeneratedVarNamesSlice, _ := config.GetAllAiGeneratedVariables()
+	for _, v := range append(twitchVarNamesSlice, aiGeneratedVarNamesSlice...) {
+		allVariablesNamesMap[v] = struct{}{}
+	}
+
 	titleTemplateEntry.OnChanged = func(s string) {
 		saveBtn.Disable()
 		s = strings.TrimSpace(s)
 		titleConfig.TitleTemplate = s
-		if titleConfigValid(titleConfig) {
-			saveBtn.Enable()
+
+		varNames, err := helpers.ExtractVariableNamesFromText(titleConfig.TitleTemplate)
+		if err != nil {
+			config.Logger.LogErrorf("unable to extract var names from title template - err: %v", err)
+			return
 		}
+
+		definedVariableMatches := make([]string, 0, len(allVariablesNamesMap))
+		undefinedVariableMatches := make([]string, 0, len(allVariablesNamesMap))
+		for _, v := range varNames {
+			if _, exists := allVariablesNamesMap[v]; exists {
+				definedVariableMatches = append(definedVariableMatches, v)
+			} else {
+				undefinedVariableMatches = append(undefinedVariableMatches, v)
+			}
+		}
+
+		if titleConfigValid(titleConfig) && len(undefinedVariableMatches) == 0 {
+			saveBtn.Enable()
+		} else {
+			saveBtn.Disable()
+		}
+
+		// TODO - notify of defined and undefined variables
+
 	}
 
 	updateIntervalEntry.OnChanged = func(s string) {
@@ -116,6 +146,8 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		titleTemplateEntry,
 		layout.NewSpacer(),
 		tipLabel,
+		widget.NewLabel("Detected variables"),
+		detectedVariablesWidget,
 		widget.NewLabel("Update every "),
 		updateFrequencyContainer,
 		layout.NewSpacer(),

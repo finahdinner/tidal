@@ -6,6 +6,7 @@ import (
 	"net"
 	"os/exec"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -119,4 +120,20 @@ func GenerateMapFromHomogenousStruct[ParentType any, FieldValueType any](strct P
 		res[fieldName] = value
 	}
 	return res
+}
+
+func ExtractVariableNamesFromText(text string) ([]string, error) {
+	fmtStr := `%s(\w+)%s`
+	r, err := regexp.Compile(fmt.Sprintf(fmtStr, VarNamePlaceholderPrefix, VarNamePlaceholderSuffix))
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile regex pattern %s - err: %w", fmtStr, err)
+	}
+	matches := r.FindAllStringSubmatch(text, -1)
+	variableNames := make([]string, 0, len(matches))
+	for _, match := range matches {
+		if len(match) > 1 {
+			variableNames = append(variableNames, match[1])
+		}
+	}
+	return variableNames, nil
 }
