@@ -122,6 +122,7 @@ func GenerateMapFromHomogenousStruct[ParentType any, FieldValueType any](strct P
 	return res
 }
 
+// Returns unique variable names
 func ExtractVariableNamesFromText(text string) ([]string, error) {
 	fmtStr := `%s(\w+)%s`
 	r, err := regexp.Compile(fmt.Sprintf(fmtStr, VarNamePlaceholderPrefix, VarNamePlaceholderSuffix))

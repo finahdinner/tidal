@@ -19,6 +19,10 @@ var _ fyne.Theme = (*tidalTheme)(nil) // assert that it implements the fyne.Them
 func (t tidalTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 	if name == theme.ColorNameScrollBar {
 		return color.RGBA{25, 175, 160, 255} // blue
+	} else if name == theme.ColorRed {
+		return color.RGBA{255, 0, 0, 255}
+	} else if name == theme.ColorGreen {
+		return color.RGBA{0, 255, 0, 255}
 	}
 	return theme.DefaultTheme().Color(name, variant)
 }

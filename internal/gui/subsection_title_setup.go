@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/helpers"
@@ -33,6 +34,7 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
 	)
 	detectedVariablesWidget := widget.NewRichText()
+	detectedVariableNames := []string{}
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
@@ -73,17 +75,30 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 			return
 		}
 
+		// TODO - do this efficiently
+		// append new variables
+		for _, v := range varNames {
+			for _, w := range detectedVariableNames {
+				if v == w {
+					continue
+				}
+				detectedVariableNames = append(detectedVariableNames, v)
+			}
+
+		}
+
 		numUndefinedVars := 0
 		detectedVariablesWidget.Segments = []widget.RichTextSegment{}
 		for _, v := range varNames {
 			segment := &widget.TextSegment{
-				Text:  v,
+				Text:  v + " ",
 				Style: widget.RichTextStyleInline,
 			}
+			// segment.Style.ColorName = theme.ColorNameForeground
 			if _, exists := allVariablesNamesMap[v]; exists {
-				segment.Style.ColorName = "green"
+				segment.Style.ColorName = theme.ColorGreen
 			} else {
-				segment.Style.ColorName = "red"
+				segment.Style.ColorName = theme.ColorRed
 				numUndefinedVars++
 			}
 			detectedVariablesWidget.Segments = append(
@@ -168,4 +183,12 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
 func titleConfigValid(titleConfig config.TitleT) bool {
 	return titleConfig.TitleTemplate != "" && titleConfig.TitleUpdateIntervalMinutes <= helpers.MaxTitleUpdateIntervalMinutes && titleConfig.TitleUpdateIntervalMinutes >= helpers.MinTitleUpdateIntervalMinutes
+}
+
+func removeFromStringSlicePreserveOrder(slice *[]string, removalIdx int) error {
+	if removalIdx >= len(*slice) {
+		return errors.New("provided index is out of range")
+	}
+	*slice = append((*slice)[:removalIdx], (*slice)[removalIdx+1:]...)
+	return nil
 }
