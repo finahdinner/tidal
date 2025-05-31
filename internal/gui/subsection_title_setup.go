@@ -240,14 +240,14 @@ func parseForDetectedVariablesAndUpdateUI(
 	*variablesDetectedPtr = variablesDetected
 
 	tipLabelSegment := &widget.TextSegment{
-		Text:  "✅ All variables used in your title are valid.",
+		Text:  "✅ All variables used in your title template are valid.",
 		Style: widget.RichTextStyleInline,
 	}
 
 	hasUndefinedVariables := numUndefinedVars > 0
 
 	if hasUndefinedVariables {
-		tipLabelSegment.Text = "❌ One or more variables in your title are not valid/do not exist."
+		tipLabelSegment.Text = "❌ One or more variables in your title template are invalid."
 		tipLabelSegment.Style.ColorName = theme.ColorRed
 	} else {
 		tipLabelSegment.Style.ColorName = theme.ColorGreen
