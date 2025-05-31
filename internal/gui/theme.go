@@ -48,7 +48,7 @@ func (t tidalTheme) Size(name fyne.ThemeSizeName) float32 {
 	case theme.SizeNameSelectionRadius:
 		return 5
 	case theme.SizeNameScrollBarSmall:
-		return 10
+		return 4
 	default:
 		return theme.DefaultTheme().Size(name)
 	}

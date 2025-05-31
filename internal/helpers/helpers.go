@@ -123,12 +123,9 @@ func GenerateMapFromHomogenousStruct[ParentType any, FieldValueType any](strct P
 }
 
 // Returns unique variable names
-func ExtractVariableNamesFromText(text string) ([]string, error) {
+func ExtractVariableNamesFromText(text string) []string {
 	fmtStr := `%s(\w+)%s`
-	r, err := regexp.Compile(fmt.Sprintf(fmtStr, VarNamePlaceholderPrefix, VarNamePlaceholderSuffix))
-	if err != nil {
-		return nil, fmt.Errorf("unable to compile regex pattern %s - err: %w", fmtStr, err)
-	}
+	r := regexp.MustCompile(fmt.Sprintf(fmtStr, VarNamePlaceholderPrefix, VarNamePlaceholderSuffix))
 	matches := r.FindAllStringSubmatch(text, -1)
 	variableNamesMap := make(map[string]struct{}, len(matches))
 	for _, match := range matches {
@@ -140,5 +137,5 @@ func ExtractVariableNamesFromText(text string) ([]string, error) {
 	for v := range variableNamesMap {
 		variableNamesSlice = append(variableNamesSlice, v)
 	}
-	return variableNamesSlice, nil
+	return variableNamesSlice
 }

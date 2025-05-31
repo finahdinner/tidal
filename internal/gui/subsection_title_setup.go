@@ -33,8 +33,26 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		fmt.Sprintf("You can use any Variables in your title template\nAccess them using %sVariableName%s", helpers.VarNamePlaceholderPrefix, helpers.VarNamePlaceholderSuffix),
 		fyne.TextAlignLeading, fyne.TextStyle{Italic: true},
 	)
-	detectedVariablesWidget := widget.NewRichText()
-	detectedVariableNames := []string{}
+
+	variablesDetectedWidget := widget.NewRichText()
+	variablesDetectedWidget.Scroll = fyne.ScrollHorizontalOnly
+	variablesDetected := []string{}
+	variablesDetectedIndices := map[string]int{} // index position in the slice above
+
+	allVariablesNamesMap := map[string]struct{}{}
+	twitchVarNamesSlice, _ := config.GetAllTwitchVariables()
+	aiGeneratedVarNamesSlice, _ := config.GetAllAiGeneratedVariables()
+	for _, v := range append(twitchVarNamesSlice, aiGeneratedVarNamesSlice...) {
+		allVariablesNamesMap[v] = struct{}{}
+	}
+
+	updateVariablesDetectedLabel(
+		titleConfig.TitleTemplate,
+		allVariablesNamesMap,
+		&variablesDetected,
+		variablesDetectedIndices,
+		variablesDetectedWidget,
+	)
 
 	updateIntervalEntry := widget.NewEntry()
 	if config.Preferences.Title.TitleUpdateIntervalMinutes > 0 {
@@ -57,58 +75,20 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		g.closeSecondaryWindow()
 	}
 
-	allVariablesNamesMap := map[string]struct{}{}
-	twitchVarNamesSlice, _ := config.GetAllTwitchVariables()
-	aiGeneratedVarNamesSlice, _ := config.GetAllAiGeneratedVariables()
-	for _, v := range append(twitchVarNamesSlice, aiGeneratedVarNamesSlice...) {
-		allVariablesNamesMap[v] = struct{}{}
-	}
-
 	titleTemplateEntry.OnChanged = func(s string) {
 		saveBtn.Disable()
 		s = strings.TrimSpace(s)
 		titleConfig.TitleTemplate = s
 
-		varNames, err := helpers.ExtractVariableNamesFromText(titleConfig.TitleTemplate)
-		if err != nil {
-			config.Logger.LogErrorf("unable to extract var names from title template - err: %v", err)
-			return
-		}
+		hasUndefinedVariables := updateVariablesDetectedLabel(
+			titleConfig.TitleTemplate,
+			allVariablesNamesMap,
+			&variablesDetected,
+			variablesDetectedIndices,
+			variablesDetectedWidget,
+		)
 
-		// TODO - do this efficiently
-		// append new variables
-		for _, v := range varNames {
-			for _, w := range detectedVariableNames {
-				if v == w {
-					continue
-				}
-				detectedVariableNames = append(detectedVariableNames, v)
-			}
-
-		}
-
-		numUndefinedVars := 0
-		detectedVariablesWidget.Segments = []widget.RichTextSegment{}
-		for _, v := range varNames {
-			segment := &widget.TextSegment{
-				Text:  v + " ",
-				Style: widget.RichTextStyleInline,
-			}
-			// segment.Style.ColorName = theme.ColorNameForeground
-			if _, exists := allVariablesNamesMap[v]; exists {
-				segment.Style.ColorName = theme.ColorGreen
-			} else {
-				segment.Style.ColorName = theme.ColorRed
-				numUndefinedVars++
-			}
-			detectedVariablesWidget.Segments = append(
-				detectedVariablesWidget.Segments,
-				segment,
-			)
-			detectedVariablesWidget.Refresh()
-		}
-
-		if titleConfigValid(titleConfig) && numUndefinedVars == 0 {
+		if titleConfigValid(titleConfig) && !hasUndefinedVariables {
 			saveBtn.Enable()
 		}
 	}
@@ -166,9 +146,9 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		titleTemplateEntry,
 		layout.NewSpacer(),
 		tipLabel,
-		widget.NewLabel("Detected variables"),
-		detectedVariablesWidget,
-		widget.NewLabel("Update every "),
+		widget.NewLabel("Variables Detected"),
+		variablesDetectedWidget,
+		widget.NewLabel("Update Every "),
 		updateFrequencyContainer,
 		layout.NewSpacer(),
 		updateImmediatelyCheck,
@@ -191,4 +171,64 @@ func removeFromStringSlicePreserveOrder(slice *[]string, removalIdx int) error {
 	}
 	*slice = append((*slice)[:removalIdx], (*slice)[removalIdx+1:]...)
 	return nil
+}
+
+func updateVariablesDetectedLabel(
+	titleTemplate string,
+	allVariablesNamesMap map[string]struct{},
+	variablesDetectedPtr *[]string,
+	variablesDetectedIndices map[string]int,
+	variablesDetectedWidget *widget.RichText,
+) bool {
+	tmpVariablesDetected := helpers.ExtractVariableNamesFromText(titleTemplate)
+	tmpVariablesDetectedSet := map[string]struct{}{}
+	for _, v := range tmpVariablesDetected {
+		tmpVariablesDetectedSet[v] = struct{}{}
+	}
+
+	variablesDetected := *variablesDetectedPtr
+
+	// remove any variables that haven't been detected
+	for _, v := range variablesDetected {
+		if _, exists := tmpVariablesDetectedSet[v]; !exists {
+			removeFromStringSlicePreserveOrder(&variablesDetected, variablesDetectedIndices[v])
+			delete(variablesDetectedIndices, v)
+		}
+	}
+
+	// insert any new variables that weren't previously being tracked
+	for _, v := range tmpVariablesDetected {
+		if _, exists := variablesDetectedIndices[v]; !exists {
+			variablesDetected = append(variablesDetected, v)
+			variablesDetectedIndices[v] = len(variablesDetected) - 1
+		}
+	}
+
+	// rebuild segments
+	numUndefinedVars := 0
+	variablesDetectedWidget.Segments = []widget.RichTextSegment{}
+	for _, v := range variablesDetected {
+		segment := &widget.TextSegment{
+			Text:  "",
+			Style: widget.RichTextStyleInline,
+		}
+		if _, exists := allVariablesNamesMap[v]; exists {
+			segment.Text = fmt.Sprintf("✅ %s  ", v)
+			segment.Style.ColorName = theme.ColorGreen
+		} else {
+			segment.Text = fmt.Sprintf("❌ %s  ", v)
+			segment.Style.ColorName = theme.ColorRed
+			numUndefinedVars++
+		}
+		variablesDetectedWidget.Segments = append(
+			variablesDetectedWidget.Segments,
+			segment,
+		)
+		variablesDetectedWidget.Refresh()
+	}
+
+	// modify the actual slice being passed in
+	*variablesDetectedPtr = variablesDetected
+
+	return numUndefinedVars > 0
 }

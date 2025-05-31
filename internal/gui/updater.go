@@ -230,9 +230,8 @@ func updateTitle(ctx context.Context) error {
 	newTitle := allVariablesReplacer.Replace(titleTemplate)
 
 	// check there are no "placeholder" values (non-existent variables) left
-	if matchingVariables, err := helpers.ExtractVariableNamesFromText(newTitle); err != nil {
-		return fmt.Errorf("unable to check if newTitle contains placeholders - err: %w", err)
-	} else if len(matchingVariables) > 0 && config.Preferences.Title.ThrowErrorIfNonExistentVariable {
+	matchingVariables := helpers.ExtractVariableNamesFromText(newTitle)
+	if len(matchingVariables) > 0 && config.Preferences.Title.ThrowErrorIfNonExistentVariable {
 		return fmt.Errorf("non-existent variable in resulting twitch title - err: %w", err)
 	}
 
