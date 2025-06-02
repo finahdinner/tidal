@@ -3,6 +3,8 @@ package twitch
 const (
 	twitchApiAuthoriseUrl = "https://id.twitch.tv/oauth2/authorize"
 	twitchApiTokenUrl     = "https://id.twitch.tv/oauth2/token"
+
+	MaxTitleLength = 140
 )
 
 type userAccessTokenInfoT struct {

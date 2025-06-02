@@ -15,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/helpers"
+	"github.com/finahdinner/tidal/internal/twitch"
 )
 
 var titleSetupWindowSize fyne.Size = fyne.NewSize(700, 1) // height 1 lets the layout determine the height
@@ -36,6 +37,7 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	variablesDetectedIndices := map[string]int{} // index position in the slice above
 
 	validVariablesTipLabel := widget.NewRichText()
+	numCharactersAvailableForVariablesLabel := widget.NewRichText()
 
 	allVariablesNamesMap := map[string]struct{}{}
 	twitchVarNamesSlice, _ := config.GetAllTwitchVariables()
@@ -44,15 +46,27 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		allVariablesNamesMap[v] = struct{}{}
 	}
 
-	hasUndefinedVariables := parseForDetectedVariablesAndUpdateUI(
+	allVariablesRemoverMap := map[string]string{}
+	for v := range allVariablesNamesMap {
+		allVariablesRemoverMap[v] = ""
+	}
+	allVariablesRemover, err := helpers.GetStringReplacerFromMap(allVariablesRemoverMap, true, false)
+	if err != nil {
+		config.Logger.LogErrorf("unable to get allVariablesRemover (replacer) - err: %v", err)
+		return nil
+	}
+
+	hasUndefinedVariables, numCharactersAvailableForVariables := parseForDetectedVariablesAndUpdateUI(
 		titleConfig.TitleTemplate,
 		allVariablesNamesMap,
+		allVariablesRemover,
 		&variablesDetected,
 		variablesDetectedIndices,
 		variablesDetectedWidget,
 		validVariablesTipLabel,
+		numCharactersAvailableForVariablesLabel,
 	)
-	if hasUndefinedVariables {
+	if hasUndefinedVariables || numCharactersAvailableForVariables <= 0 {
 		saveBtn.Disable()
 	}
 
@@ -82,16 +96,18 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		s = strings.TrimSpace(s)
 		titleConfig.TitleTemplate = s
 
-		hasUndefinedVariables := parseForDetectedVariablesAndUpdateUI(
+		hasUndefinedVariables, numCharactersAvailableForVariables := parseForDetectedVariablesAndUpdateUI(
 			titleConfig.TitleTemplate,
 			allVariablesNamesMap,
+			allVariablesRemover,
 			&variablesDetected,
 			variablesDetectedIndices,
 			variablesDetectedWidget,
 			validVariablesTipLabel,
+			numCharactersAvailableForVariablesLabel,
 		)
 
-		if titleConfigValid(titleConfig) && !hasUndefinedVariables {
+		if titleConfigValid(titleConfig) && !hasUndefinedVariables && numCharactersAvailableForVariables > 0 {
 			saveBtn.Enable()
 		}
 	}
@@ -160,6 +176,8 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		layout.NewSpacer(),
 		validVariablesTipLabel,
 		layout.NewSpacer(),
+		numCharactersAvailableForVariablesLabel,
+		layout.NewSpacer(),
 		saveBtn,
 	)
 }
@@ -179,11 +197,13 @@ func removeFromStringSlicePreserveOrder(slice *[]string, removalIdx int) error {
 func parseForDetectedVariablesAndUpdateUI(
 	titleTemplate string,
 	allVariablesNamesMap map[string]struct{},
+	allVariablesRemover *strings.Replacer,
 	variablesDetectedPtr *[]string,
 	variablesDetectedIndices map[string]int,
 	variablesDetectedWidget *widget.RichText,
 	validVariablesTipLabel *widget.RichText,
-) bool {
+	numCharactersAvailableForVariablesLabel *widget.RichText,
+) (bool, int) {
 	tmpVariablesDetected := helpers.ExtractVariableNamesFromText(titleTemplate)
 	tmpVariablesDetectedSet := map[string]struct{}{}
 	for _, v := range tmpVariablesDetected {
@@ -228,8 +248,8 @@ func parseForDetectedVariablesAndUpdateUI(
 			variablesDetectedWidget.Segments,
 			segment,
 		)
-		variablesDetectedWidget.Refresh()
 	}
+	variablesDetectedWidget.Refresh()
 
 	// modify the actual slice being passed in
 	*variablesDetectedPtr = variablesDetected
@@ -251,5 +271,19 @@ func parseForDetectedVariablesAndUpdateUI(
 	validVariablesTipLabel.Segments = []widget.RichTextSegment{tipLabelSegment}
 	validVariablesTipLabel.Refresh()
 
-	return hasUndefinedVariables
+	numCharactersAvailableForVariables := twitch.MaxTitleLength - len(allVariablesRemover.Replace(titleTemplate))
+
+	numCharsAvailableSegment := &widget.TextSegment{
+		Text:  "",
+		Style: widget.RichTextStyleInline,
+	}
+
+	if numCharactersAvailableForVariables <= 0 {
+		numCharsAvailableSegment.Text = ""
+		numCharsAvailableSegment.Style.ColorName = theme.ColorRed
+	} else {
+		numCharsAvailableSegment.Style.ColorName = theme.ColorGreen
+	}
+
+	return hasUndefinedVariables, numCharactersAvailableForVariables
 }
