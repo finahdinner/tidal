@@ -174,9 +174,9 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		layout.NewSpacer(),
 		throwErrorIfNonExistentVariable,
 		layout.NewSpacer(),
-		validVariablesTipLabel,
-		layout.NewSpacer(),
 		numCharactersAvailableForVariablesLabel,
+		layout.NewSpacer(),
+		validVariablesTipLabel,
 		layout.NewSpacer(),
 		saveBtn,
 	)
@@ -254,36 +254,33 @@ func parseForDetectedVariablesAndUpdateUI(
 	// modify the actual slice being passed in
 	*variablesDetectedPtr = variablesDetected
 
+	hasUndefinedVariables := numUndefinedVars > 0
 	tipLabelSegment := &widget.TextSegment{
 		Text:  "✅ All variables used in your title template are valid.",
 		Style: widget.RichTextStyleInline,
 	}
-
-	hasUndefinedVariables := numUndefinedVars > 0
-
 	if hasUndefinedVariables {
 		tipLabelSegment.Text = "❌ One or more variables in your title template are invalid."
 		tipLabelSegment.Style.ColorName = theme.ColorRed
 	} else {
 		tipLabelSegment.Style.ColorName = theme.ColorGreen
 	}
-
 	validVariablesTipLabel.Segments = []widget.RichTextSegment{tipLabelSegment}
 	validVariablesTipLabel.Refresh()
 
 	numCharactersAvailableForVariables := twitch.MaxTitleLength - len(allVariablesRemover.Replace(titleTemplate))
-
 	numCharsAvailableSegment := &widget.TextSegment{
-		Text:  "",
+		Text:  fmt.Sprintf("✅ Your title template is short enough.\nYou have %v characters available for substituted variables", numCharactersAvailableForVariables),
 		Style: widget.RichTextStyleInline,
 	}
-
 	if numCharactersAvailableForVariables <= 0 {
-		numCharsAvailableSegment.Text = ""
+		numCharsAvailableSegment.Text = fmt.Sprintf("❌ Your title template is too long.\nIt must not exceed %v characters.", twitch.MaxTitleLength)
 		numCharsAvailableSegment.Style.ColorName = theme.ColorRed
 	} else {
 		numCharsAvailableSegment.Style.ColorName = theme.ColorGreen
 	}
+	numCharactersAvailableForVariablesLabel.Segments = []widget.RichTextSegment{numCharsAvailableSegment}
+	numCharactersAvailableForVariablesLabel.Refresh()
 
 	return hasUndefinedVariables, numCharactersAvailableForVariables
 }
