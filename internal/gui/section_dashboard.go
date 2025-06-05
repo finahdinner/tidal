@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"log"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -23,17 +24,24 @@ type ActivityConsoleT struct {
 	stack  *fyne.Container
 }
 
+var ActivityConsole *ActivityConsoleT
+
+var dashboardSection *fyne.Container
+
 func init() {
 	ActivityConsole = NewActivityConsole()
 }
 
 func NewActivityConsole() *ActivityConsoleT {
 	consoleBox := container.New(layout.NewVBoxLayout())
-	// TODO - add saved console output in preferences? or maybe remove that preference
 	consoleBoxBg := canvas.NewRectangle(color.Black)
 	consoleScroll := container.NewVScroll(consoleBox)
 	consoleStack := container.New(layout.NewStackLayout(), consoleBoxBg, consoleScroll)
-	return &ActivityConsoleT{consoleBox, consoleScroll, consoleStack}
+	ac := &ActivityConsoleT{consoleBox, consoleScroll, consoleStack}
+	for _, s := range config.Preferences.ActivityConsoleLines {
+		ac.pushText(s)
+	}
+	return ac
 }
 
 // Append a new line to the activity console
@@ -42,16 +50,20 @@ func (ac *ActivityConsoleT) pushText(text string) {
 	line.Wrapping = fyne.TextWrapWord
 	line.Scroll = fyne.ScrollNone
 	ac.box.Objects = append(ac.box.Objects, line)
+	fmt.Println(ac.box.Objects)
 	ac.box.Refresh()
 	ac.scroll.ScrollToBottom()
+	log.Println("pushed to console (inside func)")
 }
-
-var ActivityConsole *ActivityConsoleT
 
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
-	for _, s := range config.Preferences.ActivityConsoleLines {
-		ActivityConsole.pushText(s)
+	if dashboardSection != nil {
+		return dashboardSection
+	}
+
+	if ActivityConsole == nil {
+		ActivityConsole = NewActivityConsole()
 	}
 
 	startTidalButton := widget.NewButton("Start Tidal", nil) // TODO - disable this if no title is set up
@@ -153,6 +165,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		buttonContainer,
 	)
 
-	return container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, ActivityConsole.stack))
-	// return dashboardSection
+	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, ActivityConsole.stack))
+	return dashboardSection
 }

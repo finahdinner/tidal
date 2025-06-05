@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -257,6 +258,10 @@ func updateTitle(ctx context.Context) error {
 	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
 
 	// TODO - send update to console
+	loggerThing := config.Logger.LogToBufferf("Updated title to %q", newTitle)
+	log.Printf("loggerThing: %v", loggerThing)
+	ActivityConsole.pushText(loggerThing)
+	log.Println("pushed to console (outside func)")
 
 	config.Preferences = newPreferences
 	config.SavePreferences()
