@@ -50,20 +50,19 @@ func (ac *ActivityConsoleT) pushText(text string) {
 	line.Wrapping = fyne.TextWrapWord
 	line.Scroll = fyne.ScrollNone
 	ac.box.Objects = append(ac.box.Objects, line)
-	fmt.Println(ac.box.Objects)
-	ac.box.Refresh()
 	ac.scroll.ScrollToBottom()
+	ac.box.Refresh()
 	log.Println("pushed to console (inside func)")
 }
 
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
-	if dashboardSection != nil {
-		return dashboardSection
-	}
-
 	if ActivityConsole == nil {
 		ActivityConsole = NewActivityConsole()
+	}
+
+	if dashboardSection != nil {
+		return dashboardSection
 	}
 
 	startTidalButton := widget.NewButton("Start Tidal", nil) // TODO - disable this if no title is set up
@@ -152,6 +151,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	titleSetupButton := widget.NewButtonWithIcon("Title Setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
+		ActivityConsole.pushText("test string") // TODO - remove this, it is only for testing
 	})
 	bottomLeftContainer := container.New(
 		layout.NewHBoxLayout(),
