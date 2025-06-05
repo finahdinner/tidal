@@ -271,7 +271,7 @@ func parseForDetectedVariablesAndUpdateUI(
 
 	hasUndefinedVariables := numUndefinedVars > 0
 	tipLabelSegment := &widget.TextSegment{
-		Text:  "✅ All variables (if any) used in your title template are valid.",
+		Text:  "✅ No invalid variables used in your title.",
 		Style: widget.RichTextStyleInline,
 	}
 	if hasUndefinedVariables {
