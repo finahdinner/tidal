@@ -585,10 +585,14 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	)
 
 	if editExisting {
-		lastValueEntry := getMultilineEntry(currentValue, nil, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
-		lastValueEntry.Disable()
-		lastValueFormLabel := widget.NewLabelWithStyle(fmt.Sprintf("Last Value\n(%v chars)", len(currentValue)), fyne.TextAlignLeading, fyne.TextStyle{})
+		lastValueEntry := getMultilineEntry("N/A", nil, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
+		lastValueFormLabel := widget.NewLabelWithStyle("Last Value", fyne.TextAlignLeading, fyne.TextStyle{})
 		lastValueFormLabel.TextStyle = fyne.TextStyle{}
+		lastValueEntry.Disable()
+		if currentValue != "" {
+			lastValueEntry.SetText(currentValue)
+			lastValueFormLabel.SetText(fmt.Sprintf("Last Value\n(%v chars)", len(currentValue)))
+		}
 		form.Objects = append(form.Objects, lastValueFormLabel, lastValueEntry)
 	}
 
