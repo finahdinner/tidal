@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"log"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -17,22 +19,40 @@ import (
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
-var dashboardSection *fyne.Container
+// type Console struct {
+// 	box    *fyne.Container
+// 	scroll *container.Scroll
+// }
+
+// var dashboardSection *fyne.Container
 
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
-	if dashboardSection != nil {
-		config.Logger.LogDebug("dashboardSection already exists")
-		return dashboardSection
+	// if dashboardSection != nil {
+	// 	config.Logger.LogDebug("dashboardSection already exists")
+	// 	return dashboardSection
+	// }
+
+	consoleBox := container.New(layout.NewVBoxLayout())
+
+	consoleStrLines := strings.Split(config.Preferences.ActivityConsoleOutput, "\n")
+	log.Println(consoleStrLines)
+	for _, s := range consoleStrLines {
+		line := widget.NewRichTextFromMarkdown(fmt.Sprintf("`%s`", s))
+		line.Wrapping = fyne.TextWrapWord
+		line.Scroll = fyne.ScrollNone
+		consoleBox.Objects = append(consoleBox.Objects, line)
 	}
+	consoleBox.Refresh()
 
-	consoleTextGrid := widget.NewTextGrid()
-	consoleTextGrid.SetText(config.Preferences.ActivityConsoleOutput)
+	// TODO - add saved console output in preferences? or maybe remove that preference
+	consoleBoxBg := canvas.NewRectangle(color.Black)
+	// consoleBoxBg.SetMinSize(fyne.NewSize(400, 300))
 
-	consoleTextGrid.SetStyleRange(0, 0, 100, 100, &widget.CustomTextGridStyle{FGColor: color.White, BGColor: color.Black})
-	consoleBg := canvas.NewRectangle(color.Black)
-	consoleBg.Resize(consoleTextGrid.MinSize())
-	console := container.NewScroll(container.NewStack(consoleBg, consoleTextGrid))
+	consoleScroll := container.NewVScroll(consoleBox)
+	// consoleScroll.SetMinSize(fyne.NewSize(400, 300))
+
+	consoleStack := container.New(layout.NewStackLayout(), consoleBoxBg, consoleScroll)
 
 	startTidalButton := widget.NewButton("Start Tidal", nil) // TODO - disable this if no title is set up
 	stopTidalButton := widget.NewButton("Stop Tidal", nil)
@@ -120,6 +140,8 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	titleSetupButton := widget.NewButtonWithIcon("Title Setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
+		consoleBox.Objects = append(consoleBox.Objects, widget.NewRichTextFromMarkdown("`hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi!`"))
+		consoleScroll.ScrollToBottom()
 	})
 	bottomLeftContainer := container.New(
 		layout.NewHBoxLayout(),
@@ -133,6 +155,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		buttonContainer,
 	)
 
-	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, console))
-	return dashboardSection
+	return container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, consoleStack))
+	// return dashboardSection
 }

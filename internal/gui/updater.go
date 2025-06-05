@@ -256,6 +256,8 @@ func updateTitle(ctx context.Context) error {
 	}
 	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
 
+	// TODO - send update to console
+
 	config.Preferences = newPreferences
 	config.SavePreferences()
 
