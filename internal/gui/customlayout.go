@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/internal/config"
 )
 
@@ -52,4 +53,10 @@ func (g *GuiWrapper) closeSecondaryWindow() {
 		g.SecondaryWindow.Close()
 		g.SecondaryWindow = nil
 	}
+}
+
+func newVariablesDetectedWidget() *widget.RichText {
+	variablesDetectedWidget := widget.NewRichText()
+	variablesDetectedWidget.Scroll = fyne.ScrollHorizontalOnly
+	return variablesDetectedWidget
 }

@@ -31,10 +31,14 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 
 	titleTemplateEntry := getMultilineEntry(titleConfig.TitleTemplate, saveBtn, 6, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 
-	variablesDetectedWidget := widget.NewRichText()
-	variablesDetectedWidget.Scroll = fyne.ScrollHorizontalOnly
 	variablesDetected := []string{}
 	variablesDetectedIndices := map[string]int{} // index position in the slice above
+	variablesDetectedWidget := newVariablesDetectedWidget()
+
+	// variablesDetectedWidget := widget.NewRichText()
+	// variablesDetectedWidget.Scroll = fyne.ScrollHorizontalOnly
+	// variablesDetected := []string{}
+	// variablesDetectedIndices := map[string]int{} // index position in the slice above
 
 	validVariablesTipLabel := widget.NewRichText()
 	numCharactersAvailableForVariablesLabel := widget.NewRichText()
@@ -275,19 +279,22 @@ func parseForDetectedVariablesAndUpdateUI(
 	validVariablesTipLabel.Segments = []widget.RichTextSegment{tipLabelSegment}
 	validVariablesTipLabel.Refresh()
 
-	numCharactersAvailableForVariables := twitch.MaxTitleLength - len(allVariablesRemover.Replace(titleTemplate))
-	numCharsAvailableSegment := &widget.TextSegment{
-		Text:  fmt.Sprintf("✅ Your title template is short enough.\nYou have %v characters available for substituted variables", numCharactersAvailableForVariables),
-		Style: widget.RichTextStyleInline,
+	numCharactersAvailableForVariables := -1 // assumed value if not using this
+	if allVariablesRemover != nil {
+		numCharactersAvailableForVariables = twitch.MaxTitleLength - len(allVariablesRemover.Replace(titleTemplate))
+		numCharsAvailableSegment := &widget.TextSegment{
+			Text:  fmt.Sprintf("✅ Your title template is short enough.\nYou have %v characters available for substituted variables", numCharactersAvailableForVariables),
+			Style: widget.RichTextStyleInline,
+		}
+		if numCharactersAvailableForVariables <= 0 {
+			numCharsAvailableSegment.Text = fmt.Sprintf("❌ Your title template is too long.\nIt must not exceed %v characters.", twitch.MaxTitleLength)
+			numCharsAvailableSegment.Style.ColorName = theme.ColorRed
+		} else {
+			numCharsAvailableSegment.Style.ColorName = theme.ColorGreen
+		}
+		numCharactersAvailableForVariablesLabel.Segments = []widget.RichTextSegment{numCharsAvailableSegment}
+		numCharactersAvailableForVariablesLabel.Refresh()
 	}
-	if numCharactersAvailableForVariables <= 0 {
-		numCharsAvailableSegment.Text = fmt.Sprintf("❌ Your title template is too long.\nIt must not exceed %v characters.", twitch.MaxTitleLength)
-		numCharsAvailableSegment.Style.ColorName = theme.ColorRed
-	} else {
-		numCharsAvailableSegment.Style.ColorName = theme.ColorGreen
-	}
-	numCharactersAvailableForVariablesLabel.Segments = []widget.RichTextSegment{numCharsAvailableSegment}
-	numCharactersAvailableForVariablesLabel.Refresh()
 
 	return hasUndefinedVariables, numCharactersAvailableForVariables
 }
