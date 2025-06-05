@@ -413,6 +413,8 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	aiGeneratedVariableRemoveColumn *fyne.Container,
 ) *fyne.Container {
 	saveBtn := widget.NewButton("Save", nil)
+	saveBtn.Disable()
+
 	variableNameEntry := widget.NewEntry()
 	variableNameEntry.SetText(variableName)
 
@@ -424,7 +426,7 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	promptEntryMain := getMultilineEntry(promptMainText, nil, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 	promptEntrySuffix := getMultilineEntry(promptSuffixText, nil, standardMultilineEntryHeight, fyne.ScrollVerticalOnly, fyne.TextWrapWord)
 
-	twitchVariablesDetectedWidget := widget.NewRichText()
+	twitchVariablesDetectedWidget := newVariablesDetectedWidget()
 	validTwitchVariablesTipLabel := widget.NewRichText()
 
 	twitchVariablesDetected := []string{}
@@ -432,7 +434,7 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 
 	fullPromptWithoutReplacement := strings.TrimSpace(promptEntryMain.Text + "\n" + promptEntrySuffix.Text)
 
-	hasUndefinedVariables, _ := parseForDetectedVariablesAndUpdateUI(
+	parseForDetectedVariablesAndUpdateUI(
 		fullPromptWithoutReplacement,
 		twitchVariablesNamesMap,
 		nil,
@@ -443,12 +445,9 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		nil,
 	)
 
-	if hasUndefinedVariables {
-		saveBtn.Disable()
-	}
-
 	for _, entry := range []*widget.Entry{promptEntryMain, promptEntrySuffix} {
 		entry.OnChanged = func(s string) {
+			saveBtn.Disable()
 
 			fullPromptWithoutReplacement = strings.TrimSpace(promptEntryMain.Text + "\n" + promptEntrySuffix.Text)
 
@@ -583,8 +582,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 		twitchVariablesDetectedWidget,
 		layout.NewSpacer(),
 		validTwitchVariablesTipLabel,
-		// widget.NewLabel("Prompt Preview"),
-		// promptPreview,
 	)
 
 	if editExisting {

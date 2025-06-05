@@ -35,11 +35,6 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	variablesDetectedIndices := map[string]int{} // index position in the slice above
 	variablesDetectedWidget := newVariablesDetectedWidget()
 
-	// variablesDetectedWidget := widget.NewRichText()
-	// variablesDetectedWidget.Scroll = fyne.ScrollHorizontalOnly
-	// variablesDetected := []string{}
-	// variablesDetectedIndices := map[string]int{} // index position in the slice above
-
 	validVariablesTipLabel := widget.NewRichText()
 	numCharactersAvailableForVariablesLabel := widget.NewRichText()
 
@@ -260,6 +255,15 @@ func parseForDetectedVariablesAndUpdateUI(
 			segment,
 		)
 	}
+	if len(variablesDetectedWidget.Segments) == 0 {
+		variablesDetectedWidget.Segments = append(
+			variablesDetectedWidget.Segments,
+			&widget.TextSegment{
+				Text:  "-",
+				Style: widget.RichTextStyleInline,
+			},
+		)
+	}
 	variablesDetectedWidget.Refresh()
 
 	// modify the actual slice being passed in
@@ -267,7 +271,7 @@ func parseForDetectedVariablesAndUpdateUI(
 
 	hasUndefinedVariables := numUndefinedVars > 0
 	tipLabelSegment := &widget.TextSegment{
-		Text:  "✅ All variables used in your title template are valid.",
+		Text:  "✅ All variables (if any) used in your title template are valid.",
 		Style: widget.RichTextStyleInline,
 	}
 	if hasUndefinedVariables {
