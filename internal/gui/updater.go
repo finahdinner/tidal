@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -237,7 +236,7 @@ func updateTitle(ctx context.Context) error {
 		return fmt.Errorf("unable to construct allVariablesReplacer - err: %w", err)
 	}
 
-	newTitle := allVariablesReplacer.Replace(titleTemplate)
+	newTitle := strings.TrimSpace(allVariablesReplacer.Replace(titleTemplate))
 
 	// check there are no "placeholder" values (non-existent variables) left
 	matchingVariables := helpers.ExtractVariableNamesFromText(newTitle)
@@ -256,12 +255,7 @@ func updateTitle(ctx context.Context) error {
 		return fmt.Errorf("unable to update stream title - err: %w", err)
 	}
 	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
-
-	// TODO - send update to console
-	loggerThing := config.Logger.LogToBufferf("Updated title to %q", newTitle)
-	log.Printf("loggerThing: %v", loggerThing)
-	ActivityConsole.pushText(loggerThing)
-	log.Println("pushed to console (outside func)")
+	ActivityConsole.pushText(config.Logger.LogToBufferf("Updated title to %q", newTitle))
 
 	config.Preferences = newPreferences
 	config.SavePreferences()

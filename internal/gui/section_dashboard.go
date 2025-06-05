@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"log"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -29,7 +28,9 @@ var ActivityConsole *ActivityConsoleT
 var dashboardSection *fyne.Container
 
 func init() {
-	ActivityConsole = NewActivityConsole()
+	if ActivityConsole == nil {
+		ActivityConsole = NewActivityConsole()
+	}
 }
 
 func NewActivityConsole() *ActivityConsoleT {
@@ -49,10 +50,11 @@ func (ac *ActivityConsoleT) pushText(text string) {
 	line := widget.NewRichTextFromMarkdown(fmt.Sprintf("`%s`", text))
 	line.Wrapping = fyne.TextWrapWord
 	line.Scroll = fyne.ScrollNone
-	ac.box.Objects = append(ac.box.Objects, line)
-	ac.scroll.ScrollToBottom()
-	ac.box.Refresh()
-	log.Println("pushed to console (inside func)")
+	fyne.Do(func() {
+		ac.box.Objects = append(ac.box.Objects, line)
+		ac.scroll.ScrollToBottom()
+		ac.box.Refresh()
+	})
 }
 
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
