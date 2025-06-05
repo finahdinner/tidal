@@ -153,7 +153,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	titleSetupButton := widget.NewButtonWithIcon("Title Setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
-		ActivityConsole.pushText("test string") // TODO - remove this, it is only for testing
 	})
 	bottomLeftContainer := container.New(
 		layout.NewHBoxLayout(),
