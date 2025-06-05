@@ -14,14 +14,20 @@ import (
 	"github.com/finahdinner/tidal/pkg/llm"
 )
 
-const llmResponseTimeout = 5 * time.Second
-const singleCycleTimeout = 10 * time.Second
+const (
+	llmResponseTimeout = 5 * time.Second
+	singleCycleTimeout = 10 * time.Second
 
-var updaterTicker *time.Ticker
-var updaterTickerDone chan struct{}
+	emptyVariablePlaceholder = "<<<N/A>>>"
+)
 
-var updateVariablesSectionSignal = make(chan struct{}, 1)
-var updateDashboardSectionSignal = make(chan struct{}, 1)
+var (
+	updaterTicker     *time.Ticker
+	updaterTickerDone chan struct{}
+
+	updateVariablesSectionSignal = make(chan struct{}, 1)
+	updateDashboardSectionSignal = make(chan struct{}, 1)
+)
 
 // Begins a ticker to update the twitch title
 func startUpdater() error {
@@ -139,6 +145,9 @@ func updateTitle(ctx context.Context) error {
 				prompt += "\n" + v.PromptSuffix
 			}
 			prompt = twitchVariableStringReplacer.Replace(prompt)
+			if config.Preferences.Title.ThrowErrorIfEmptyVariable && strings.Contains(prompt, emptyVariablePlaceholder) {
+				return fmt.Errorf("prompt for aiGeneratedVariable %v has an empty value", placeholderStr)
+			}
 			promptsMap[placeholderStr] = prompt
 		}
 
@@ -264,4 +273,21 @@ func stopUpdater() {
 		close(updaterTickerDone)
 		updaterTickerDone = nil
 	}
+}
+
+func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) (*strings.Replacer, error) {
+	twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[config.TwitchVariablesT, config.TwitchVariableT](twitchVariables)
+	twitchVariablesValuesMap := map[string]string{}
+	for varName, v := range twitchVariablesMap {
+		val := v.Value
+		if val == "" {
+			val = emptyVariablePlaceholder
+		}
+		twitchVariablesValuesMap[varName] = val
+	}
+	twitchVariablesStringReplacer, err := helpers.GetStringReplacerFromMap(twitchVariablesValuesMap, true, false)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create string replacer map for twitch variables - err: %w", err)
+	}
+	return twitchVariablesStringReplacer, nil
 }

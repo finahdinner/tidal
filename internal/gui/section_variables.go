@@ -19,9 +19,8 @@ import (
 )
 
 const (
-	standardMultilineEntryHeight      = 5
-	tallerMultilineEntryHeight        = 7
-	promptEmptyStreamValuePlaceholder = "<<N/A>>"
+	standardMultilineEntryHeight = 5
+	tallerMultilineEntryHeight   = 7
 )
 
 var promptWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
@@ -47,12 +46,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	twitchVariableDescriptionColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Description"))
 
 	twitchVariables := &config.Preferences.TwitchVariables
-
-	twitchVariablesStringReplacer, err := getTwitchVariablesStringReplacer(*twitchVariables)
-	if err != nil {
-		config.Logger.LogErrorf("unable to get twitch variables string replacer - err: %v", err)
-		return nil
-	}
 
 	g.populateRowsWithExistingTwitchVariables(
 		twitchVariables,
@@ -127,7 +120,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		aiGeneratedVariables,
 		twitchVariableNames,
 		twitchVariablesNamesMap,
-		twitchVariablesStringReplacer,
 		aiGeneratedVariableCopyColumn,
 		aiGeneratedVariableNameColumn,
 		aiGeneratedEditColumn,
@@ -141,7 +133,6 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 				false,
 				twitchVariableNames,
 				twitchVariablesNamesMap,
-				twitchVariablesStringReplacer,
 				"",
 				"",
 				config.Preferences.LlmConfig.DefaultPromptSuffix,
@@ -300,7 +291,6 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 	aiGeneratedVariables []config.LlmVariableT,
 	twitchVariableNames []string,
 	twitchVariablesNamesMap map[string]struct{},
-	twitchVariablesStringReplacer *strings.Replacer,
 	aiGeneratedVariableCopyColumn *fyne.Container,
 	aiGeneratedVariableNameColumn *fyne.Container,
 	aiGeneratedEditColumn *fyne.Container,
@@ -336,7 +326,6 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 						true,
 						twitchVariableNames,
 						twitchVariablesNamesMap,
-						twitchVariablesStringReplacer,
 						name,
 						aiGenVar.PromptMain,
 						aiGenVar.PromptSuffix,
@@ -381,7 +370,6 @@ func (g *GuiWrapper) populateRowsWithExistingAiGeneratedVariables(
 					config.Preferences.AiGeneratedVariables,
 					twitchVariableNames,
 					twitchVariablesNamesMap,
-					twitchVariablesStringReplacer,
 					aiGeneratedVariableCopyColumn,
 					aiGeneratedVariableNameColumn,
 					aiGeneratedEditColumn,
@@ -402,7 +390,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	editExisting bool,
 	twitchVariableNames []string,
 	twitchVariablesNamesMap map[string]struct{},
-	twitchVariablesStringReplacer *strings.Replacer,
 	variableName string,
 	promptMainText string,
 	promptSuffixText string,
@@ -555,7 +542,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 			config.Preferences.AiGeneratedVariables,
 			twitchVariableNames,
 			twitchVariablesNamesMap,
-			twitchVariablesStringReplacer,
 			aiGeneratedVariableCopyColumn,
 			aiGeneratedVariableNameColumn,
 			aiGeneratedEditColumn,
@@ -597,23 +583,6 @@ func (g *GuiWrapper) getAiGeneratedVariableSection(
 	}
 
 	return container.New(layout.NewVBoxLayout(), form, container.New(layout.NewBorderLayout(nil, nil, nil, saveBtn), saveBtn))
-}
-
-func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) (*strings.Replacer, error) {
-	twitchVariablesMap := helpers.GenerateMapFromHomogenousStruct[config.TwitchVariablesT, config.TwitchVariableT](twitchVariables)
-	twitchVariablesValuesMap := map[string]string{}
-	for varName, v := range twitchVariablesMap {
-		val := v.Value
-		if val == "" {
-			val = promptEmptyStreamValuePlaceholder
-		}
-		twitchVariablesValuesMap[varName] = val
-	}
-	twitchVariablesStringReplacer, err := helpers.GetStringReplacerFromMap(twitchVariablesValuesMap, true, false)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create string replacer map for twitch variables - err: %w", err)
-	}
-	return twitchVariablesStringReplacer, nil
 }
 
 func valueOrPlaceholderValue(txt string) string {
