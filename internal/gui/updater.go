@@ -231,8 +231,12 @@ func updateTitle(ctx context.Context) error {
 
 	// check there are no "placeholder" values (non-existent variables) left
 	matchingVariables := helpers.ExtractVariableNamesFromText(newTitle)
-	if len(matchingVariables) > 0 && config.Preferences.Title.ThrowErrorIfNonExistentVariable {
+	if config.Preferences.Title.ThrowErrorIfNonExistentVariable && len(matchingVariables) > 0 {
 		return fmt.Errorf("non-existent variable in resulting twitch title - err: %w", err)
+	}
+
+	if config.Preferences.Title.ThrowErrorIfTooLong && len(newTitle) > twitch.MaxTitleLength {
+		return fmt.Errorf("title is too long (%v chars) - err: %w", len(newTitle), err)
 	}
 
 	newPreferences.Title.Value = newTitle

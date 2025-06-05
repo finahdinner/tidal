@@ -61,6 +61,7 @@ type TitleT struct {
 	UpdateImmediatelyOnStart        bool   `json:"update_immediately_on_start"`
 	ThrowErrorIfEmptyVariable       bool   `json:"throw_error_if_empty_variable"`
 	ThrowErrorIfNonExistentVariable bool   `json:"throw_error_if_non_existent_variable"`
+	ThrowErrorIfTooLong             bool   `json:"throw_error_if_too_long"`
 }
 
 // Ensure fields are populated enough to make requests to update twitch variables

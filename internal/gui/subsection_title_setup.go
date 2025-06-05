@@ -144,10 +144,10 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		intervalEntryErrorText,
 	)
 
-	updateImmediatelyCheck := widget.NewCheck("Update immediately on start", func(b bool) {
+	updateImmediatelyOnStart := widget.NewCheck("Update title immediately on start", func(b bool) {
 		titleConfig.UpdateImmediatelyOnStart = b
 	})
-	updateImmediatelyCheck.SetChecked(titleConfig.UpdateImmediatelyOnStart)
+	updateImmediatelyOnStart.SetChecked(titleConfig.UpdateImmediatelyOnStart)
 
 	throwErrorIfEmptyVariable := widget.NewCheck("Throw error if using an empty variable", func(b bool) {
 		titleConfig.ThrowErrorIfEmptyVariable = b
@@ -159,6 +159,11 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 	})
 	throwErrorIfNonExistentVariable.SetChecked(titleConfig.ThrowErrorIfNonExistentVariable)
 
+	throwErrorIfTooLong := widget.NewCheck("Throw error if title is too long", func(b bool) {
+		titleConfig.ThrowErrorIfTooLong = b
+	})
+	throwErrorIfTooLong.SetChecked(titleConfig.ThrowErrorIfTooLong)
+
 	return container.New(
 		layout.NewFormLayout(),
 		widget.NewLabel("Title Template"),
@@ -168,11 +173,13 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		widget.NewLabel("Update Every "),
 		updateFrequencyContainer,
 		layout.NewSpacer(),
-		updateImmediatelyCheck,
+		updateImmediatelyOnStart,
 		layout.NewSpacer(),
 		throwErrorIfEmptyVariable,
 		layout.NewSpacer(),
 		throwErrorIfNonExistentVariable,
+		layout.NewSpacer(),
+		throwErrorIfTooLong,
 		layout.NewSpacer(),
 		numCharactersAvailableForVariablesLabel,
 		layout.NewSpacer(),

@@ -49,6 +49,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		UpdateImmediatelyOnStart:        true,
 		ThrowErrorIfEmptyVariable:       true,
 		ThrowErrorIfNonExistentVariable: true,
+		ThrowErrorIfTooLong:             true,
 	},
 	ActivityConsoleOutput: "",
 }
