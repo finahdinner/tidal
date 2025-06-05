@@ -32,9 +32,6 @@ var (
 // Begins a ticker to update the twitch title
 func startUpdater() error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), singleCycleTimeout)
-	defer cancel()
-
 	if updaterTicker != nil {
 		return errors.New("ticker already running - stop it first")
 	}
@@ -58,7 +55,8 @@ func startUpdater() error {
 	go func() {
 		defer close(doneChan)
 		if config.Preferences.Title.UpdateImmediatelyOnStart {
-			if err := updateCycle(ctx); err != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), singleCycleTimeout)
+			if err := updateCycle(ctx, cancel); err != nil {
 				errChan <- fmt.Errorf("unable to complete update cycle - err: %w", err)
 			}
 		}
@@ -69,7 +67,8 @@ func startUpdater() error {
 				config.Logger.LogInfo("updateTicker finished")
 				return
 			case <-updaterTicker.C:
-				if err := updateCycle(ctx); err != nil {
+				ctx, cancel := context.WithTimeout(context.Background(), singleCycleTimeout)
+				if err := updateCycle(ctx, cancel); err != nil {
 					errChan <- fmt.Errorf("unable to complete update cycle - err: %w", err)
 					continue
 				}
@@ -104,7 +103,8 @@ func startUpdater() error {
 }
 
 // One single update cycle - updates Twitch variables then updates the title
-func updateCycle(ctx context.Context) error {
+func updateCycle(ctx context.Context, cancel context.CancelFunc) error {
+	defer cancel()
 	if err := twitch.UpdateTwitchVariables(ctx); err != nil {
 		if errors.Is(err, twitch.Err401Unauthorised) {
 			return fmt.Errorf("unable to update twitch variables - err: %w", err)
