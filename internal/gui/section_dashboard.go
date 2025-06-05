@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
-	"log"
-	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -19,40 +17,42 @@ import (
 	"github.com/finahdinner/tidal/internal/twitch"
 )
 
-// type Console struct {
-// 	box    *fyne.Container
-// 	scroll *container.Scroll
-// }
+type ActivityConsoleT struct {
+	box    *fyne.Container
+	scroll *container.Scroll
+	stack  *fyne.Container
+}
 
-// var dashboardSection *fyne.Container
+func init() {
+	ActivityConsole = NewActivityConsole()
+}
+
+func NewActivityConsole() *ActivityConsoleT {
+	consoleBox := container.New(layout.NewVBoxLayout())
+	// TODO - add saved console output in preferences? or maybe remove that preference
+	consoleBoxBg := canvas.NewRectangle(color.Black)
+	consoleScroll := container.NewVScroll(consoleBox)
+	consoleStack := container.New(layout.NewStackLayout(), consoleBoxBg, consoleScroll)
+	return &ActivityConsoleT{consoleBox, consoleScroll, consoleStack}
+}
+
+// Append a new line to the activity console
+func (ac *ActivityConsoleT) pushText(text string) {
+	line := widget.NewRichTextFromMarkdown(fmt.Sprintf("`%s`", text))
+	line.Wrapping = fyne.TextWrapWord
+	line.Scroll = fyne.ScrollNone
+	ac.box.Objects = append(ac.box.Objects, line)
+	ac.box.Refresh()
+	ac.scroll.ScrollToBottom()
+}
+
+var ActivityConsole *ActivityConsoleT
 
 func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
-	// if dashboardSection != nil {
-	// 	config.Logger.LogDebug("dashboardSection already exists")
-	// 	return dashboardSection
-	// }
-
-	consoleBox := container.New(layout.NewVBoxLayout())
-
-	consoleStrLines := strings.Split(config.Preferences.ActivityConsoleOutput, "\n")
-	log.Println(consoleStrLines)
-	for _, s := range consoleStrLines {
-		line := widget.NewRichTextFromMarkdown(fmt.Sprintf("`%s`", s))
-		line.Wrapping = fyne.TextWrapWord
-		line.Scroll = fyne.ScrollNone
-		consoleBox.Objects = append(consoleBox.Objects, line)
+	for _, s := range config.Preferences.ActivityConsoleLines {
+		ActivityConsole.pushText(s)
 	}
-	consoleBox.Refresh()
-
-	// TODO - add saved console output in preferences? or maybe remove that preference
-	consoleBoxBg := canvas.NewRectangle(color.Black)
-	// consoleBoxBg.SetMinSize(fyne.NewSize(400, 300))
-
-	consoleScroll := container.NewVScroll(consoleBox)
-	// consoleScroll.SetMinSize(fyne.NewSize(400, 300))
-
-	consoleStack := container.New(layout.NewStackLayout(), consoleBoxBg, consoleScroll)
 
 	startTidalButton := widget.NewButton("Start Tidal", nil) // TODO - disable this if no title is set up
 	stopTidalButton := widget.NewButton("Stop Tidal", nil)
@@ -140,8 +140,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 
 	titleSetupButton := widget.NewButtonWithIcon("Title Setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
-		consoleBox.Objects = append(consoleBox.Objects, widget.NewRichTextFromMarkdown("`hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi! hi!hi!`"))
-		consoleScroll.ScrollToBottom()
 	})
 	bottomLeftContainer := container.New(
 		layout.NewHBoxLayout(),
@@ -155,6 +153,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		buttonContainer,
 	)
 
-	return container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, consoleStack))
+	return container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, ActivityConsole.stack))
 	// return dashboardSection
 }
