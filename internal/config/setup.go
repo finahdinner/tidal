@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-const appConfigDirName = "finahdinner-tidal"
+const AppName = "tidal"
 
 var AppConfigDir string
 
@@ -57,7 +57,7 @@ func getAppConfigDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	appConfigDir := path.Join(globalConfigDir, appConfigDirName)
+	appConfigDir := path.Join(globalConfigDir, AppName+"-config")
 	if !dirExists(appConfigDir) {
 		os.Mkdir(appConfigDir, 0755) // 0755 - owner can rwx, others can r-x
 	}

@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/finahdinner/tidal/internal/config"
 )
 
 type GuiWrapper struct {
@@ -20,7 +21,14 @@ var Gui *GuiWrapper
 
 func init() {
 
-	a := app.NewWithID("tidal.preferences")
+	a := app.NewWithID(config.AppName)
+
+	icon, err := fyne.LoadResourceFromPath("internal/assets/icon.png")
+	if err != nil {
+		config.Logger.LogErrorf("unable to load logo - err: %v", err)
+	}
+	a.SetIcon(icon)
+
 	a.Settings().SetTheme(&tidalTheme{})
 
 	primaryWindow := a.NewWindow("Tidal")
