@@ -14,23 +14,23 @@ type ConsoleLoggerT struct {
 	logPath string
 }
 
-func (cl *ConsoleLoggerT) updateLogPath() error {
+func (cl *ConsoleLoggerT) UpdateLogPath() error {
 	appConfigDir, err := getAppConfigDir()
 	if err != nil {
 		return err
 	}
 	timeNowStr := time.Now().Format("20060102150405")
-	cl.logPath = path.Join(appConfigDir, timeNowStr+".log")
+	cl.logPath = path.Join(appConfigDir, consoleLogsFolderName, timeNowStr+".log")
 	return nil
 }
 
-func (cl *ConsoleLoggerT) deleteLogPath() {
+func (cl *ConsoleLoggerT) DeleteLogPath() {
 	cl.logPath = ""
 }
 
-func (cl *ConsoleLoggerT) pushToLog(text string) error {
+func (cl *ConsoleLoggerT) PushToLog(text string) error {
 	if cl.logPath == "" {
-		if err := cl.updateLogPath(); err != nil {
+		if err := cl.UpdateLogPath(); err != nil {
 			return fmt.Errorf("unable to update log path: %w", err)
 		}
 	}
@@ -45,10 +45,4 @@ func (cl *ConsoleLoggerT) pushToLog(text string) error {
 	return nil
 }
 
-type ConsoleLoggerI interface {
-	pushToLog(string) error
-	deleteLogPath()
-	updateLogPath() error
-}
-
-var ConsoleLogger *ConsoleLoggerI
+var ConsoleLogger *ConsoleLoggerT = &ConsoleLoggerT{}
