@@ -58,5 +58,5 @@ func getAppConfigDir() (string, error) {
 	if !dirExists(appConfigDir) {
 		os.Mkdir(appConfigDir, 0755) // 0755 - owner can rwx, others can r-x
 	}
-	return globalConfigDir, nil
+	return appConfigDir, nil
 }
