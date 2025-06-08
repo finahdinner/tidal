@@ -254,9 +254,14 @@ func updateTitle(ctx context.Context) error {
 	if err := twitch.UpdateStreamTitle(ctx, newPreferences); err != nil {
 		return fmt.Errorf("unable to update stream title - err: %w", err)
 	}
-	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
-	ActivityConsole.pushText(config.Logger.LogToBufferf("Updated title to %q", newTitle))
 
+	if err := ActivityConsole.pushToConsole(
+		config.Logger.LogToBufferf("Updated title to %q", newTitle),
+	); err != nil {
+		return fmt.Errorf("unable to push title update to console - err: %w", err)
+	}
+
+	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
 	config.Preferences = newPreferences
 	config.SavePreferences()
 

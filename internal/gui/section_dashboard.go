@@ -42,13 +42,26 @@ func NewActivityConsole() *ActivityConsoleT {
 }
 
 // Append a new line to the activity console
-func (ac *ActivityConsoleT) pushText(text string) {
+func (ac *ActivityConsoleT) pushToConsole(text string) error {
+	if err := config.ConsoleLogger.PushToLog(text); err != nil {
+		return err
+	}
 	line := widget.NewRichTextFromMarkdown(fmt.Sprintf("`%s`", text))
 	line.Wrapping = fyne.TextWrapWord
 	line.Scroll = fyne.ScrollNone
 	fyne.Do(func() {
 		ac.box.Objects = append(ac.box.Objects, line)
 		ac.scroll.ScrollToBottom()
+		ac.box.Refresh()
+	})
+	return nil
+}
+
+// Clears the console and closes the console log file
+func (ac *ActivityConsoleT) clearConsole() {
+	config.ConsoleLogger.DeleteInstance()
+	ac.box.Objects = []fyne.CanvasObject{}
+	fyne.Do(func() {
 		ac.box.Refresh()
 	})
 }
@@ -93,6 +106,10 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 			return
 		}
 
+		config.ConsoleLogger.NewInstance()
+		startTidalButton.Disable()
+		stopTidalButton.Enable()
+
 		go func() {
 			go func() {
 				uptimeSeconds := 0
@@ -131,8 +148,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 				g.App.SendNotification(fyne.NewNotification("Tidal stopped", "Please check the app."))
 			}
 		}()
-		startTidalButton.Disable()
-		stopTidalButton.Enable()
 	}
 
 	stopTidalButton.OnTapped = func() {
@@ -141,6 +156,8 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		uptimeTicker = nil
 		uptimeLabel.SetText("")
 		config.Logger.LogInfo("tidal stopped")
+		config.ConsoleLogger.DeleteInstance()
+		ActivityConsole.clearConsole()
 		stopTidalButton.Disable()
 		startTidalButton.Enable()
 	}
