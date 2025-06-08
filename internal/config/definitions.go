@@ -9,7 +9,6 @@ type PreferencesFormat struct {
 	LlmConfig            LlmConfigT     `json:"llm_config"`
 	AiGeneratedVariables []LlmVariableT `json:"ai_generated_variables"`
 	Title                TitleT         `json:"title_config"`
-	ActivityConsoleLines []string       `json:"activity_console_lines"`
 }
 
 type TwitchConfigT struct {

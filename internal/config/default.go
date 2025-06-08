@@ -51,5 +51,4 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		ThrowErrorIfNonExistentVariable: true,
 		ThrowErrorIfTooLong:             true,
 	},
-	ActivityConsoleLines: []string{},
 }

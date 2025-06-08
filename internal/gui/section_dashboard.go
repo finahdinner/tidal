@@ -38,11 +38,7 @@ func NewActivityConsole() *ActivityConsoleT {
 	consoleBoxBg := canvas.NewRectangle(color.Black)
 	consoleScroll := container.NewVScroll(consoleBox)
 	consoleStack := container.New(layout.NewStackLayout(), consoleBoxBg, consoleScroll)
-	ac := &ActivityConsoleT{consoleBox, consoleScroll, consoleStack}
-	for _, s := range config.Preferences.ActivityConsoleLines {
-		ac.pushText(s)
-	}
-	return ac
+	return &ActivityConsoleT{consoleBox, consoleScroll, consoleStack}
 }
 
 // Append a new line to the activity console
