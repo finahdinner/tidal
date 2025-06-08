@@ -9,13 +9,9 @@ import (
 const appConfigDirName = "finahdinner-tidal"
 
 func init() {
-	globalConfigDir, err := os.UserConfigDir()
+	appConfigDir, err := getAppConfigDir()
 	if err != nil {
 		log.Fatal(err)
-	}
-	appConfigDir := path.Join(globalConfigDir, appConfigDirName)
-	if !dirExists(appConfigDir) {
-		os.Mkdir(appConfigDir, 0755) // 0755 - owner can rwx, others can r-x
 	}
 
 	// config file
@@ -32,7 +28,7 @@ func init() {
 		}
 	}
 
-	// create logger
+	// create general logger
 	appLogPath = path.Join(appConfigDir, logFileName)
 	Logger, err = newTidalLogger(appLogPath)
 	if err != nil {
@@ -51,4 +47,16 @@ func dirExists(path string) bool {
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+func getAppConfigDir() (string, error) {
+	globalConfigDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	appConfigDir := path.Join(globalConfigDir, appConfigDirName)
+	if !dirExists(appConfigDir) {
+		os.Mkdir(appConfigDir, 0755) // 0755 - owner can rwx, others can r-x
+	}
+	return globalConfigDir, nil
 }
