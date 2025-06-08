@@ -15,6 +15,8 @@ import (
 	"github.com/finahdinner/tidal/internal/config"
 	"github.com/finahdinner/tidal/internal/helpers"
 	"github.com/finahdinner/tidal/internal/twitch"
+
+	"github.com/skratchdot/open-golang/open"
 )
 
 type ActivityConsoleT struct {
@@ -167,9 +169,16 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	titleSetupButton := widget.NewButtonWithIcon("Title Setup", theme.SettingsIcon(), func() {
 		g.openSecondaryWindow("Title Setup", g.getTitleSetupSubsection(), &titleSetupWindowSize)
 	})
+
+	openConfigFolderBtn := widget.NewButtonWithIcon("Config Folder", theme.FolderIcon(), func() {
+		fmt.Println(config.AppConfigDir)
+		open.Run(config.AppConfigDir)
+	})
+
 	bottomLeftContainer := container.New(
 		layout.NewHBoxLayout(),
 		titleSetupButton,
+		openConfigFolderBtn,
 		uptimeLabel,
 	)
 

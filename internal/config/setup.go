@@ -8,14 +8,17 @@ import (
 
 const appConfigDirName = "finahdinner-tidal"
 
+var AppConfigDir string
+
 func init() {
-	appConfigDir, err := getAppConfigDir()
+	var err error
+	AppConfigDir, err = getAppConfigDir()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// config file
-	appPreferencesPath = path.Join(appConfigDir, preferencesFileName)
+	appPreferencesPath = path.Join(AppConfigDir, preferencesFileName)
 	if fileExists(appPreferencesPath) {
 		Preferences, err = GetPreferences()
 		if err != nil {
@@ -29,7 +32,7 @@ func init() {
 	}
 
 	// create general logger
-	appLogPath = path.Join(appConfigDir, logFileName)
+	appLogPath = path.Join(AppConfigDir, logFileName)
 	Logger, err = newTidalLogger(appLogPath)
 	if err != nil {
 		log.Fatalf("unable to create logger: %v", err)

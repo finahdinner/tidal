@@ -4,6 +4,7 @@ go 1.23.4
 
 require (
 	fyne.io/fyne/v2 v2.6.1
+	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	google.golang.org/genai v1.5.0
 )
 
