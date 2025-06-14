@@ -25,8 +25,7 @@ const (
 
 var promptWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
 
-func (g *GuiWrapper) getVariablesSection() *fyne.Container {
-
+func (g *GuiWrapper) getStreamVariablesSection() *fyne.Container {
 	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
 	twitchVariablesHeader.TextSize = headerSize
 
@@ -90,6 +89,25 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 		}
 	}()
 
+	return container.NewPadded(
+		container.NewScroll(
+			container.New(
+				layout.NewVBoxLayout(),
+				twitchVariablesHeaderRow,
+				container.New(
+					layout.NewHBoxLayout(),
+					twitchVariableCopyColumn,
+					twitchVariableNameColumn,
+					twitchVariableValueColumn,
+					twitchVariableDescriptionColumn,
+				),
+			),
+		),
+	)
+}
+
+func (g *GuiWrapper) getAiGeneratedVariablesSection() *fyne.Container {
+
 	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
 	aiGeneratedVariablesHeader.TextSize = headerSize
 
@@ -147,64 +165,25 @@ func (g *GuiWrapper) getVariablesSection() *fyne.Container {
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
-	selectedSubsection := container.NewPadded()
-
-	streamVariablesSubsection := container.New(
-		layout.NewVBoxLayout(),
-		twitchVariablesHeaderRow,
-		container.New(
-			layout.NewHBoxLayout(),
-			twitchVariableCopyColumn,
-			twitchVariableNameColumn,
-			twitchVariableValueColumn,
-			twitchVariableDescriptionColumn,
-		),
-	)
-
-	aiGeneratedVariablesSubsection := container.New(
-		layout.NewVBoxLayout(),
-		aiGeneratedVariablesHeaderRow,
-		container.New(
-			layout.NewVBoxLayout(),
+	return container.NewPadded(
+		container.NewScroll(
 			container.New(
-				layout.NewHBoxLayout(),
-				aiGeneratedVariableCopyColumn,
-				aiGeneratedVariableNameColumn,
-				aiGeneratedEditColumn,
-				aiGeneratedVariableRemoveColumn,
+				layout.NewVBoxLayout(),
+				aiGeneratedVariablesHeaderRow,
+				container.New(
+					layout.NewVBoxLayout(),
+					container.New(
+						layout.NewHBoxLayout(),
+						aiGeneratedVariableCopyColumn,
+						aiGeneratedVariableNameColumn,
+						aiGeneratedEditColumn,
+						aiGeneratedVariableRemoveColumn,
+					),
+					horizontalSpacer(3),
+					addAiGeneratedVariableBtnRow,
+				),
 			),
-			horizontalSpacer(3),
-			addAiGeneratedVariableBtnRow,
 		),
-	)
-
-	switchToStreamVarsBtn := widget.NewButton("Stream", nil)
-	switchToAiGeneratedVarsBtn := widget.NewButton("AI-Generated", nil)
-
-	switchToStreamVarsBtn.OnTapped = func() {
-		switchToStreamVarsBtn.Disable()
-		switchToAiGeneratedVarsBtn.Enable()
-		selectedSubsection.Objects = []fyne.CanvasObject{streamVariablesSubsection}
-	}
-
-	switchToAiGeneratedVarsBtn.OnTapped = func() {
-		switchToAiGeneratedVarsBtn.Disable()
-		switchToStreamVarsBtn.Enable()
-		selectedSubsection.Objects = []fyne.CanvasObject{aiGeneratedVariablesSubsection}
-	}
-
-	sidebarSwitcher := container.New(
-		layout.NewGridLayoutWithRows(2),
-		switchToStreamVarsBtn,
-		switchToAiGeneratedVarsBtn,
-	)
-
-	switchToStreamVarsBtn.OnTapped() // tap this button to start
-
-	return container.New(
-		layout.NewBorderLayout(nil, nil, sidebarSwitcher, nil),
-		sidebarSwitcher,
-		container.NewScroll(selectedSubsection),
 	)
 }
 

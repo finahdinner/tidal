@@ -41,10 +41,11 @@ func init() {
 	}
 
 	menuMap := map[string]func() *fyne.Container{
-		"Dashboard": Gui.getDashboardSection,
-		"Variables": Gui.getVariablesSection,
+		"Dashboard":              Gui.getDashboardSection,
+		"Stream Variables":       Gui.getStreamVariablesSection,
+		"Ai-Generated Variables": Gui.getAiGeneratedVariablesSection,
 	}
-	menuItemNames := []string{"Dashboard", "Variables"}
+	menuItemNames := []string{"Dashboard", "Stream Variables", "Ai-Generated Variables"}
 
 	contentContainer := container.New(layout.NewStackLayout())
 	menuButtons := container.New(layout.NewGridLayoutWithColumns(len(menuItemNames)))
