@@ -103,7 +103,7 @@ func (g *GuiWrapper) getTwitchConfigSubsection() *fyne.Container {
 			}
 			showErrorDialog(
 				err,
-				fmt.Sprintf("unable to save twitch config:\n%v", err),
+				"Unable to save twitch configuration - see logs for details.",
 				g.SecondaryWindow,
 			)
 			return
@@ -126,7 +126,7 @@ func (g *GuiWrapper) getTwitchConfigSubsection() *fyne.Container {
 				}
 				showErrorDialog(
 					err,
-					fmt.Sprintf("unable to authenticate using twitch credentials:\n%v", err),
+					"Unable to authenticate using Twitch credentials - see logs for details.",
 					g.SecondaryWindow,
 				)
 				fyne.Do(func() { saveConfigButton.Enable() }) // to encourage to change settings + save again
