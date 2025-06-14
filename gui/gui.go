@@ -93,8 +93,6 @@ func init() {
 		contentContainer,
 	)
 
-	// mainSplit := container.New(layout.NewBorderLayout(nil, nil, menuList, nil), menuList, contentContainer)
-
 	Gui.PrimaryWindow.SetContent(mainSplit)
 	Gui.PrimaryWindow.Show()
 }
