@@ -27,7 +27,7 @@ type ActivityConsoleT struct {
 
 var ActivityConsole *ActivityConsoleT
 
-var dashboardSection *fyne.Container
+var dashboardSection fyne.CanvasObject
 
 func init() {
 	if ActivityConsole == nil {
@@ -68,7 +68,7 @@ func (ac *ActivityConsoleT) clearConsole() {
 	})
 }
 
-func (g *GuiWrapper) getDashboardSection() *fyne.Container {
+func (g *GuiWrapper) getDashboardSection() fyne.CanvasObject {
 
 	if ActivityConsole == nil {
 		ActivityConsole = NewActivityConsole()
@@ -126,7 +126,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 						return
 					case <-uptimeTicker.C:
 						uptimeSeconds += 1
-						// TODO - proper time format
 						fyne.Do(func() {
 							uptimeLabel.SetText(fmt.Sprintf("Uptime: %s", helpers.GetTimeStringFromSeconds(uptimeSeconds)))
 						})
@@ -187,6 +186,13 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 		buttonContainer,
 	)
 
-	dashboardSection = container.NewPadded(container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, ActivityConsole.stack))
+	dashboardSection = contentCanvas(
+		"Dashboard",
+		nil,
+		container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, ActivityConsole.stack),
+		false,
+		true,
+	)
+
 	return dashboardSection
 }
