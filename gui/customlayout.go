@@ -30,7 +30,7 @@ func showErrorDialog(err error, dialogText string, window fyne.Window) {
 
 	var customDialog dialog.Dialog
 
-	showLogsBtn := widget.NewButton("Show Logs", func() {
+	openLogsBtn := widget.NewButton("Open Logs", func() {
 		open.Run(config.AppLogFilePath)
 	})
 	dismissBtn := widget.NewButton("Dismiss", func() {
@@ -39,7 +39,7 @@ func showErrorDialog(err error, dialogText string, window fyne.Window) {
 	btnRow := container.New(
 		layout.NewHBoxLayout(),
 		layout.NewSpacer(),
-		showLogsBtn, dismissBtn,
+		openLogsBtn, dismissBtn,
 		layout.NewSpacer(),
 	)
 
