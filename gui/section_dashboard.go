@@ -145,7 +145,7 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 				if errors.Is(err, twitch.Err401Unauthorised) {
 					showErrorDialog(err, "Twitch API returned 401 Unauthorised.\nEnsure you have set up your Twitch credentials correctly.", g.PrimaryWindow)
 				} else {
-					showErrorDialog(err, fmt.Sprintf("Error encountered during title update process - err: %v", err), g.PrimaryWindow)
+					showErrorDialog(err, "Unable to update title - see logs for details.", g.PrimaryWindow)
 				}
 				g.App.SendNotification(fyne.NewNotification("Tidal stopped", "Please check the app."))
 			}
