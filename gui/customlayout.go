@@ -1,12 +1,13 @@
 package gui
 
 import (
-	"errors"
 	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/config"
 )
@@ -25,7 +26,27 @@ func verticalSpacer(width float32) *canvas.Rectangle {
 
 func showErrorDialog(err error, dialogText string, window fyne.Window) {
 	config.Logger.LogError(err.Error())
-	dialog.ShowError(errors.New(dialogText), window)
+
+	var customDialog dialog.Dialog
+
+	showLogsBtn := widget.NewButton("Show Logs", nil)
+	dismissBtn := widget.NewButton("Dismiss", func() {
+		customDialog.Dismiss()
+	})
+	btnRow := container.New(
+		layout.NewHBoxLayout(),
+		layout.NewSpacer(),
+		showLogsBtn, dismissBtn,
+		layout.NewSpacer(),
+	)
+
+	customContent := container.New(
+		layout.NewVBoxLayout(),
+		widget.NewLabel(dialogText),
+		btnRow,
+	)
+	customDialog = dialog.NewCustomWithoutButtons("Error", customContent, window)
+	customDialog.Show()
 }
 
 func showInfoDialog(title string, message string, window fyne.Window) {
