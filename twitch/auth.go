@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/finahdinner/tidal/internal/config"
-	"github.com/finahdinner/tidal/internal/helpers"
+	"github.com/finahdinner/tidal/config"
+	"github.com/finahdinner/tidal/helpers"
 )
 
 type ctxServerKey struct{}

@@ -1,6 +1,6 @@
 package config
 
-import "github.com/finahdinner/tidal/internal/helpers"
+import "github.com/finahdinner/tidal/helpers"
 
 type PreferencesFormat struct {
 	TwitchConfig    TwitchConfigT    `json:"twitch_config"`

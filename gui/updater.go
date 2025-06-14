@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/finahdinner/tidal/internal/config"
-	"github.com/finahdinner/tidal/internal/helpers"
-	"github.com/finahdinner/tidal/internal/twitch"
-	"github.com/finahdinner/tidal/pkg/llm"
+	"github.com/finahdinner/tidal/config"
+	"github.com/finahdinner/tidal/helpers"
+	"github.com/finahdinner/tidal/llm"
+	"github.com/finahdinner/tidal/twitch"
 )
 
 const (

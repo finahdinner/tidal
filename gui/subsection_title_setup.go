@@ -13,9 +13,9 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/config"
-	"github.com/finahdinner/tidal/internal/helpers"
-	"github.com/finahdinner/tidal/internal/twitch"
+	"github.com/finahdinner/tidal/config"
+	"github.com/finahdinner/tidal/helpers"
+	"github.com/finahdinner/tidal/twitch"
 )
 
 var titleSetupWindowSize fyne.Size = fyne.NewSize(700, 1) // height 1 lets the layout determine the height

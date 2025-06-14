@@ -7,8 +7,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/config"
-	"github.com/finahdinner/tidal/pkg/llm"
+	"github.com/finahdinner/tidal/config"
+	"github.com/finahdinner/tidal/llm"
 )
 
 var llmConfigWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/finahdinner/tidal/internal/config"
+	"github.com/finahdinner/tidal/config"
 )
 
 var Err401Unauthorised error = errors.New("unauthorised")

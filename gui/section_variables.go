@@ -14,8 +14,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/config"
-	"github.com/finahdinner/tidal/internal/helpers"
+	"github.com/finahdinner/tidal/config"
+	"github.com/finahdinner/tidal/helpers"
 )
 
 const (

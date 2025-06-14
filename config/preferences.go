@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/finahdinner/tidal/internal/helpers"
+	"github.com/finahdinner/tidal/helpers"
 )
 
 const preferencesFileName = "preferences.json"

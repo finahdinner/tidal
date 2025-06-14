@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"github.com/finahdinner/tidal/internal/config"
+	"github.com/finahdinner/tidal/config"
 )
 
 func horizontalSpacer(height float32) *canvas.Rectangle {
