@@ -171,7 +171,6 @@ func (g *GuiWrapper) getDashboardSection() *fyne.Container {
 	})
 
 	openConfigFolderBtn := widget.NewButtonWithIcon("Config Folder", theme.FolderIcon(), func() {
-		fmt.Println(config.AppConfigDir)
 		open.Run(config.AppConfigDir)
 	})
 

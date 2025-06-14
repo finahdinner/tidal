@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/config"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func horizontalSpacer(height float32) *canvas.Rectangle {
@@ -29,7 +30,9 @@ func showErrorDialog(err error, dialogText string, window fyne.Window) {
 
 	var customDialog dialog.Dialog
 
-	showLogsBtn := widget.NewButton("Show Logs", nil)
+	showLogsBtn := widget.NewButton("Show Logs", func() {
+		open.Run(config.AppLogFilePath)
+	})
 	dismissBtn := widget.NewButton("Dismiss", func() {
 		customDialog.Dismiss()
 	})

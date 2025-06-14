@@ -9,6 +9,7 @@ import (
 const AppName = "tidal"
 
 var AppConfigDir string
+var AppLogFilePath string
 
 func init() {
 	var err error
@@ -32,8 +33,8 @@ func init() {
 	}
 
 	// create general logger
-	appLogPath = path.Join(AppConfigDir, logFileName)
-	Logger, err = newTidalLogger(appLogPath)
+	AppLogFilePath = path.Join(AppConfigDir, logFileName)
+	Logger, err = newTidalLogger(AppLogFilePath)
 	if err != nil {
 		log.Fatalf("unable to create logger: %v", err)
 	}
