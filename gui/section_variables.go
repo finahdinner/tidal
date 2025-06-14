@@ -25,19 +25,11 @@ const (
 
 var promptWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
 
-func (g *GuiWrapper) getStreamVariablesSection() *fyne.Container {
-	twitchVariablesHeader := canvas.NewText("Twitch Variables", theme.Color(theme.ColorNameForeground))
-	twitchVariablesHeader.TextSize = headerSize
+func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 
-	twitchVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {
+	openSettingsFunc := func() {
 		g.openSecondaryWindow("Twitch Configuration", g.getTwitchConfigSubsection(), &twitchConfigWindowSize)
-	})
-	twitchVariablesHeaderRow := container.New(
-		layout.NewHBoxLayout(),
-		twitchVariablesSettingsButton,
-		verticalSpacer(1),
-		twitchVariablesHeader,
-	)
+	}
 
 	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
@@ -89,37 +81,26 @@ func (g *GuiWrapper) getStreamVariablesSection() *fyne.Container {
 		}
 	}()
 
-	return container.NewPadded(
-		container.NewScroll(
-			container.New(
-				layout.NewVBoxLayout(),
-				twitchVariablesHeaderRow,
-				container.New(
-					layout.NewHBoxLayout(),
-					twitchVariableCopyColumn,
-					twitchVariableNameColumn,
-					twitchVariableValueColumn,
-					twitchVariableDescriptionColumn,
-				),
-			),
+	return contentCanvas(
+		"Twitch Variables",
+		openSettingsFunc,
+		container.New(
+			layout.NewHBoxLayout(),
+			twitchVariableCopyColumn,
+			twitchVariableNameColumn,
+			twitchVariableValueColumn,
+			twitchVariableDescriptionColumn,
 		),
+		true,
+		true,
 	)
 }
 
-func (g *GuiWrapper) getAiGeneratedVariablesSection() *fyne.Container {
+func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 
-	aiGeneratedVariablesHeader := canvas.NewText("AI-generated Variables", theme.Color(theme.ColorNameForeground))
-	aiGeneratedVariablesHeader.TextSize = headerSize
-
-	aiGeneratedVariablesSettingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {
+	openSettingsFunc := func() {
 		g.openSecondaryWindow("LLM Configuration", g.getLlmConfigSubsection(), &llmConfigWindowSize)
-	})
-	aiGeneratedVariablesHeaderRow := container.New(
-		layout.NewHBoxLayout(),
-		aiGeneratedVariablesSettingsButton,
-		verticalSpacer(1),
-		aiGeneratedVariablesHeader,
-	)
+	}
 
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
@@ -165,25 +146,23 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() *fyne.Container {
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
-	return container.NewPadded(
-		container.NewScroll(
+	return contentCanvas(
+		"AI-generated Variables",
+		openSettingsFunc,
+		container.New(
+			layout.NewVBoxLayout(),
 			container.New(
-				layout.NewVBoxLayout(),
-				aiGeneratedVariablesHeaderRow,
-				container.New(
-					layout.NewVBoxLayout(),
-					container.New(
-						layout.NewHBoxLayout(),
-						aiGeneratedVariableCopyColumn,
-						aiGeneratedVariableNameColumn,
-						aiGeneratedEditColumn,
-						aiGeneratedVariableRemoveColumn,
-					),
-					horizontalSpacer(3),
-					addAiGeneratedVariableBtnRow,
-				),
+				layout.NewHBoxLayout(),
+				aiGeneratedVariableCopyColumn,
+				aiGeneratedVariableNameColumn,
+				aiGeneratedEditColumn,
+				aiGeneratedVariableRemoveColumn,
 			),
+			horizontalSpacer(3),
+			addAiGeneratedVariableBtnRow,
 		),
+		true,
+		true,
 	)
 }
 

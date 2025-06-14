@@ -40,7 +40,7 @@ func init() {
 		PrimaryWindow: primaryWindow,
 	}
 
-	menuMap := map[string]func() *fyne.Container{
+	menuMap := map[string]func() fyne.CanvasObject{
 		"Dashboard":              Gui.getDashboardSection,
 		"Stream Variables":       Gui.getStreamVariablesSection,
 		"Ai-Generated Variables": Gui.getAiGeneratedVariablesSection,

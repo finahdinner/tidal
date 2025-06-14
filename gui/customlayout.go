@@ -8,10 +8,63 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/finahdinner/tidal/config"
 	"github.com/skratchdot/open-golang/open"
 )
+
+func contentCanvas(
+	title string,
+	openSettingsFunc func(),
+	content fyne.CanvasObject,
+	scrollable bool,
+	padded bool,
+) fyne.CanvasObject {
+
+	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
+	header.TextSize = headerSize
+
+	var headerRow *fyne.Container
+	if openSettingsFunc != nil {
+		settingsBtn := widget.NewButtonWithIcon("", theme.SettingsIcon(), openSettingsFunc)
+		headerRow = container.New(
+			layout.NewHBoxLayout(),
+			settingsBtn,
+			verticalSpacer(1),
+			header,
+		)
+	} else {
+		headerRow = container.New(
+			layout.NewHBoxLayout(),
+			header,
+		)
+	}
+
+	headerRow = container.New(
+		layout.NewVBoxLayout(),
+		headerRow,
+		verticalSpacer(2),
+	)
+
+	var c fyne.CanvasObject
+
+	c = container.New(
+		layout.NewBorderLayout(headerRow, nil, nil, nil),
+		headerRow,
+		content,
+	)
+
+	if scrollable {
+		c = container.NewScroll(c)
+	}
+
+	if padded {
+		c = container.NewPadded(c)
+	}
+
+	return c
+}
 
 func horizontalSpacer(height float32) *canvas.Rectangle {
 	padding := canvas.NewRectangle(color.Transparent)
