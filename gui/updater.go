@@ -26,7 +26,6 @@ var (
 	updaterTickerDone chan struct{}
 
 	updateVariablesSectionSignal = make(chan struct{}, 1)
-	updateDashboardSectionSignal = make(chan struct{}, 1) // TODO - need to use or remove this
 )
 
 // Begins a ticker to update the twitch title
@@ -79,14 +78,6 @@ func startUpdater() error {
 				default:
 					// reached if updateVariablesSectionSignal is full
 					config.Logger.LogDebug("updateVariablesSectionSignal chan is full - skipping")
-				}
-
-				select {
-				case updateDashboardSectionSignal <- struct{}{}:
-					// signal to update dashboard section
-				default:
-					// reached if updateDashboardSectionSignal is full
-					config.Logger.LogDebug("updateDashboardSectionSignal chan is full - skipping")
 				}
 			}
 		}
