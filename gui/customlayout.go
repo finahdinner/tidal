@@ -14,7 +14,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-func contentCanvas(
+func sectionWrapper(
 	title string,
 	openSettingsFunc func(),
 	content fyne.CanvasObject,

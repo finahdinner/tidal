@@ -81,7 +81,7 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 		}
 	}()
 
-	return contentCanvas(
+	return sectionWrapper(
 		"Twitch Variables",
 		openSettingsFunc,
 		container.New(
@@ -146,7 +146,7 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
-	return contentCanvas(
+	return sectionWrapper(
 		"AI-generated Variables",
 		openSettingsFunc,
 		container.New(

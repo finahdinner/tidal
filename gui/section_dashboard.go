@@ -186,7 +186,7 @@ func (g *GuiWrapper) getDashboardSection() fyne.CanvasObject {
 		buttonContainer,
 	)
 
-	dashboardSection = contentCanvas(
+	dashboardSection = sectionWrapper(
 		"Dashboard",
 		nil,
 		container.New(layout.NewBorderLayout(nil, bottomRow, nil, nil), bottomRow, ActivityConsole.stack),
