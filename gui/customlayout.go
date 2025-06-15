@@ -14,11 +14,14 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
+// var maxContentSize fyne.Size = fyne.NewSize(900, 600)
+
 func sectionWrapper(
 	title string,
 	openSettingsFunc func(),
 	content fyne.CanvasObject,
-	scrollable bool,
+	verticallyScrollable bool,
+	horizontallyScrollable bool,
 	padded bool,
 ) fyne.CanvasObject {
 
@@ -55,8 +58,12 @@ func sectionWrapper(
 		content,
 	)
 
-	if scrollable {
+	if verticallyScrollable && horizontallyScrollable {
 		c = container.NewScroll(c)
+	} else if verticallyScrollable {
+		c = container.NewVScroll(c)
+	} else if horizontallyScrollable {
+		c = container.NewHScroll(c)
 	}
 
 	if padded {

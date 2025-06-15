@@ -93,6 +93,7 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 		),
 		true,
 		true,
+		true,
 	)
 }
 
@@ -161,6 +162,7 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 			horizontalSpacer(3),
 			addAiGeneratedVariableBtnRow,
 		),
+		true,
 		true,
 		true,
 	)

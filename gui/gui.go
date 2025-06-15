@@ -50,8 +50,9 @@ func init() {
 		"Console":                Gui.getConsoleSection,
 		"Stream Variables":       Gui.getStreamVariablesSection,
 		"Ai-Generated Variables": Gui.getAiGeneratedVariablesSection,
+		"Help":                   Gui.getHelpSection,
 	}
-	menuItemNames := []string{"Console", "Stream Variables", "Ai-Generated Variables"}
+	menuItemNames := []string{"Console", "Stream Variables", "Ai-Generated Variables", "Help"}
 
 	contentContainer := container.New(layout.NewStackLayout())
 	menuButtons := container.New(layout.NewGridLayoutWithColumns(len(menuItemNames)))
