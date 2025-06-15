@@ -26,7 +26,7 @@ var (
 	updaterTickerDone chan struct{}
 
 	updateVariablesSectionSignal = make(chan struct{}, 1)
-	updateDashboardSectionSignal = make(chan struct{}, 1)
+	updateDashboardSectionSignal = make(chan struct{}, 1) // TODO - need to use or remove this
 )
 
 // Begins a ticker to update the twitch title
