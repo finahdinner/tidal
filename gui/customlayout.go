@@ -14,8 +14,6 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-// var maxContentSize fyne.Size = fyne.NewSize(900, 600)
-
 func sectionWrapper(
 	title string,
 	openSettingsFunc func(),
