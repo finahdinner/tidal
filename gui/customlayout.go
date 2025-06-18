@@ -17,6 +17,7 @@ import (
 func sectionWrapper(
 	title string,
 	openSettingsFunc func(),
+	openHelpFunc func(),
 	content fyne.CanvasObject,
 	verticallyScrollable bool,
 	horizontallyScrollable bool,
@@ -26,25 +27,29 @@ func sectionWrapper(
 	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
 	header.TextSize = headerSize
 
-	var headerRow *fyne.Container
-	if openSettingsFunc != nil {
-		settingsBtn := widget.NewButtonWithIcon("", theme.SettingsIcon(), openSettingsFunc)
-		headerRow = container.New(
-			layout.NewHBoxLayout(),
-			settingsBtn,
-			verticalSpacer(1),
-			header,
-		)
-	} else {
-		headerRow = container.New(
-			layout.NewHBoxLayout(),
-			header,
-		)
+	settingsBtn := widget.NewButtonWithIcon("", theme.SettingsIcon(), openSettingsFunc)
+	if openSettingsFunc == nil {
+		settingsBtn.Disable()
 	}
 
-	headerRow = container.New(
+	headerRowLeft := container.New(
+		layout.NewHBoxLayout(),
+		settingsBtn,
+		verticalSpacer(1),
+		header,
+	)
+
+	helpBtn := widget.NewButtonWithIcon("", theme.HelpIcon(), openHelpFunc)
+	if openHelpFunc == nil {
+		helpBtn.Disable()
+	}
+
+	headerRow := container.New(
 		layout.NewVBoxLayout(),
-		headerRow,
+		container.New(
+			layout.NewBorderLayout(nil, nil, headerRowLeft, helpBtn),
+			headerRowLeft, helpBtn,
+		),
 		verticalSpacer(2),
 	)
 

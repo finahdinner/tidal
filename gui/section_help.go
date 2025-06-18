@@ -42,6 +42,7 @@ func (g *GuiWrapper) getHelpSection() fyne.CanvasObject {
 	return sectionWrapper(
 		"General Help",
 		nil,
+		nil,
 		c,
 		true,
 		false,

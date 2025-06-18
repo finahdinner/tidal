@@ -74,6 +74,7 @@ func (g *GuiWrapper) getConsoleSection() fyne.CanvasObject {
 	consoleSection = sectionWrapper(
 		"Console",
 		nil,
+		nil,
 		ActivityConsole.stack,
 		false,
 		false,

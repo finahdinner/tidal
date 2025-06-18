@@ -84,6 +84,7 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 	return sectionWrapper(
 		"Twitch Variables",
 		openSettingsFunc,
+		nil,
 		container.New(
 			layout.NewHBoxLayout(),
 			twitchVariableCopyColumn,
@@ -150,6 +151,7 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 	return sectionWrapper(
 		"AI-generated Variables",
 		openSettingsFunc,
+		nil,
 		container.New(
 			layout.NewVBoxLayout(),
 			container.New(
