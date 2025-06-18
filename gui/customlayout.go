@@ -14,6 +14,8 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
+var helpWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
+
 func sectionWrapper(
 	title string,
 	openSettingsFunc func(),
@@ -74,6 +76,26 @@ func sectionWrapper(
 	}
 
 	return c
+}
+
+func helpSectionWrapper(title string, markdownLines []string) fyne.CanvasObject {
+
+	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
+	header.TextSize = headerSize
+
+	c := container.New(
+		layout.NewVBoxLayout(),
+		header,
+		verticalSpacer(1),
+	)
+
+	for _, line := range markdownLines {
+		rt := widget.NewRichTextFromMarkdown(line)
+		rt.Wrapping = fyne.TextWrapWord
+		c.Objects = append(c.Objects, rt)
+	}
+
+	return container.NewPadded(c)
 }
 
 func horizontalSpacer(height float32) *canvas.Rectangle {

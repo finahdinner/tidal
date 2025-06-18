@@ -71,10 +71,14 @@ func (g *GuiWrapper) getConsoleSection() fyne.CanvasObject {
 		return consoleSection
 	}
 
+	openHelpFunc := func() {
+		g.openSecondaryWindow("Console Help", getConsoleHelpSection(), &helpWindowSize)
+	}
+
 	consoleSection = sectionWrapper(
 		"Console",
 		nil,
-		nil,
+		openHelpFunc,
 		ActivityConsole.stack,
 		false,
 		false,
@@ -82,4 +86,15 @@ func (g *GuiWrapper) getConsoleSection() fyne.CanvasObject {
 	)
 
 	return consoleSection
+}
+
+func getConsoleHelpSection() fyne.CanvasObject {
+
+	markdownLines := []string{
+		"- When the **Start Tidal** button is pressed, each title update will be logged to the Console.",
+		"- When the **Stop Tidal** button is pressed, or Tidal stops updating the title for any other reason, the Console will be cleared.",
+		"- However, all logs will exist in a log file found in the logs folder - use the **Config Folder** button to open this folder.",
+	}
+
+	return helpSectionWrapper("Console Help", markdownLines)
 }
