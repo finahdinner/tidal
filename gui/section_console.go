@@ -75,7 +75,7 @@ func (g *GuiWrapper) getConsoleSection() fyne.CanvasObject {
 		g.openSecondaryWindow("Console Help", getConsoleHelpSection(), &helpWindowSize)
 	}
 
-	consoleSection = sectionWrapper(
+	consoleSection = mainWindowSectionWrapper(
 		"Console",
 		nil,
 		openHelpFunc,

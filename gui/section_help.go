@@ -39,7 +39,7 @@ func (g *GuiWrapper) getHelpSection() fyne.CanvasObject {
 
 	c.Objects = append(c.Objects, noteRt)
 
-	return sectionWrapper(
+	return mainWindowSectionWrapper(
 		"General Help",
 		nil,
 		nil,

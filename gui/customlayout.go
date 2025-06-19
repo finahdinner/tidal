@@ -16,7 +16,7 @@ import (
 
 var helpWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layout determine the height
 
-func sectionWrapper(
+func mainWindowSectionWrapper(
 	title string,
 	openSettingsFunc func(),
 	openHelpFunc func(),
