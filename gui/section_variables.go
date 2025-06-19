@@ -28,7 +28,15 @@ var promptWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layou
 func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 
 	openSettingsFunc := func() {
-		g.openSecondaryWindow("Twitch Configuration", g.getTwitchConfigSubsection(), &twitchConfigWindowSize)
+		g.openSecondaryWindow(
+			"Twitch Configuration",
+			secondaryWindowSectionWrapper(
+				"Twitch Configuration",
+				nil,
+				g.getTwitchConfigSubsection(),
+			),
+			&twitchConfigWindowSize,
+		)
 	}
 
 	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
@@ -101,7 +109,15 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 
 	openSettingsFunc := func() {
-		g.openSecondaryWindow("LLM Configuration", g.getLlmConfigSubsection(), &llmConfigWindowSize)
+		g.openSecondaryWindow(
+			"LLM Configuration",
+			secondaryWindowSectionWrapper(
+				"LLM Configuration",
+				nil,
+				g.getLlmConfigSubsection(),
+			),
+			&llmConfigWindowSize,
+		)
 	}
 
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))

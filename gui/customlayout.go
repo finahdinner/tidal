@@ -79,7 +79,25 @@ func mainWindowSectionWrapper(
 }
 
 func secondaryWindowSectionWrapper(title string, openHelpFunc func(), content fyne.CanvasObject) fyne.CanvasObject {
-	//
+	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
+	header.TextSize = headerSize
+
+	helpBtn := widget.NewButtonWithIcon("", theme.HelpIcon(), openHelpFunc)
+	if openHelpFunc == nil {
+		helpBtn.Disable()
+	}
+
+	c := container.New(
+		layout.NewVBoxLayout(),
+		container.New(
+			layout.NewBorderLayout(nil, nil, header, helpBtn),
+			header, helpBtn,
+		),
+		verticalSpacer(2),
+		content,
+	)
+
+	return container.NewPadded(c)
 }
 
 func helpSectionWrapper(title string, markdownLines []string) fyne.CanvasObject {
