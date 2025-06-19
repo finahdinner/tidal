@@ -78,24 +78,53 @@ func mainWindowSectionWrapper(
 	return c
 }
 
-func secondaryWindowSectionWrapper(title string, openHelpFunc func(), content fyne.CanvasObject) fyne.CanvasObject {
+func secondaryWindowSectionWrapper(
+	title string,
+	mainContent fyne.CanvasObject,
+	helpContent fyne.CanvasObject,
+) fyne.CanvasObject {
+
 	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
 	header.TextSize = headerSize
 
-	helpBtn := widget.NewButtonWithIcon("", theme.HelpIcon(), openHelpFunc)
-	if openHelpFunc == nil {
-		helpBtn.Disable()
-	}
+	// used to toggle between help and main content
+	contentToggleBtn := widget.NewButtonWithIcon("", theme.HelpIcon(), nil)
+	helpContentShowing := false
 
 	c := container.New(
 		layout.NewVBoxLayout(),
 		container.New(
-			layout.NewBorderLayout(nil, nil, header, helpBtn),
-			header, helpBtn,
+			layout.NewBorderLayout(nil, nil, header, contentToggleBtn),
+			header, contentToggleBtn,
 		),
 		verticalSpacer(2),
-		content,
+		mainContent,
 	)
+
+	if helpContent == nil {
+		contentToggleBtn.Disable()
+	} else {
+		contentToggleBtn.OnTapped = func() {
+			if helpContentShowing {
+				// switch to mainContent
+				c.Objects = append(
+					c.Objects[:len(c.Objects)-1],
+					mainContent,
+				)
+				helpContentShowing = false
+				contentToggleBtn.Icon = theme.HelpIcon()
+			} else {
+				// switch to helpContent
+				c.Objects = append(
+					c.Objects[:len(c.Objects)-1],
+					helpContent,
+				)
+				helpContentShowing = true
+				contentToggleBtn.Icon = theme.NavigateBackIcon()
+			}
+			c.Refresh()
+		}
+	}
 
 	return container.NewPadded(c)
 }

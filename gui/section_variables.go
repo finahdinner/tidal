@@ -32,8 +32,8 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 			"Twitch Configuration",
 			secondaryWindowSectionWrapper(
 				"Twitch Configuration",
-				nil,
 				g.getTwitchConfigSubsection(),
+				getTwitchConfigurationHelpSection(),
 			),
 			&twitchConfigWindowSize,
 		)
@@ -106,6 +106,15 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 	)
 }
 
+func getTwitchConfigurationHelpSection() fyne.CanvasObject {
+
+	markdownLines := []string{
+		"- TODO",
+	}
+
+	return helpSectionWrapper("Twitch Configuration Help", markdownLines)
+}
+
 func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 
 	openSettingsFunc := func() {
@@ -113,8 +122,8 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 			"LLM Configuration",
 			secondaryWindowSectionWrapper(
 				"LLM Configuration",
-				nil,
 				g.getLlmConfigSubsection(),
+				getLlmConfigurationHelpSection(),
 			),
 			&llmConfigWindowSize,
 		)
@@ -184,6 +193,15 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 		true,
 		true,
 	)
+}
+
+func getLlmConfigurationHelpSection() fyne.CanvasObject {
+
+	markdownLines := []string{
+		"- TODO",
+	}
+
+	return helpSectionWrapper("LLM Configuration Help", markdownLines)
 }
 
 func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Container) *fyne.Container {
