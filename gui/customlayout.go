@@ -78,6 +78,10 @@ func mainWindowSectionWrapper(
 	return c
 }
 
+func secondaryWindowSectionWrapper(title string, openHelpFunc func(), content fyne.CanvasObject) fyne.CanvasObject {
+	//
+}
+
 func helpSectionWrapper(title string, markdownLines []string) fyne.CanvasObject {
 
 	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
