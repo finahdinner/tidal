@@ -27,25 +27,6 @@ var promptWindowSize fyne.Size = fyne.NewSize(600, 1) // height 1 lets the layou
 
 func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 
-	getTwitchConfigurationHelpSection := func() fyne.CanvasObject {
-		markdownLines := []string{
-			"- TODO",
-		}
-		return helpSectionWrapper("Twitch Configuration Help", markdownLines)
-	}
-
-	openSettingsFunc := func() {
-		g.openSecondaryWindow(
-			"Twitch Configuration",
-			secondaryWindowSectionWrapper(
-				"Twitch Configuration",
-				g.getTwitchConfigSubsection(),
-				getTwitchConfigurationHelpSection(),
-			),
-			&twitchConfigWindowSize,
-		)
-	}
-
 	twitchVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	twitchVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	twitchVariableValueColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Last Value"))
@@ -95,6 +76,41 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 			}
 		}
 	}()
+
+	configSection := g.getTwitchConfigSubsection()
+
+	getTwitchConfigurationHelpSection := func() fyne.CanvasObject {
+		markdownLines := []string{
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+			"- TODO",
+		}
+		scroll := container.NewVScroll(helpSectionWrapper("", markdownLines))
+		scroll.SetMinSize(configSection.MinSize())
+		return scroll
+	}
+
+	openSettingsFunc := func() {
+		g.openSecondaryWindow(
+			"Twitch Configuration",
+			secondaryWindowSectionWrapper(
+				"Twitch Configuration",
+				configSection,
+				getTwitchConfigurationHelpSection(),
+			),
+			&twitchConfigWindowSize,
+		)
+	}
 
 	return mainWindowSectionWrapper(
 		"Twitch Variables",

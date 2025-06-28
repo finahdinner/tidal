@@ -131,14 +131,18 @@ func secondaryWindowSectionWrapper(
 
 func helpSectionWrapper(title string, markdownLines []string) fyne.CanvasObject {
 
-	header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
-	header.TextSize = headerSize
-
-	c := container.New(
-		layout.NewVBoxLayout(),
-		header,
-		verticalSpacer(1),
-	)
+	var c *fyne.Container
+	if title != "" {
+		header := canvas.NewText(title, theme.Color(theme.ColorNameForeground))
+		header.TextSize = headerSize
+		c = container.New(
+			layout.NewVBoxLayout(),
+			header,
+			verticalSpacer(1),
+		)
+	} else {
+		c = container.New(layout.NewVBoxLayout())
+	}
 
 	for _, line := range markdownLines {
 		rt := widget.NewRichTextFromMarkdown(line)
@@ -204,6 +208,7 @@ func (g *GuiWrapper) openSecondaryWindow(title string, canvasObj fyne.CanvasObje
 		}
 		g.SecondaryWindow.SetContent(canvasObj)
 	}
+	g.SecondaryWindow.SetFixedSize(true)
 	g.SecondaryWindow.Show()
 	g.SecondaryWindow.RequestFocus()
 }
