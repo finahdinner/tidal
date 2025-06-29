@@ -113,10 +113,14 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 		)
 	}
 
+	openHelpFunc := func() {
+		g.openSecondaryWindow("Stream Variables Help", getStreamVariablesHelpSection(), &helpWindowSize)
+	}
+
 	return mainWindowSectionWrapper(
 		"Twitch Variables",
 		openSettingsFunc,
-		nil,
+		openHelpFunc,
 		container.New(
 			layout.NewHBoxLayout(),
 			twitchVariableCopyColumn,
@@ -236,6 +240,19 @@ func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Conta
 		})
 	}
 	return container.New(layout.NewStackLayout(), nameLabelCopyButtonBg, nameLabelCopyButtonBtn)
+}
+
+func getStreamVariablesHelpSection() fyne.CanvasObject {
+
+	markdownLines := []string{
+		"- **Stream Variables** contain values relating to your Twitch channel and current livestream.",
+		"- They dynamically update while Tidal is active. For example, if someone follows your channel, the `{{NumFollowers}}` variable will almost-immediately increase in value by one.",
+		"- Stream Variables may be included in title and prompt **templates**, with the syntax `{{VariableName}}`, and these *placeholders* will be substituted with the actual value of the variable.",
+		"-> For example, given the title template **I have {{NumViewers}} viewers** - whilst having 5 viewers, this will evaluate to **I have 5 viewers**.",
+		"**Stream Variables therefore form an integral part of Tidal, as they allow you to construct dynamic (and 'aware') Twitch titles.**",
+	}
+
+	return helpSectionWrapper("Stream Variables Help", markdownLines)
 }
 
 func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int, scrollDirection fyne.ScrollDirection, textWrapBehaviour fyne.TextWrap) *widget.Entry {
