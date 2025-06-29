@@ -134,6 +134,19 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 	)
 }
 
+func getStreamVariablesHelpSection() fyne.CanvasObject {
+
+	markdownLines := []string{
+		"- **Stream Variables** are real-time values that reflect the current state of your Twitch channel and livestream.",
+		"- These variables update dynamically while Tidal is running. For example, if someone follows your channel, the **{{NumFollowers}}** variable will update almost immediately to reflect the new count.",
+		"- You can use Stream Variables in title and prompt **templates** using the syntax **{{VariableName}}**. These *placeholders* will automatically be replaced with their actual values.",
+		"-> For example, if your title template is **I have {{NumViewers}} viewers**, and you currently have 5 viewers, it will evaluate to **I have 5 viewers**.",
+		"**Along with **AI-Generated Variables**, Stream Variables form an integral part of Tidal, as they allow you to construct dynamic, context-aware Twitch titles.**",
+	}
+
+	return helpSectionWrapper("Stream Variables Help", markdownLines)
+}
+
 func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 
 	getLlmConfigurationHelpSection := func() fyne.CanvasObject {
@@ -199,10 +212,14 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
 
+	openHelpFunc := func() {
+		g.openSecondaryWindow("AI-Generated Variables Help", getAiGeneratedVariablesHelpSection(), &helpWindowSize)
+	}
+
 	return mainWindowSectionWrapper(
 		"AI-generated Variables",
 		openSettingsFunc,
-		nil,
+		openHelpFunc,
 		container.New(
 			layout.NewVBoxLayout(),
 			container.New(
@@ -219,6 +236,18 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 		true,
 		true,
 	)
+}
+
+func getAiGeneratedVariablesHelpSection() fyne.CanvasObject {
+
+	markdownLines := []string{
+		"- **AI-Generated Variables** are custom values created by sending prompts to a Large Language Model (LLM).",
+		"- The value of each AI-Generated Variable is the LLM’s response to your custom prompt. Like **Stream Variables**, they can be used in your **Title Template** using the **{{VariableName}}** placeholder format.",
+		"- These prompts can include **Stream Variables** using the same **{{VariableName}}** syntax, which allows AI-Generated Variables to adapt based on real-time context.",
+		"**Along with **Stream Variables**, AI-Generated Variables form an integral part of Tidal, as they allow you to construct dynamic, context-aware Twitch titles.**",
+	}
+
+	return helpSectionWrapper("AI-Generated Variables Help", markdownLines)
 }
 
 func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Container) *fyne.Container {
@@ -240,19 +269,6 @@ func (g *GuiWrapper) getNewCopyButton(rowIdx int, variableNameColumn *fyne.Conta
 		})
 	}
 	return container.New(layout.NewStackLayout(), nameLabelCopyButtonBg, nameLabelCopyButtonBtn)
-}
-
-func getStreamVariablesHelpSection() fyne.CanvasObject {
-
-	markdownLines := []string{
-		"- **Stream Variables** contain values relating to your Twitch channel and current livestream.",
-		"- They dynamically update while Tidal is active. For example, if someone follows your channel, the `{{NumFollowers}}` variable will almost-immediately increase in value by one.",
-		"- Stream Variables may be included in title and prompt **templates**, with the syntax `{{VariableName}}`, and these *placeholders* will be substituted with the actual value of the variable.",
-		"-> For example, given the title template **I have {{NumViewers}} viewers** - whilst having 5 viewers, this will evaluate to **I have 5 viewers**.",
-		"**Stream Variables therefore form an integral part of Tidal, as they allow you to construct dynamic (and 'aware') Twitch titles.**",
-	}
-
-	return helpSectionWrapper("Stream Variables Help", markdownLines)
 }
 
 func getMultilineEntry(text string, saveBtn *widget.Button, lineHeight int, scrollDirection fyne.ScrollDirection, textWrapBehaviour fyne.TextWrap) *widget.Entry {
