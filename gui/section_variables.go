@@ -81,19 +81,19 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 
 	getTwitchConfigurationHelpSection := func() fyne.CanvasObject {
 		markdownLines := []string{
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
-			"- TODO",
+			`In order for Tidal to change your Twitch stream's title, you will need to create a **Developer Application**, by following the instructions below.`,
+			"- Navigate to the Twitch Developer Console, found at **https://dev.twitch.tv/console**",
+			`- Under **Applications**, click **Register Your Application**, and populate the fields with the given values:`,
+			"-> `Name`:" + `**AnyUniqueNameLikeThis**`,
+			"-> `OAuth Redirect URLs`: **http://localhost:17563**",
+			"-> `Category`: **Application Integration**",
+			"-> `Client Type`: **Confidential**",
+			"- Click **Create**, then click the **Manage** button next to your listed application.",
+			"- Click **New Secret**, then copy or write down your **Client Secret** in a safe place.",
+			"- Using the values above, populate the **Twitch Username**, **Client ID**, **Client Secret** and **Redirect URI** fields in the Tidal **Twitch Configuration**.",
+			"- Click **Save**, then **Authenticate**, and your browser will open.",
+			"- Ensure you are signed into your Twitch account (it must match the username you provided in Tidal), and **Authorize** the application.",
+			"**All done!**",
 		}
 		scroll := container.NewVScroll(helpSectionWrapper("", markdownLines))
 		scroll.SetMinSize(configSection.MinSize())
