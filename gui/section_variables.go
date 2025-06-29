@@ -149,25 +149,6 @@ func getStreamVariablesHelpSection() fyne.CanvasObject {
 
 func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 
-	getLlmConfigurationHelpSection := func() fyne.CanvasObject {
-		markdownLines := []string{
-			"- TODO",
-		}
-		return helpSectionWrapper("LLM Configuration Help", markdownLines)
-	}
-
-	openSettingsFunc := func() {
-		g.openSecondaryWindow(
-			"LLM Configuration",
-			secondaryWindowSectionWrapper(
-				"LLM Configuration",
-				g.getLlmConfigSubsection(),
-				getLlmConfigurationHelpSection(),
-			),
-			&llmConfigWindowSize,
-		)
-	}
-
 	aiGeneratedVariableCopyColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Copy"))
 	aiGeneratedVariableNameColumn := container.New(layout.NewVBoxLayout(), widget.NewLabel("Name"))
 	aiGeneratedEditColumn := container.New(layout.NewVBoxLayout(), layout.NewSpacer())
@@ -211,6 +192,32 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 		)
 	})
 	addAiGeneratedVariableBtnRow := container.New(layout.NewBorderLayout(nil, nil, addAiGeneratedVariableBtn, nil), addAiGeneratedVariableBtn)
+
+	configSection := g.getLlmConfigSubsection()
+
+	getLlmConfigurationHelpSection := func() fyne.CanvasObject {
+		markdownLines := []string{
+			"To create **AI-Generated Variables**, you will first need to configure a Large Language Model (LLM) to send prompts to.",
+			"- **Provider** – The LLM provider you’d like to use (e.g., **Google Gemini**).",
+			"- **API Key** – Used to authenticate with the selected provider. You will need to obtain this key from your provider’s developer portal.",
+			"- **Default Prompt Suffix** – A prompt suffix is a set of instructions appended to your prompt to enforce a structured and appropriate response. This field sets the default suffix used for new prompts.",
+		}
+		scroll := container.NewVScroll(helpSectionWrapper("", markdownLines))
+		scroll.SetMinSize(configSection.MinSize())
+		return scroll
+	}
+
+	openSettingsFunc := func() {
+		g.openSecondaryWindow(
+			"LLM Configuration",
+			secondaryWindowSectionWrapper(
+				"LLM Configuration",
+				configSection,
+				getLlmConfigurationHelpSection(),
+			),
+			&llmConfigWindowSize,
+		)
+	}
 
 	openHelpFunc := func() {
 		g.openSecondaryWindow("AI-Generated Variables Help", getAiGeneratedVariablesHelpSection(), &helpWindowSize)
