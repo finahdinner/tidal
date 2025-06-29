@@ -93,7 +93,8 @@ func (g *GuiWrapper) getStreamVariablesSection() fyne.CanvasObject {
 			"- Using the values above, populate the **Twitch Username**, **Client ID**, **Client Secret** and **Redirect URI** fields in the Tidal **Twitch Configuration**.",
 			"- Click **Save**, then **Authenticate**, and your browser will open.",
 			"- Ensure you are signed into your Twitch account (it must match the username you provided in Tidal), and **Authorize** the application.",
-			"**All done!**",
+			"- This populates the **Twitch User ID** and **Access Token** fields - your credentials are now set up!",
+			"**Note: if you ever change any field values, your Twitch User ID and Access Token will reset, meaning you need to re-authorize.**",
 		}
 		scroll := container.NewVScroll(helpSectionWrapper("", markdownLines))
 		scroll.SetMinSize(configSection.MinSize())
