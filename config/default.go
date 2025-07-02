@@ -46,6 +46,7 @@ var defaultPreferences PreferencesFormat = PreferencesFormat{
 		Value:                           "",
 		TitleTemplate:                   "",
 		TitleUpdateIntervalMinutes:      1,
+		SendChatMessagePerTitleUpdate:   true,
 		UpdateImmediatelyOnStart:        true,
 		ThrowErrorIfEmptyVariable:       true,
 		ThrowErrorIfNonExistentVariable: true,

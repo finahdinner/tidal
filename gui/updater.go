@@ -252,6 +252,13 @@ func updateTitle(ctx context.Context) error {
 		return fmt.Errorf("unable to push title update to console - err: %w", err)
 	}
 
+	if config.Preferences.Title.SendChatMessagePerTitleUpdate {
+		msg := fmt.Sprintf("✅ New stream title: %q", newTitle)
+		if err := twitch.SendChatMessage(ctx, newPreferences, msg); err != nil {
+			config.Logger.LogErrorf("unable to send message about updating the stream title - err: %s", err)
+		}
+	}
+
 	config.Logger.LogInfof("successfully updated title to %q", newPreferences.Title.Value)
 	config.Preferences = newPreferences
 	config.SavePreferences()

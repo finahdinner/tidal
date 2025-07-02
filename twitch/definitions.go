@@ -21,6 +21,7 @@ const (
 	twitchApiSubscriptionsUrl = "https://api.twitch.tv/helix/subscriptions"
 	twitchApiChannelsUrl      = "https://api.twitch.tv/helix/channels"
 	twitchApiFollowersUrl     = "https://api.twitch.tv/helix/channels/followers"
+	twitchApiMessagesUrl      = "https://api.twitch.tv/helix/chat/messages"
 )
 
 type getUsersApiResponseT struct {
@@ -95,6 +96,17 @@ type getChannelFollowersResponseT struct {
 	} `json:"data"`
 	Pagination paginationApiResponse `json:"pagination"`
 	Total      int                   `json:"total"`
+}
+
+type postChatMessageResponseT struct {
+	Data []struct {
+		MessageId  string `json:"message_id"`
+		IsSent     bool   `json:"is_sent"`
+		DropReason *struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"drop_reason"`
+	} `json:"data"`
 }
 
 type RawApiResponses struct {

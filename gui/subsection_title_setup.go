@@ -143,6 +143,11 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		intervalEntryErrorText,
 	)
 
+	sendChatMsgPerUpdate := widget.NewCheck("Send chat message per title update", func(b bool) {
+		titleConfig.SendChatMessagePerTitleUpdate = b
+	})
+	sendChatMsgPerUpdate.SetChecked(titleConfig.SendChatMessagePerTitleUpdate)
+
 	updateImmediatelyOnStart := widget.NewCheck("Update title immediately on start", func(b bool) {
 		titleConfig.UpdateImmediatelyOnStart = b
 	})
@@ -171,6 +176,8 @@ func (g *GuiWrapper) getTitleSetupSubsection() *fyne.Container {
 		variablesDetectedWidget,
 		widget.NewLabel("Update Every "),
 		updateFrequencyContainer,
+		layout.NewSpacer(),
+		sendChatMsgPerUpdate,
 		layout.NewSpacer(),
 		updateImmediatelyOnStart,
 		layout.NewSpacer(),

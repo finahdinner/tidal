@@ -57,6 +57,7 @@ type TitleT struct {
 	Value                           string `json:"value"`
 	TitleTemplate                   string `json:"title_template"`
 	TitleUpdateIntervalMinutes      int    `json:"title_update_interval_minutes"`
+	SendChatMessagePerTitleUpdate   bool   `json:"send_chat_message_per_title_update"`
 	UpdateImmediatelyOnStart        bool   `json:"update_immediately_on_start"`
 	ThrowErrorIfEmptyVariable       bool   `json:"throw_error_if_empty_variable"`
 	ThrowErrorIfNonExistentVariable bool   `json:"throw_error_if_non_existent_variable"`

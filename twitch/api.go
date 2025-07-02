@@ -91,8 +91,54 @@ func UpdateStreamTitle(ctx context.Context, prefs config.PreferencesFormat) erro
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unable to update content - http code %v", resp.Status)
+		return fmt.Errorf("unable to update content - http status %v", resp.Status)
 	}
+	return nil
+}
+
+// POST request to /messages endpoint
+func SendChatMessage(ctx context.Context, prefs config.PreferencesFormat, message string) error {
+	reqBody := map[string]string{
+		"broadcaster_id": prefs.TwitchConfig.UserId,
+		"sender_id":      prefs.TwitchConfig.UserId,
+		"message":        message,
+	}
+	reqBodyJson, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("unable to parse reqBody - err: %w", err)
+	}
+	config.Logger.LogInfof("reqBodyJson: %v", string(reqBodyJson))
+
+	// make a POST request
+	req, err := http.NewRequestWithContext(ctx, "POST", twitchApiMessagesUrl, bytes.NewBuffer(reqBodyJson))
+	if err != nil {
+		return fmt.Errorf("unable to construct request using url %q and body %v", twitchApiMessagesUrl, reqBodyJson)
+	}
+
+	req.Header.Set("Client-Id", prefs.TwitchConfig.ClientId)
+	req.Header.Set("Authorization", "Bearer "+prefs.TwitchConfig.Credentials.UserAccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("request for %v failed - err: %w", req.URL, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to send message - http status %v", resp.Status)
+	}
+
+	var result postChatMessageResponseT
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("unable to decode response from request to %v - err: %w", req.URL, err)
+	} else if !result.Data[0].IsSent {
+		if result.Data[0].DropReason == nil { // malformed response
+			return errors.New("unable to send message in Twitch channel, and no drop reason received")
+		}
+		return fmt.Errorf("http status: %v - unable to send message in channel - code: %v, reason: %v", resp.StatusCode, result.Data[0].DropReason.Code, result.Data[0].DropReason.Message)
+	}
+
 	return nil
 }
 
