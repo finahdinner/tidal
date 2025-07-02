@@ -61,7 +61,7 @@ func GetFollowers(ctx context.Context, prefs config.PreferencesFormat) (*getChan
 // PATCH request to /channels endpoint
 func UpdateStreamTitle(ctx context.Context, prefs config.PreferencesFormat) error {
 	params := url.Values{}
-	params.Add("broadcaster_id", config.Preferences.TwitchConfig.UserId)
+	params.Add("broadcaster_id", prefs.TwitchConfig.UserId)
 	queryUrl := fmt.Sprintf("%s?%s", twitchApiChannelsUrl, params.Encode())
 	config.Logger.LogInfof("queryUrl: %v", queryUrl)
 
