@@ -1,6 +1,7 @@
 package gui
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"time"
@@ -25,16 +26,14 @@ type GuiWrapper struct {
 
 var Gui *GuiWrapper
 
+//go:embed assets/icon.png
+var iconData []byte
+var iconResource = fyne.NewStaticResource("icon.png", iconData)
+
 func init() {
 
 	a := app.NewWithID(config.AppName)
-
-	icon, err := fyne.LoadResourceFromPath("assets/icon.png")
-	if err != nil {
-		config.Logger.LogErrorf("unable to load logo - err: %v", err)
-	}
-	a.SetIcon(icon)
-
+	a.SetIcon(iconResource)
 	a.Settings().SetTheme(&tidalTheme{})
 
 	primaryWindow := a.NewWindow("Tidal")
