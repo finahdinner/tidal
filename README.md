@@ -41,6 +41,8 @@ git clone https://github.com/finahdinner/tidal.git tmp-tidal && cd tmp-tidal && 
 
 #### _A basic overview of the usage of the application is outlined in the `Help` section found within the main window, and more detailed instructions are found by clicking the `?` icon in the top right corner of most subsections within the application._
 
+#### _You may also find the following helpful for constructing LLM prompts that produce reliable responses: https://www.promptingguide.ai/introduction/tips_
+
 #### In order for Tidal to dynamically update your Twitch stream title, you must first configure the following:
 
 1. **Twitch Channel & Application Credentials**
@@ -49,11 +51,9 @@ git clone https://github.com/finahdinner/tidal.git tmp-tidal && cd tmp-tidal && 
 
 2. **LLM Credentials**
 
--   Navigate to the `AI-generated Variables` section and click on the settings cog in the top left corner to input these credentials - this subsection includes detailed instructions on how to fill in each field and configure LLM credentials.
+-   Navigate to the `AI-generated Variables` section and click on the settings cog in the top left corner to input these credentials - this subsection includes detailed instructions on how to fill in each field.
 
 ## Example Tidal Usage
-
-#### _You may find the following helpful for constructing LLM prompts that produce reliable responses: https://www.promptingguide.ai/introduction/tips_
 
 1. Define an **AI-Generated Variable** called `GameJoke`, which instructs an LLM with the following:
 
@@ -71,3 +71,9 @@ Streaming $$StreamCategory to $$NumViewers - $$GameJoke
 ```
 
 3. Set Tidal to update the title (using the above title template) every 3 minutes.
+
+4. Example of a generated title (with some terrible humour):
+
+```
+Streaming Old School RuneScape to 14 viewers - Why did the pickpocket get kicked out of Ardougne? He kept stealing the punchlines! 🥷😂
+```
