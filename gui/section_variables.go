@@ -138,9 +138,9 @@ func getStreamVariablesHelpSection() fyne.CanvasObject {
 
 	markdownLines := []string{
 		"- **Stream Variables** are real-time values that reflect the current state of your Twitch channel and livestream.",
-		"- These variables update dynamically while Tidal is running. For example, if someone follows your channel, the **{{NumFollowers}}** variable will update almost immediately to reflect the new count.",
-		"- You can use Stream Variables in title and prompt **templates** using the syntax **{{VariableName}}**. These *placeholders* will automatically be replaced with their actual values.",
-		"-> For example, if your title template is **I have {{NumViewers}} viewers**, and you currently have 5 viewers, it will evaluate to **I have 5 viewers**.",
+		fmt.Sprintf("- These variables update dynamically while Tidal is running. For example, if someone follows your channel, the **%sNumFollowers** variable will update almost immediately to reflect the new count.", helpers.VarNamePlaceholderPrefix),
+		fmt.Sprintf("- You can use Stream Variables in title and prompt **templates** using the syntax **%sVariableName**. These *placeholders* will automatically be replaced with their actual values.", helpers.VarNamePlaceholderPrefix),
+		fmt.Sprintf("-> For example, if your title template is **I have %sNumViewers viewers**, and you currently have 5 viewers, it will evaluate to **I have 5 viewers**.", helpers.VarNamePlaceholderPrefix),
 		"**Along with **AI-Generated Variables**, Stream Variables form an integral part of Tidal, as they allow you to construct dynamic, context-aware Twitch titles.**",
 	}
 
@@ -246,14 +246,12 @@ func (g *GuiWrapper) getAiGeneratedVariablesSection() fyne.CanvasObject {
 }
 
 func getAiGeneratedVariablesHelpSection() fyne.CanvasObject {
-
 	markdownLines := []string{
 		"- **AI-Generated Variables** are custom values created by sending prompts to a Large Language Model (LLM).",
-		"- The value of each AI-Generated Variable is the LLM’s response to your custom prompt. Like **Stream Variables**, they can be used in your **Title Template** using the **{{VariableName}}** placeholder format.",
-		"- These prompts can include **Stream Variables** using the same **{{VariableName}}** syntax, which allows AI-Generated Variables to adapt based on real-time context.",
+		fmt.Sprintf("- The value of each AI-Generated Variable is the LLM’s response to your custom prompt. Like **Stream Variables**, they can be used in your **Title Template** using the **%sVariableName** placeholder format.", helpers.VarNamePlaceholderPrefix),
+		fmt.Sprintf("- These prompts can include **Stream Variables** using the same **%sVariableName** syntax, which allows AI-Generated Variables to adapt based on real-time context.", helpers.VarNamePlaceholderPrefix),
 		"**Along with **Stream Variables**, AI-Generated Variables form an integral part of Tidal, as they allow you to construct dynamic, context-aware Twitch titles.**",
 	}
-
 	return helpSectionWrapper("AI-Generated Variables Help", markdownLines)
 }
 
