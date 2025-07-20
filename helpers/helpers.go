@@ -16,8 +16,7 @@ const (
 	MinTitleUpdateIntervalMinutes = 1
 	MaxTitleUpdateIntervalMinutes = 1440
 
-	VarNamePlaceholderPrefix = "{{"
-	VarNamePlaceholderSuffix = "}}"
+	VarNamePlaceholderPrefix = "$$"
 	VariablePlaceholderValue = "-"
 )
 
@@ -31,11 +30,11 @@ func GenerateCsrfToken(length int) string {
 }
 
 func GenerateVarPlaceholderString(varName string) string {
-	return fmt.Sprintf("%v%v%v", VarNamePlaceholderPrefix, varName, VarNamePlaceholderSuffix)
+	return fmt.Sprintf("%v%v", VarNamePlaceholderPrefix, varName)
 }
 
 func GetVarNameFromPlaceholderString(placeholderString string) string {
-	return strings.Replace(strings.Replace(placeholderString, VarNamePlaceholderPrefix, "", 1), VarNamePlaceholderSuffix, "", 1)
+	return strings.Replace(placeholderString, VarNamePlaceholderPrefix, "", 1)
 }
 
 func GetStringReplacerFromMap(m map[string]string, allowEmptyReplacements bool, allowSubstrings bool) (*strings.Replacer, error) {
@@ -124,8 +123,9 @@ func GenerateMapFromHomogenousStruct[ParentType any, FieldValueType any](strct P
 
 // Returns unique variable names
 func ExtractVariableNamesFromText(text string) []string {
-	fmtStr := `%s(\w+)%s`
-	r := regexp.MustCompile(fmt.Sprintf(fmtStr, VarNamePlaceholderPrefix, VarNamePlaceholderSuffix))
+	fmtStr := `%s(\w+)`
+	escapedPrefix := regexp.QuoteMeta(VarNamePlaceholderPrefix)
+	r := regexp.MustCompile(fmt.Sprintf(fmtStr, escapedPrefix))
 	matches := r.FindAllStringSubmatch(text, -1)
 	variableNamesMap := make(map[string]struct{}, len(matches))
 	for _, match := range matches {
