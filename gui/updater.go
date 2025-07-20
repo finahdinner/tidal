@@ -287,7 +287,7 @@ func getTwitchVariablesStringReplacer(twitchVariables config.TwitchVariablesT) (
 		if val == "" {
 			val = emptyVariablePlaceholder
 		}
-		twitchVariablesValuesMap[varName] = val
+		twitchVariablesValuesMap[helpers.GenerateVarPlaceholderString(varName)] = val
 	}
 	twitchVariablesStringReplacer, err := helpers.GetStringReplacerFromMap(twitchVariablesValuesMap, true, false)
 	if err != nil {
