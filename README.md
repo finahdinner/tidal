@@ -1,4 +1,4 @@
-# Tidal
+# <img width="32" height="32" alt="icon" src="https://github.com/user-attachments/assets/3330f2cc-729b-40a7-a585-0d32f93a7053" /> Tidal
 
 ### **Tidal** is a Twitch stream title manager that allows you to dynamically update your stream titles in a context-aware, creative, and often humorous way.
 
