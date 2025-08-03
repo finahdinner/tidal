@@ -63,13 +63,13 @@ jobs:
       - name: Build binary
         run: |
           mkdir -p build/linux
-          go build -o build/linux/tidal
+          go build -o build/linux/tidal-linux
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
           name: tidal-linux
-          path: build/linux/tidal
+          path: build/linux/tidal-linux
 
   release:
     name: Publisher release
