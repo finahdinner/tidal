@@ -27,6 +27,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -51,6 +57,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install gcc libgl1-mesa-dev xorg-dev libxkbcommon-dev
 
       - name: Set up Go
         uses: actions/setup-go@v5
