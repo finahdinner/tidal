@@ -36,7 +36,7 @@ jobs:
         shell: cmd
         run: |
           mkdir build\windows
-          go build -o build\windows\tidal-amd64.exe
+          go build -ldflags="-H windowsgui" -o build\windows\tidal-amd64.exe
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
