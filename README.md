@@ -15,27 +15,38 @@ Templates automatically substitute variable names with their current values, and
 
 ## Installation
 
-#### _(Downloadable binaries coming soon...)_
+### Downloadable binaries
+
+[See Latest Releases](https://github.com/finahdinner/tidal/releases/latest)
+
+### Compile from source
 
 1. Install Go: https://go.dev/doc/install — ensure that `go` is on your system `PATH`.
 2. Install Git: https://git-scm.com/downloads — ensure that `git` is on your system `PATH`.
-3. Compile the binary:
 
 #### Windows
 
-```
-git clone https://github.com/finahdinner/tidal.git tmp-tidal && cd tmp-tidal && go build -o ../tidal.exe && cd .. && rmdir /s /q tmp-tidal
-```
+3. Install GCC: [https://code.visualstudio.com/docs/cpp/config-mingw](https://code.visualstudio.com/docs/cpp/config-mingw)
+4. Compile the binary, `tidal.exe`:
+- **Powershell**:
 
--   This will create an executable `tidal.exe` binary.
+    ```
+    git clone https://github.com/finahdinner/tidal.git tmp-tidal; Set-Location tmp-tidal; go build -o ../tidal.exe; Set-Location ..; Remove-Item tmp-tidal -Recurse -Force
+    ```
+- **CMD**:
 
-#### macOS & Linux
+    ```
+    git clone https://github.com/finahdinner/tidal.git tmp-tidal && cd tmp-tidal && go build -o ..\tidal.exe && cd .. && rmdir /s /q tmp-tidal
+    ```
 
-```
-git clone https://github.com/finahdinner/tidal.git tmp-tidal && cd tmp-tidal && go build -o ../tidal && cd .. && rm -rf tmp-tidal
-```
+#### Linux
 
--   This will create an executable `tidal` binary.
+3. Install GCC (consult your specific distro's instructions)
+4. Compile the binary, `tidal`:
+
+    ```
+    git clone https://github.com/finahdinner/tidal.git tmp-tidal && cd tmp-tidal && go build -o ../tidal && cd .. && rm -rf tmp-tidal
+    ```
 
 ## Post-Installation Setup
 

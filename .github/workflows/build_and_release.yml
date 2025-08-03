@@ -1,0 +1,97 @@
+name: Build Tidal binaries and release to GitHub
+
+on:
+
+  push:
+    tags:
+      "v*"
+
+  workflow_dispatch:
+    inputs:
+      logLevel:
+          description: "Log level"
+          required: true
+          default: "warning"
+      environment:
+          description: "Environment to deploy"
+          required: false
+          default: "staging"
+
+jobs:
+
+  windows-build:
+    name: Build for Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.4'
+
+      - name: Build binary
+        shell: cmd
+        run: |
+          mkdir build\windows
+          go build -o build\windows\tidal-amd64.exe
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: tidal-windows-amd64.exe
+          path: build/windows/tidal-amd64.exe
+
+  linux-build:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.4'
+
+      - name: Build binary
+        run: |
+          mkdir -p build/linux
+          go build -o build/linux/tidal
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: tidal-linux
+          path: build/linux/tidal
+
+  release:
+    name: Publisher release
+    needs: [windows-build, linux-build]
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Download Windows binary
+        uses: actions/download-artifact@v4
+        with:
+          name: tidal-windows-amd64.exe
+          path: dist
+
+      - name: Download Linux binary
+        uses: actions/download-artifact@v4
+        with:
+          name: tidal-linux
+          path: dist
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          prerelease: false
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
